@@ -28,5 +28,6 @@ FROM base AS api
 COPY --chown=dosimetria:dosimetria . .
 USER dosimetria
 EXPOSE 8000
-# A porta pode ser trocada pela variável PORT (plataformas de hospedagem costumam defini-la)
-CMD ["sh", "-c", "uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Aplica as migrações do banco (se DATABASE_URL estiver definida) e sobe a API.
+# A porta pode ser trocada pela variável PORT (plataformas de hospedagem costumam defini-la).
+CMD ["sh", "-c", "python -m banco.migrar && exec uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]

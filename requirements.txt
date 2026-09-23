@@ -6,3 +6,8 @@ fastapi==0.141.1
 uvicorn==0.52.4
 # páginas para estudantes (pacote web/): templates HTML
 jinja2==3.1.6
+# banco de dados MySQL (pacote banco/): ORM, driver, migrações e criptografia do login do MySQL 8
+sqlalchemy==2.0.54
+pymysql==1.2.3
+alembic==1.20.0
+cryptography==50.0.1
