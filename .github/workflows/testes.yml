@@ -22,7 +22,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - name: Roda o notebook de testes no contêiner
+      - name: Gera o .env com senhas aleatórias para o MySQL de teste
+        run: python3 scripts/preparar_ambiente.py
+      - name: Roda o notebook de testes no contêiner (com MySQL)
         run: docker compose run --rm testes
 
   navegador:
@@ -37,7 +39,9 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: tests/navegador/package-lock.json
-      - name: Sobe a API e as páginas no contêiner
+      - name: Gera o .env com senhas aleatórias para o MySQL de teste
+        run: python3 scripts/preparar_ambiente.py
+      - name: Sobe a API, as páginas e o MySQL nos contêineres
         run: |
           docker compose up -d --build api
           for i in $(seq 1 30); do curl -fsS http://localhost:8000/saude && exit 0; sleep 2; done
@@ -60,8 +64,34 @@ jobs:
           path: tests/navegador/fotos/
           retention-days: 7
 
+  seguranca:
+    # dependências com vulnerabilidade conhecida reprovam o build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Audita as dependências Python (pip-audit)
+        run: |
+          python -m pip install --quiet pip-audit==2.10.1
+          pip-audit -r requirements.txt -r requirements-dev.txt --progress-spinner off
+      - name: Audita as dependências do teste de navegador (npm audit)
+        working-directory: tests/navegador
+        run: npm audit --audit-level=moderate
+      - name: Procura segredos no código
+        run: |
+          # falha se aparecer algo com cara de credencial (o .env nunca é versionado)
+          if git grep -n -I -E "(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|api\.render\.com/deploy/srv-[a-z0-9]+\?key=|mysql://[^:@/ <>]+:[^@/ <>\$\{]+@)" -- . ':!*.pdf'; then
+            echo "::error::Possível segredo encontrado no código (veja as linhas acima)."
+            exit 1
+          fi
+          test ! -e .env || { echo "::error::.env não pode ser versionado"; exit 1; }
+
   deploy:
-    needs: [testes, navegador]
+    needs: [testes, navegador, seguranca]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions: {}

@@ -23,6 +23,7 @@ registro do que já foi feito e dos próximos passos está em
 | Página | O que o estudante faz |
 |---|---|
 | [Início](https://sergius-ia-judge.onrender.com/) | Visão geral do sistema trifásico |
+| [Analisar caso](https://sergius-ia-judge.onrender.com/analisar) | Descreve um caso em detalhes; o texto é anonimizado (nomes, CPF, endereços, processos...), revisado pelo próprio estudante e guardado no MySQL, com código para consultar ou excluir. É a base de estudo do agente de análise, em construção |
 | [Calcular](https://sergius-ia-judge.onrender.com/calcular) | Preenche a faixa, as circunstâncias, as agravantes e atenuantes e as causas (ou carrega um dos exemplos) e vê as três penas, os alertas, o passo a passo e a fundamentação, que pode ser copiada |
 | [Praticar](https://sergius-ia-judge.onrender.com/praticar) | Recebe um caso (sem a descrição, que entregaria a resposta), faz a dosimetria e recebe a correção fase a fase, com a diferença em dias, a explicação e o gabarito |
 | [Como funciona](https://sergius-ia-judge.onrender.com/como-funciona) | As regras usadas pelo motor, em linguagem de estudo |
@@ -31,6 +32,64 @@ As páginas ficam em `web/` (templates HTML, CSS e JavaScript sem framework) e s
 servidas pelo mesmo app da API, no mesmo contêiner. O JavaScript só chama a API
 JSON, então nenhuma regra do motor é duplicada no navegador. Os textos do usuário
 entram na página só como texto (`textContent`), nunca como HTML.
+
+## Segurança e privacidade
+
+O site é público e recebe textos que podem conter dados pessoais, então a segurança é
+tratada como requisito em cada funcionalidade:
+
+- **Anonimização antes de gravar** (`privacidade/`): nomes, CPF, CNPJ, RG, e-mails,
+  telefones, CEPs, placas, endereços e números de processo viram marcadores como
+  `[PESSOA 1]`. O estudante vê e confirma o texto anonimizado; **o texto original nunca
+  é gravado**. Cada caso tem um código aleatório (não sequencial) para consulta e
+  **exclusão** a qualquer momento (LGPD).
+- **Consentimento explícito** antes de salvar; só casos **validados pelo responsável**
+  serão usados para ensinar o agente.
+- **Cabeçalhos de segurança** em todas as respostas (`api/seguranca.py`): CSP sem scripts
+  de terceiros nem inline, proibição de exibir o site dentro de outro (frame), `nosniff`,
+  política de referência e HSTS em HTTPS. Respostas com casos não ficam em cache.
+- **Limites**: tamanho máximo da requisição (256 KB, verificado enquanto o corpo chega)
+  e da descrição (20 mil caracteres); limite de requisições por visitante e um teto
+  global por rota. O IP do visitante vem do proxy do Render e não pode ser falsificado
+  pelo cabeçalho `X-Forwarded-For`.
+- **Outros sites só leem** (CORS libera apenas `GET`): nenhum site de terceiros consegue
+  gravar ou excluir casos pelo navegador de um visitante.
+- **Erros sem detalhes internos**: falhas de banco viram uma mensagem genérica, e erros de
+  validação não ecoam textos longos.
+- **Banco**: consultas parametrizadas (SQLAlchemy), conexão TLS com a Aiven (com
+  verificação do certificado quando `MYSQL_CA_CERT` está definido) e esquema versionado
+  por migrações (Alembic).
+- **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
+  Render e do GitHub. O MySQL local usa senhas aleatórias num `.env` fora do git. O CI
+  procura segredos no código e reprova o build se achar algum.
+- **Dependências fixadas e auditadas**: o CI roda `pip-audit` e `npm audit` e reprova
+  vulnerabilidades conhecidas; o Dependabot abre PRs de atualização toda semana.
+- O contêiner roda com usuário sem privilégios de root.
+
+## Banco de dados (MySQL)
+
+Em produção, os casos ficam no **MySQL da Aiven**. Configuração, feita uma vez:
+
+1. Na Aiven, no serviço MySQL, aba **Databases**: crie o banco `sergius_ia_judge`.
+2. Aba **Users**: crie um usuário só para este projeto (ex.: `sergius_app`). Com o
+   usuário administrador, dê a ele acesso **apenas** a esse banco:
+   `GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES ON sergius_ia_judge.* TO 'sergius_app'@'%';`
+3. No Render, no serviço, aba **Environment**, crie:
+   - `DATABASE_URL`: a *Service URI* da Aiven com o usuário, a senha e o banco acima, no
+     formato `mysql://<usuario>:<senha>@<host>:<porta>/sergius_ia_judge?ssl-mode=REQUIRED`;
+   - `MYSQL_CA_CERT`: o conteúdo do certificado CA da Aiven (**Overview → CA certificate**),
+     para a conexão também verificar a identidade do servidor.
+
+As migrações rodam sozinhas quando o serviço inicia. Sem `DATABASE_URL`, o site funciona
+normalmente e só a gravação de casos fica indisponível.
+
+Localmente, o `docker compose` sobe um MySQL próprio na porta 33307 (para não conflitar
+com outros projetos). Antes, gere o `.env` com senhas aleatórias:
+
+```bash
+python scripts/preparar_ambiente.py
+docker compose up -d mysql
+```
 
 ## Usando a API
 
@@ -203,7 +262,11 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   entrada.py             entrada_de_dict: o formato JSON de entrada (o mesmo da API)
   ensino.py              comparar_resposta: correção da dosimetria do estudante
 sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
-api/                     API HTTP (FastAPI): app.py (rotas) e esquemas.py (formatos)
+api/                     API HTTP (FastAPI): app.py, casos.py, seguranca.py e esquemas.py
+banco/                   MySQL: conexão (TLS), tabelas, operações e migrar.py
+migracoes/               migrações do esquema do banco (Alembic)
+privacidade/             anonimização das descrições antes de gravar
+scripts/                 preparar_ambiente.py (gera o .env local com senhas aleatórias)
 web/                     páginas: rotas.py, templates/ (HTML) e static/ (CSS e JS)
 dados/casos/             casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
 tests/
