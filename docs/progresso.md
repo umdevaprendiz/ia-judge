@@ -197,6 +197,12 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   os jobs de publicação da imagem e de deploy no Azure foram removidos. Ficou
   no GitHub Container Registry uma imagem pública da API publicada durante a
   tentativa com o Azure; ela não é usada pelo Render.
+- **API publicada no Render:** https://sergius-ia-judge.onrender.com/docs.
+  Verificado pela internet: `/saude` e `/docs` respondem, os 10 casos de
+  `dados/casos/dosimetrias.json` dão a pena definitiva esperada via `POST
+  /dosimetria/calcular`, `/ensino/comparar` corrige (2/3 no exemplo), os erros
+  de validação saem em português, o `§` chega correto e o CORS responde ao
+  preflight de outra origem (`access-control-allow-origin: *`).
 
 ## Decisões de projeto tomadas nesta sessão
 
@@ -229,7 +235,5 @@ para não duplicar trabalho de novo.
 - **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
   dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
   sentenças penais reais conforme forem aparecendo.
-- **Publicar no Render:** falta o usuário criar o serviço no painel (New →
-  Blueprint → repositório → Apply). Se o uso crescer, avaliar um limite de
-  requisições por IP.
+- Se o uso da API pública crescer, avaliar um limite de requisições por IP.
 - Depois: ingestão (Planalto → banco) ou extração via LLM.
