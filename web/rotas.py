@@ -40,6 +40,11 @@ def analisar(request: Request) -> HTMLResponse:
     return _pagina(request, "analisar.html", "Analisar caso", "analisar")
 
 
+@roteador.get("/pesquisar", response_class=HTMLResponse)
+def pesquisar(request: Request) -> HTMLResponse:
+    return _pagina(request, "pesquisar.html", "Pesquisar na lei", "pesquisar")
+
+
 @roteador.get("/praticar", response_class=HTMLResponse)
 def praticar(request: Request) -> HTMLResponse:
     return _pagina(request, "praticar.html", "Praticar", "praticar")

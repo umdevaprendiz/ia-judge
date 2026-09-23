@@ -8,6 +8,7 @@ Documentação interativa da API: http://127.0.0.1:8000/docs
 import json
 import os
 from functools import cache
+from threading import Thread
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -32,9 +33,11 @@ from dosimetria import (
 from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
 
 from banco import banco_configurado
+from fontes.busca import base_de_fontes
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
 from .casos import roteador as rotas_dos_casos
+from .fontes import citar, roteador as rotas_das_fontes
 from .seguranca import RateLimiter, SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
@@ -73,6 +76,10 @@ app.add_middleware(SecurityHeadersMiddleware)
 # páginas para estudantes (web/): /, /calcular, /praticar, /como-funciona, e seus CSS/JS
 app.include_router(rotas_das_paginas)
 app.include_router(rotas_dos_casos)
+app.include_router(rotas_das_fontes)
+
+# a base de legislação leva uns 2 s para carregar: começa já, para o primeiro visitante não esperar
+Thread(target=base_de_fontes, daemon=True).start()
 app.mount("/static", StaticFiles(directory=PASTA_ESTATICOS), name="static")
 
 
@@ -194,7 +201,7 @@ def obter_exemplo(id_exemplo: str) -> dict:
 def calcular(entrada: SentencingRequest) -> dict:
     """Calcula a dosimetria completa: as três fases, o passo a passo, os alertas e a fundamentação."""
     resultado = entrada_de_dict(entrada.model_dump(mode="json")).calcular()
-    return resultado_para_dict(resultado)
+    return _com_fontes_citadas(resultado_para_dict(resultado), entrada)
 
 
 @app.post("/ensino/comparar", response_model=ComparisonOutput, tags=["ensino"], dependencies=[Depends(limite_calculo)])
@@ -227,8 +234,28 @@ def comparar(pedido: ComparisonRequest) -> dict:
             }
             for fase in comparacao.fases
         ],
-        "gabarito": resultado_para_dict(resultado),
+        "gabarito": _com_fontes_citadas(resultado_para_dict(resultado), pedido.entrada),
     }
+
+
+def _com_fontes_citadas(resultado: dict, entrada: SentencingRequest) -> dict:
+    """Acrescenta o texto de cada dispositivo citado no cálculo, conferido na base de legislação.
+
+    Rótulo que não está na base volta com encontrado=false: a fundamentação nunca cita um
+    texto que não existe (fase 4 do plano, verificador de citações).
+    """
+    passos = list(resultado["passos"])
+    if resultado["alternativa_art68"]:
+        passos += resultado["alternativa_art68"]["passos"]
+    rotulos = [
+        resultado["faixa_aplicada"]["origem"],
+        "CP.art59",  # 1ª fase
+        *(item.dispositivo for item in entrada.agravantes_atenuantes),  # 2ª fase
+        "CP.art68",  # o sistema trifásico e o concurso de causas
+        *(passo["dispositivo"] for passo in passos),
+    ]
+    unicos = list(dict.fromkeys(r for r in rotulos if r and r != "-"))[:30]
+    return {**resultado, "fontes_citadas": [citar(rotulo) for rotulo in unicos]}
 
 
 @cache

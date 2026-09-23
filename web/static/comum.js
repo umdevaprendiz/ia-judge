@@ -157,6 +157,65 @@ export function esconder(...elementos) {
   for (const elemento of elementos) elemento.hidden = true;
 }
 
+/** "CP.art155.§4.IV" -> "CP, art. 155, § 4º, IV" */
+export function formatarRotulo(rotulo) {
+  return String(rotulo)
+    .split(".")
+    .map((parte, posicao) => {
+      if (posicao === 0) return parte;
+      const artigo = parte.match(/^art(\d+)(-[A-Z]+)?$/);
+      if (artigo) return `art. ${artigo[1]}${Number(artigo[1]) < 10 ? "º" : ""}${artigo[2] || ""}`;
+      const paragrafo = parte.match(/^§(\d+)(-[A-Z]+)?$/);
+      if (paragrafo) return `§ ${paragrafo[1]}${Number(paragrafo[1]) < 10 ? "º" : ""}${paragrafo[2] || ""}`;
+      return parte.replaceAll("_", " ");
+    })
+    .join(", ");
+}
+
+/** Um artigo da base de legislação: título, trecho (opcional), texto completo e a fonte. */
+export function cartaoDeDispositivo(dispositivo, trecho) {
+  const fonte = dispositivo.fonte;
+  const titulo = [formatarRotulo(dispositivo.rotulo), dispositivo.epigrafe].filter(Boolean).join(" — ");
+  return el(
+    "article",
+    { classe: "cartao dispositivo" },
+    el("h3", { classe: "dispositivo__titulo", texto: titulo }),
+    el("p", { classe: "dispositivo__meta", texto: [dispositivo.nome_lei, ...dispositivo.estrutura.slice(-2)].join(" · ") }),
+    trecho && el("p", { classe: "dispositivo__trecho", texto: trecho }),
+    el("details", {}, el("summary", { texto: "Ver o artigo completo" }), el("pre", { classe: "dispositivo__texto", texto: dispositivo.texto })),
+    el(
+      "p",
+      { classe: `dispositivo__fonte${fonte.desatualizada ? " dispositivo__fonte--antiga" : ""}` },
+      `Fonte: ${fonte.titulo}, atualizada até ${fonte.atualizado_ate}.`,
+      fonte.desatualizada ? " Edição antiga: confira o texto vigente no site do Planalto." : ""
+    )
+  );
+}
+
+function secaoFontesCitadas(fontes) {
+  if (!fontes || !fontes.length) return null;
+  return el(
+    "section",
+    { classe: "fontes-citadas" },
+    el("h3", { texto: "Textos da lei citados" }),
+    el("p", { classe: "ajuda", texto: "Cada dispositivo usado no cálculo, conferido na base de legislação do agente." }),
+    fontes.map((citacao) =>
+      citacao.encontrado
+        ? el(
+            "details",
+            { classe: "detalhes" },
+            el("summary", {
+              texto: `${formatarRotulo(citacao.rotulo)}${citacao.dispositivo.epigrafe ? ` — ${citacao.dispositivo.epigrafe}` : ""} (${citacao.dispositivo.nome_lei})`,
+            }),
+            el("pre", { classe: "dispositivo__texto", texto: citacao.texto }),
+            !citacao.parte_encontrada && el("p", { classe: "ajuda", texto: "A parte citada não foi localizada; segue o artigo inteiro." }),
+            el("p", { classe: "dispositivo__fonte", texto: `Fonte: ${citacao.dispositivo.fonte.titulo}.` })
+          )
+        : el("p", { classe: "dispositivo__ausente", texto: `${formatarRotulo(citacao.rotulo)}: não está na base de legislação.` })
+    )
+  );
+}
+
 function cartaoPena(rotulo, pena, destaque) {
   return el(
     "div",
@@ -259,5 +318,7 @@ export function renderizarResultado(resultado, { titulo = "Resultado" } = {}) {
   fragmento.append(
     el("section", { classe: "fundamentacao-bloco" }, el("div", { classe: "linha-titulo" }, el("h3", { texto: "Fundamentação" }), botaoCopiar), texto)
   );
+  const citadas = secaoFontesCitadas(resultado.fontes_citadas);
+  if (citadas) fragmento.append(citadas);
   return fragmento;
 }

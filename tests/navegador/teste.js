@@ -35,7 +35,7 @@ const verificar = (condicao, mensagem) => {
   verificar((await pagina.title()).includes("sergius-ia-Judge"), "Início: título da página");
   verificar(await pagina.locator('nav a[aria-current="page"]', { hasText: "Início" }).count() === 1, "Início: menu marca a página atual");
   verificar(
-    JSON.stringify(await pagina.locator("nav a").allTextContents()) === JSON.stringify(["Início", "Calcular", "Analisar caso", "Praticar", "Como funciona"]),
+    JSON.stringify(await pagina.locator("nav a").allTextContents()) === JSON.stringify(["Início", "Calcular", "Analisar caso", "Praticar", "Pesquisar na lei", "Como funciona"]),
     "Início: menu só com as páginas dos estudantes (sem a aba API)"
   );
   verificar(await pagina.locator('a[href="/docs"]').count() === 0, "Início: nenhum link para a documentação da API");
@@ -61,6 +61,13 @@ const verificar = (condicao, mensagem) => {
   verificar((await pagina.locator(".fundamentacao").textContent()).startsWith("DOSIMETRIA DA PENA"), "Calcular: fundamentação exibida");
   verificar((await pagina.locator(".fundamentacao").textContent()).includes("Faixa aplicada (CP.art155)"), "Calcular: dispositivo da faixa chega ao resultado");
   verificar((await pagina.locator(".resultado__contexto").textContent()).startsWith("Faixa CP.art155:"), "Calcular: contexto mostra o dispositivo da faixa");
+  const citadas = await pagina.locator(".fontes-citadas summary").allTextContents();
+  verificar(
+    citadas.length === 5 && citadas[0].startsWith("CP, art. 155 — Furto") && citadas.some((c) => c.startsWith("CP, art. 155, § 1º")),
+    `Calcular: textos da lei citados, conferidos na base (${citadas.length})`
+  );
+  await pagina.locator(".fontes-citadas summary").first().click();
+  verificar((await pagina.locator(".fontes-citadas .dispositivo__texto").first().textContent()).startsWith("Art. 155. Subtrair"), "Calcular: texto do art. 155 abre no resultado");
   await pagina.screenshot({ path: `${FOTOS}/2-calcular-resultado.png`, fullPage: true });
 
   // ---------- Calcular: exemplo com duas opções do art. 68 e alertas ----------
@@ -138,7 +145,7 @@ const verificar = (condicao, mensagem) => {
   verificar(await pagina.locator(".correcao-fase--errada").count() === 1, "Praticar: uma fase marcada como errada");
   verificar((await pagina.locator(".correcao-fase--errada").textContent()).includes("1 dia acima do esperado"), "Praticar: mostra a diferença em dias");
   verificar((await pagina.locator("#correcao").textContent()).includes("Furto simples em repouso noturno"), "Praticar: descrição aparece depois da correção");
-  await pagina.locator("#correcao details summary").click();
+  await pagina.locator("#correcao details summary", { hasText: "gabarito" }).click();
   verificar(await pagina.locator("#correcao .fundamentacao").isVisible(), "Praticar: gabarito abre com a fundamentação");
   await pagina.screenshot({ path: `${FOTOS}/5-praticar-correcao.png`, fullPage: true });
 
@@ -157,6 +164,37 @@ const verificar = (condicao, mensagem) => {
   await pagina.click('#resposta button[type="submit"]');
   await pagina.locator(".placar").waitFor();
   verificar((await pagina.locator(".placar").textContent()) === "Você acertou 1 de 1 fase.", "Praticar: opção do art. 68 aceita como correta");
+
+  // ---------- Pesquisar na lei (RAG) ----------
+  await pagina.goto(`${BASE}/pesquisar`);
+  await pagina.waitForFunction(() => document.querySelectorAll("#lei option").length > 5);
+  await pagina.fill("#q", "o réu assaltou a vítima com uma faca");
+  await pagina.click('#form-busca button[type="submit"]');
+  await pagina.locator(".lista-resultados li").first().waitFor();
+  const primeiro = await pagina.locator(".dispositivo__titulo").first().textContent();
+  verificar(primeiro === "CP, art. 157 — Roubo", `Pesquisar: pergunta leiga encontra o roubo (${primeiro})`);
+  verificar((await pagina.locator(".dispositivo__trecho").first().textContent()).includes("arma branca"), "Pesquisar: trecho mostra o inciso da arma branca");
+  verificar(pagina.url().includes("q="), "Pesquisar: endereço guarda a busca");
+  await pagina.screenshot({ path: `${FOTOS}/9-pesquisar.png`, fullPage: true });
+  // lei que não está na base: aviso claro
+  await pagina.fill("#q", "art. 33 da Lei de Drogas");
+  await pagina.click('#form-busca button[type="submit"]');
+  await pagina.locator("#avisos").waitFor({ state: "visible" });
+  verificar((await pagina.locator("#avisos").textContent()).includes("Lei de Drogas"), "Pesquisar: avisa quando a lei não está na base");
+  // filtro por lei
+  await pagina.selectOption("#lei", "CF");
+  await pagina.fill("#q", "liberdade de manifestação do pensamento");
+  await pagina.click('#form-busca button[type="submit"]');
+  await pagina.waitForURL(/lei=CF/);
+  await pagina.locator(".lista-resultados li").first().waitFor();
+  const titulosCf = await pagina.locator(".dispositivo__titulo").allTextContents();
+  verificar(titulosCf.every((titulo) => titulo.startsWith("CF,")), "Pesquisar: filtro por lei (só a Constituição)");
+  // texto digitado não vira HTML
+  await pagina.selectOption("#lei", "");
+  await pagina.fill("#q", '<img src=x onerror="window.injetado2=1"> furto');
+  await pagina.click('#form-busca button[type="submit"]');
+  await pagina.waitForURL((url) => url.search.includes("furto") && !url.search.includes("lei="));
+  verificar(await pagina.evaluate(() => window.injetado2 === undefined && !document.querySelector("#resultados img")), "Pesquisar: busca digitada não é interpretada como HTML");
 
   // ---------- Analisar caso (precisa do banco: SEM_BANCO=1 pula) ----------
   await pagina.goto(`${BASE}/analisar`);
@@ -239,6 +277,11 @@ const verificar = (condicao, mensagem) => {
   const largura = await paginaCelular.evaluate(() => document.documentElement.scrollWidth);
   verificar(largura <= 390, `Celular: sem rolagem horizontal (largura ${largura}px)`);
   await paginaCelular.screenshot({ path: `${FOTOS}/6-celular-calcular.png`, fullPage: true });
+  await paginaCelular.goto(`${BASE}/pesquisar?q=${encodeURIComponent("direitos e garantias fundamentais")}`);
+  await paginaCelular.locator(".lista-resultados li").first().waitFor();
+  await paginaCelular.locator(".lista-resultados details summary").first().click();
+  const larguraBusca = await paginaCelular.evaluate(() => document.documentElement.scrollWidth);
+  verificar(larguraBusca <= 390, `Celular: pesquisa sem rolagem horizontal (largura ${larguraBusca}px)`);
 
   const escuro = await navegador.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: "dark" });
   const paginaEscura = await escuro.newPage();

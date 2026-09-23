@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<header class="cabecalho-pagina">
+  <h1>Pesquisar na lei</h1>
+  <p>Escreva do seu jeito ("o réu assaltou a vítima com uma faca") ou cite o artigo ("art. 157 do CP").
+    A busca procura nos textos oficiais do Código Penal, do CPP, da Constituição, da LEP, do CDC, do Código
+    Civil e das leis que vieram com eles, e mostra de onde veio cada resultado.</p>
+</header>
+
+<form id="form-busca" class="bloco" role="search" novalidate>
+  <div class="grade grade--2">
+    <label class="campo" for="q">O que você procura
+      <input id="q" name="q" type="search" maxlength="300" required autocomplete="off"
+        placeholder="Ex.: furto durante o repouso noturno">
+    </label>
+    <label class="campo" for="lei">Onde
+      <select id="lei" name="lei"><option value="">Em todas as leis</option></select>
+    </label>
+  </div>
+  <div class="acoes">
+    <button type="submit" class="botao botao--primario">Pesquisar</button>
+  </div>
+</form>
+
+<div id="erros" class="aviso aviso--erro" role="alert" hidden></div>
+<div id="avisos" class="aviso aviso--alerta" hidden></div>
+<section id="resultados" class="resultado resultados-busca" aria-live="polite" hidden></section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/pesquisar.js?v={{ versao }}"></script>
+{% endblock %}

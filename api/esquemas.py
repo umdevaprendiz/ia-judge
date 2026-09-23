@@ -11,6 +11,8 @@ from dosimetria import (
 )
 from dosimetria.entrada import ESTRATEGIAS
 
+from .fontes import ExcerptOutput
+
 PADRAO_FRACAO = r"^\s*\d{1,4}\s*/\s*\d{1,4}\s*$"  # ex.: "1/3" (até 4 dígitos: frações legais são pequenas)
 
 # limites de tamanho: bem acima de qualquer caso real, e baixos o bastante para uma
@@ -182,6 +184,9 @@ class SentencingOutput(BaseModel):
     composicao: str
     alertas: list[str]
     fundamentacao: str = Field(description="Texto da dosimetria para leitura humana.")
+    fontes_citadas: list[ExcerptOutput] = Field(
+        default_factory=list, description="Texto de cada dispositivo citado, conferido na base de legislação."
+    )
 
 
 class PhaseComparisonOutput(BaseModel):

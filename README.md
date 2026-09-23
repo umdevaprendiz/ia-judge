@@ -73,6 +73,31 @@ tratada como requisito em cada funcionalidade:
   vulnerabilidades conhecidas; o Dependabot abre PRs de atualização toda semana.
 - O contêiner roda com usuário sem privilégios de root.
 
+## Base de legislação e busca (RAG)
+
+O agente consulta a lei numa base própria, sem IA de terceiros: **5.260 artigos** extraídos
+dos PDFs oficiais do Senado e da Câmara (Código Penal, CPP, Constituição e ADCT, LEP, Lei
+dos Crimes Hediondos, Lei 9.099, Contravenções Penais, CDC, Código Civil e as leis que vêm
+nesses livros). Um registro por artigo, com epígrafe ("Furto"), título e capítulo.
+
+- **Ingestão** (`fontes/`, `scripts/construir_base_de_fontes.py`): lê os PDFs da raiz, tira
+  cabeçalhos, números de página e notas de rodapé, junta palavras partidas e divide em leis e
+  artigos. Artigos citados dentro de leis que alteram outras não viram artigos falsos. De
+  cada artigo fica a edição mais recente. O resultado vai para `dados/fontes/dispositivos.json`;
+  os PDFs ficam fora do git.
+- **Busca** (`fontes/busca.py`): BM25 com dois campos (o artigo inteiro e a "cabeça": epígrafe
+  e caput), palavras reduzidas ao radical e sem acentos, sinônimos leigos ("assalto com faca"
+  encontra roubo e arma branca) e referências diretas ("art. 157 do CP"). É determinística e
+  cita só o que está na base.
+- **Casos de teste** (`dados/fontes/perguntas.json`, `python -m fontes.avaliacao`): 43
+  perguntas escritas como um estudante escreveria. Hoje 88% trazem o artigo certo em 1º lugar
+  e 100% entre os 5 primeiros.
+- **Uso**: a página **Pesquisar na lei** e `GET /fontes/buscar?q=...`; o cálculo da
+  dosimetria devolve em `fontes_citadas` o texto de cada dispositivo usado, conferido na base
+  (um rótulo que não existe volta com `encontrado: false`).
+- **Limites conhecidos**: a Lei de Drogas (11.343/2006) não veio em nenhum PDF; o Código Civil
+  e as leis do mesmo livro são da edição de 2008 e aparecem com aviso de edição antiga.
+
 ## Banco de dados (MySQL)
 
 Em produção, os casos ficam no **MySQL da Aiven**. Configuração, feita uma vez:

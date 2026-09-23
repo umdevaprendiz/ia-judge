@@ -333,3 +333,14 @@ mark { background: color-mix(in srgb, var(--realce) 30%, transparent); color: in
   .linha .campo:nth-of-type(2), .linha .campo:nth-of-type(3) { grid-column: 1 / -1; }
   .comparacao { grid-template-columns: 1fr; }
 }
+
+/* ---------- Pesquisar na lei e textos citados ---------- */
+.lista-resultados { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .9rem; }
+.dispositivo__titulo { margin: 0 0 .25rem; font-size: 1.08rem; }
+.dispositivo__meta { color: var(--texto-suave); font-size: .88rem; margin: 0 0 .6rem; }
+.dispositivo__trecho { margin: 0 0 .6rem; }
+.dispositivo__texto { white-space: pre-wrap; overflow-wrap: anywhere; font-family: inherit; font-size: .95rem; margin: .5rem 0; }
+.dispositivo__fonte { color: var(--texto-suave); font-size: .82rem; margin: .5rem 0 0; }
+.dispositivo__fonte--antiga { color: var(--alerta); }
+.dispositivo__ausente { color: var(--alerta); }
+.fontes-citadas { margin-top: 1.5rem; }

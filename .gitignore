@@ -16,3 +16,7 @@ venv/
 # teste no navegador: dependências e fotos de tela
 tests/navegador/node_modules/
 tests/navegador/fotos/
+
+# PDFs novos ficam fora do git: a base de legislação vem deles (scripts/construir_base_de_fontes.py),
+# e o que vai para o repositório é o texto extraído (dados/fontes/). Alguns PDFs são edições comerciais.
+*.pdf
