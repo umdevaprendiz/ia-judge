@@ -499,6 +499,359 @@
         "alertas_contem": [],
         "conta": "base no mínimo 1460; 1460*3/2 = 2190"
       }
+    },
+    {
+      "id": "construido-10",
+      "fonte": "construído",
+      "descricao": "Furto noturno privilegiado: aumento e diminuição da Parte Especial em sentidos opostos (não há concurso do art. 68, parágrafo único).",
+      "entrada": {
+        "faixa": {
+          "origem": "CP.art155",
+          "minimo": {
+            "anos": 1
+          },
+          "maximo": {
+            "anos": 4
+          }
+        },
+        "circunstancias_desfavoraveis": [],
+        "agravantes_atenuantes": [],
+        "causas": [
+          {
+            "codigo": "repouso_noturno",
+            "dispositivo": "CP.art155.§1",
+            "direcao": "aumento",
+            "origem": "parte_especial",
+            "fracao_min": "1/3"
+          },
+          {
+            "codigo": "furto_privilegiado",
+            "dispositivo": "CP.art155.§2",
+            "direcao": "diminuicao",
+            "origem": "parte_especial",
+            "fracao_min": "1/3",
+            "fracao_max": "2/3"
+          }
+        ],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 365,
+        "pena_intermediaria_dias": 365,
+        "pena_definitiva_dias": 324,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [
+          "abaixo do mínimo"
+        ],
+        "conta": "base e intermediária no mínimo 365; 365*4/3*2/3 = 324,44 -> 324"
+      }
+    },
+    {
+      "id": "construido-11",
+      "fonte": "construído",
+      "descricao": "Estelionato com arrependimento posterior (art. 16) na fração máxima de 2/3, justificada pela reparação integral antes da denúncia.",
+      "entrada": {
+        "faixa": {
+          "origem": "CP.art171",
+          "minimo": {
+            "anos": 1
+          },
+          "maximo": {
+            "anos": 5
+          }
+        },
+        "circunstancias_desfavoraveis": [
+          "culpabilidade",
+          "consequencias"
+        ],
+        "agravantes_atenuantes": [],
+        "causas": [
+          {
+            "codigo": "arrependimento_posterior",
+            "dispositivo": "CP.art16",
+            "direcao": "diminuicao",
+            "origem": "parte_geral",
+            "fracao_min": "1/3",
+            "fracao_max": "2/3",
+            "fracao_escolhida": "2/3",
+            "justificativa": "reparação integral do dano, espontânea e logo após o fato, antes do oferecimento da denúncia"
+          }
+        ],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 729,
+        "pena_intermediaria_dias": 729,
+        "pena_definitiva_dias": 243,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [
+          "abaixo do mínimo"
+        ],
+        "conta": "incremento = 1460/8 = 182; base 365+2*182 = 729; 729*1/3 = 243"
+      }
+    },
+    {
+      "id": "construido-12",
+      "fonte": "construído",
+      "descricao": "Estelionato em continuidade delitiva (art. 71): cinco crimes, aumento de 1/3 pelo critério do STJ; confissão leva a pena intermediária ao mínimo.",
+      "entrada": {
+        "faixa": {
+          "origem": "CP.art171",
+          "minimo": {
+            "anos": 1
+          },
+          "maximo": {
+            "anos": 5
+          }
+        },
+        "circunstancias_desfavoraveis": [
+          "culpabilidade"
+        ],
+        "agravantes_atenuantes": [
+          {
+            "codigo": "confissao_espontanea",
+            "dispositivo": "CP.art65.III.d",
+            "direcao": "atenuante",
+            "preponderante": false
+          }
+        ],
+        "causas": [
+          {
+            "codigo": "crime_continuado",
+            "dispositivo": "CP.art71",
+            "direcao": "aumento",
+            "origem": "parte_geral",
+            "fracao_min": "1/6",
+            "fracao_max": "2/3",
+            "fracao_escolhida": "1/3",
+            "justificativa": "cinco infrações em continuidade; critério do STJ: 5 crimes = aumento de 1/3"
+          }
+        ],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 547,
+        "pena_intermediaria_dias": 365,
+        "pena_definitiva_dias": 486,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [],
+        "conta": "incremento = 182; base 547; -182 = 365; 365*4/3 = 486,67 -> 486"
+      }
+    },
+    {
+      "id": "construido-13",
+      "fonte": "construído",
+      "descricao": "Apropriação indébita: agravante e atenuante não preponderantes se compensam (vítima maior de 60 x reparação do dano).",
+      "entrada": {
+        "faixa": {
+          "origem": "CP.art168",
+          "minimo": {
+            "anos": 1
+          },
+          "maximo": {
+            "anos": 4
+          }
+        },
+        "circunstancias_desfavoraveis": [
+          "consequencias"
+        ],
+        "agravantes_atenuantes": [
+          {
+            "codigo": "vitima_maior_de_60",
+            "dispositivo": "CP.art61.II.h",
+            "direcao": "agravante",
+            "preponderante": false
+          },
+          {
+            "codigo": "reparacao_do_dano",
+            "dispositivo": "CP.art65.III.b",
+            "direcao": "atenuante",
+            "preponderante": false
+          }
+        ],
+        "causas": [],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 501,
+        "pena_intermediaria_dias": 501,
+        "pena_definitiva_dias": 501,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [],
+        "conta": "incremento = 136; base 501; compensação: 501; sem causas"
+      }
+    },
+    {
+      "id": "construido-14",
+      "fonte": "construído",
+      "descricao": "Homicídio qualificado por motivo torpe; meio cruel como agravante; réu menor de 21 (atenuante preponderante) afasta a agravante.",
+      "entrada": {
+        "faixa": {
+          "origem": "CP.art121.§2.I",
+          "minimo": {
+            "anos": 12
+          },
+          "maximo": {
+            "anos": 30
+          }
+        },
+        "circunstancias_desfavoraveis": [
+          "consequencias"
+        ],
+        "agravantes_atenuantes": [
+          {
+            "codigo": "meio_cruel",
+            "dispositivo": "CP.art61.II.d",
+            "direcao": "agravante",
+            "preponderante": false
+          },
+          {
+            "codigo": "menoridade_relativa",
+            "dispositivo": "CP.art65.I",
+            "direcao": "atenuante",
+            "preponderante": true
+          }
+        ],
+        "causas": [],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 5201,
+        "pena_intermediaria_dias": 4380,
+        "pena_definitiva_dias": 4380,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [
+          "preponderam as atenuantes"
+        ],
+        "conta": "intervalo 10950-4380 = 6570; incremento = 6570/8 = 821; base 4380+821 = 5201; só a atenuante conta: 5201-821 = 4380 (12 anos)"
+      }
+    },
+    {
+      "id": "construido-15",
+      "fonte": "construído",
+      "descricao": "Tráfico com duas diminuições da legislação especial (tráfico privilegiado e colaboração, art. 41): o motor mostra as duas opções do art. 68, parágrafo único.",
+      "entrada": {
+        "faixa": {
+          "origem": "L11343.art33",
+          "minimo": {
+            "anos": 5
+          },
+          "maximo": {
+            "anos": 15
+          }
+        },
+        "circunstancias_desfavoraveis": [],
+        "agravantes_atenuantes": [],
+        "causas": [
+          {
+            "codigo": "trafico_privilegiado",
+            "dispositivo": "L11343.art33.§4",
+            "direcao": "diminuicao",
+            "origem": "parte_especial",
+            "fracao_min": "1/6",
+            "fracao_max": "2/3"
+          },
+          {
+            "codigo": "colaboracao_voluntaria",
+            "dispositivo": "L11343.art41",
+            "direcao": "diminuicao",
+            "origem": "parte_especial",
+            "fracao_min": "1/3",
+            "fracao_max": "2/3"
+          }
+        ],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 1825,
+        "pena_intermediaria_dias": 1825,
+        "pena_definitiva_dias": 1013,
+        "alternativa_art68_dias": 1216,
+        "alertas_contem": [
+          "abaixo do mínimo",
+          "art. 68, parágrafo único"
+        ],
+        "conta": "todas: 1825*5/6*2/3 = 1013,89 -> 1013; só a que mais diminui (1/3): 1825*2/3 = 1216,67 -> 1216"
+      }
+    },
+    {
+      "id": "construido-16",
+      "fonte": "construído",
+      "descricao": "Tráfico majorado por envolver adolescente (art. 40, VI) e privilegiado (§4) com redução de 1/2 justificada: aumento e diminuição em cascata.",
+      "entrada": {
+        "faixa": {
+          "origem": "L11343.art33",
+          "minimo": {
+            "anos": 5
+          },
+          "maximo": {
+            "anos": 15
+          }
+        },
+        "circunstancias_desfavoraveis": [
+          "circunstancias"
+        ],
+        "agravantes_atenuantes": [],
+        "causas": [
+          {
+            "codigo": "envolvimento_de_adolescente",
+            "dispositivo": "L11343.art40.VI",
+            "direcao": "aumento",
+            "origem": "parte_especial",
+            "fracao_min": "1/6",
+            "fracao_max": "2/3"
+          },
+          {
+            "codigo": "trafico_privilegiado",
+            "dispositivo": "L11343.art33.§4",
+            "direcao": "diminuicao",
+            "origem": "parte_especial",
+            "fracao_min": "1/6",
+            "fracao_max": "2/3",
+            "fracao_escolhida": "1/2",
+            "justificativa": "réu primário, sem antecedentes, pequena quantidade; fração intermediária pelo envolvimento do adolescente"
+          }
+        ],
+        "estrategia": {
+          "tipo": "fracao_do_intervalo",
+          "fracao": "1/8"
+        },
+        "composicao": "cascata"
+      },
+      "esperado": {
+        "pena_base_dias": 2281,
+        "pena_intermediaria_dias": 2281,
+        "pena_definitiva_dias": 1330,
+        "alternativa_art68_dias": null,
+        "alertas_contem": [
+          "abaixo do mínimo"
+        ],
+        "conta": "incremento = 3650/8 = 456; base 1825+456 = 2281; 2281*7/6*1/2 = 1330,58 -> 1330"
+      }
     }
   ]
 }
