@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from .agravantes_atenuantes import CircunstanciaLegal
-from .causas import CausaModificadora
-from .circunstancias import CircunstanciaJudicial, Valoracao
-from .faixa import Faixa
+from ..circunstancias.legais import CircunstanciaLegal
+from ..circunstancias.causas import CausaModificadora
+from ..circunstancias.judiciais import CircunstanciaJudicial, Valoracao
+from ..valores.faixa import Faixa
 from .fase1 import calcular_pena_base
 from .fase2 import calcular_pena_intermediaria
 from .fase3 import Composicao, OpcaoFase3, calcular_pena_definitiva
-from .passo import Passo
-from .pena import Pena
-from .quantum import EstrategiaQuantum
+from ..relatorio.passo import Passo
+from ..valores.pena import Pena
+from ..quantum.estrategias import EstrategiaQuantum
 
 
 @dataclass(frozen=True, slots=True)
