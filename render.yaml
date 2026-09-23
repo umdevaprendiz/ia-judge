@@ -1,0 +1,18 @@
+# Blueprint do Render: publica a API a partir deste repositório, usando o Dockerfile.
+# No painel do Render: New -> Blueprint -> escolher este repositório -> Apply.
+# O Render compila o último estágio do Dockerfile, que é o alvo "api".
+services:
+  - type: web
+    name: sergius-ia-judge
+    runtime: docker
+    plan: free
+    region: virginia            # a região disponível mais próxima do Brasil
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /saude
+    # só publica depois que o workflow de testes do GitHub passar
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PORT
+        value: "8000"

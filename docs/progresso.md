@@ -184,6 +184,17 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
     sobe a API em `http://localhost:8000/docs`. Verificado com chamadas HTTP
     reais ao container.
   - Testes: a seção "API" do notebook usa o `TestClient` do FastAPI.
+- Hospedagem: a primeira tentativa foi no Microsoft Azure (Container Apps, com a
+  imagem no GitHub Container Registry). O login na Azure CLI funcionou, mas a
+  conta não tinha nenhuma assinatura ativa ("No subscriptions found"), e o
+  usuário decidiu trocar para o **Render**. O `render.yaml` (Blueprint) publica
+  a API no plano gratuito, região virginia, a partir do `Dockerfile` (o Render
+  compila o último estágio, que é o alvo `api`), com health check em `/saude`
+  e `autoDeployTrigger: checksPass`: só publica depois que o workflow
+  `.github/workflows/testes.yml` passar. O workflow agora só roda os testes;
+  os jobs de publicação da imagem e de deploy no Azure foram removidos. Ficou
+  no GitHub Container Registry uma imagem pública da API publicada durante a
+  tentativa com o Azure; ela não é usada pelo Render.
 
 ## Decisões de projeto tomadas nesta sessão
 
@@ -216,8 +227,7 @@ para não duplicar trabalho de novo.
 - **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
   dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
   sentenças penais reais conforme forem aparecendo.
-- **Hospedar a API** num endereço público para os estudantes (a imagem
-  `api` já serve para Render, Railway, Fly.io, Cloud Run etc.; falta o
-  usuário escolher o serviço e criar a conta). Se o uso crescer, avaliar um
-  limite de requisições por IP.
+- **Publicar no Render:** falta o usuário criar o serviço no painel (New →
+  Blueprint → repositório → Apply). Se o uso crescer, avaliar um limite de
+  requisições por IP.
 - Depois: ingestão (Planalto → banco) ou extração via LLM.
