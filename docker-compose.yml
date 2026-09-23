@@ -2,10 +2,23 @@
 name: sergius-ia-judge
 
 services:
+  # API para os estudantes. Documentação interativa em http://localhost:8000/docs
+  #   docker compose up api
+  api:
+    build:
+      context: .
+      target: api
+    image: sergius-ia-judge:api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
   # Roda o notebook de testes contra o código atual da pasta (montado só para leitura).
   #   docker compose run --rm testes
   testes:
-    build: .
+    build:
+      context: .
+      target: dev
     image: sergius-ia-judge:dev
     volumes:
       - ./:/app:ro
@@ -13,7 +26,9 @@ services:
   # JupyterLab para editar e rodar os testes, com a pasta do projeto montada.
   #   docker compose up jupyter   ->   http://127.0.0.1:8888/lab?token=dosimetria
   jupyter:
-    build: .
+    build:
+      context: .
+      target: dev
     image: sergius-ia-judge:dev
     command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser"]
     environment:
