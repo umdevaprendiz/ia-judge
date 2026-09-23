@@ -1,4 +1,4 @@
-# ia-judge: motor de dosimetria penal
+# sergius-ia-Judge: motor de dosimetria penal
 
 Projeto de estudo de uma IA que auxilia na **dosimetria da pena** (Código Penal
 brasileiro). Hoje o repositório contém o **motor de cálculo**, escrito em Python

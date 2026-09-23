@@ -1,9 +1,12 @@
+# Nome do projeto no Docker (imagens e nomes do Docker só aceitam minúsculas).
+name: sergius-ia-judge
+
 services:
   # Roda o notebook de testes contra o código atual da pasta (montado só para leitura).
   #   docker compose run --rm testes
   testes:
     build: .
-    image: mll-judicial:dev
+    image: sergius-ia-judge:dev
     volumes:
       - ./:/app:ro
 
@@ -11,7 +14,7 @@ services:
   #   docker compose up jupyter   ->   http://127.0.0.1:8888/lab?token=dosimetria
   jupyter:
     build: .
-    image: mll-judicial:dev
+    image: sergius-ia-judge:dev
     command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser"]
     environment:
       JUPYTER_TOKEN: ${JUPYTER_TOKEN:-dosimetria}
