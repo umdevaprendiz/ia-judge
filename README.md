@@ -37,7 +37,9 @@ Regras que o motor respeita:
   atenuante ou quando a pena definitiva ficou fora da faixa.
 
 Convenção de unidades: a pena é guardada em dias inteiros, com 1 ano = 365 dias
-e 1 mês = 30 dias.
+e 1 mês = 30 dias. Como 12 meses somam só 360 dias, na exibição os meses param
+em 11 e o excedente fica nos dias: 726 dias aparecem como "1 ano, 11 meses,
+31 dias".
 
 ## Exemplo de uso
 
