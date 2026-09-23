@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .pena import Pena
+from ..valores.pena import Pena
 
 
 @dataclass(frozen=True, slots=True)

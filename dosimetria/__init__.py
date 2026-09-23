@@ -1,15 +1,32 @@
-from .fracao import Fracao
-from .pena import Pena
-from .faixa import Faixa
-from .circunstancias import CircunstanciaJudicial, Valoracao
-from .passo import Passo
+"""Motor de dosimetria penal (sistema trifásico do art. 68 do CP), em Python puro.
+
+A API pública é reexportada aqui: `from dosimetria import Pena, calcular_dosimetria_completa`.
+"""
+
+from .valores import Faixa, Fracao, Pena
+from .circunstancias import (
+    CausaModificadora,
+    CircunstanciaJudicial,
+    CircunstanciaLegal,
+    Direcao,
+    DirecaoCausa,
+    OrigemCausa,
+    Valoracao,
+)
 from .quantum import EstrategiaQuantum, FracaoDoIntervalo, FracaoDoMinimo
-from .fase1 import ResultadoFase1, calcular_pena_base
-from .agravantes_atenuantes import CircunstanciaLegal, Direcao
-from .fase2 import ResultadoFase2, calcular_pena_intermediaria
-from .causas import CausaModificadora, DirecaoCausa, OrigemCausa
-from .fase3 import Composicao, OpcaoFase3, ResultadoFase3, calcular_pena_definitiva
-from .completa import ResultadoDosimetria, calcular_dosimetria_completa
+from .relatorio import Passo
+from .fases import (
+    Composicao,
+    OpcaoFase3,
+    ResultadoDosimetria,
+    ResultadoFase1,
+    ResultadoFase2,
+    ResultadoFase3,
+    calcular_dosimetria_completa,
+    calcular_pena_base,
+    calcular_pena_definitiva,
+    calcular_pena_intermediaria,
+)
 
 __all__ = [
     "Fracao",

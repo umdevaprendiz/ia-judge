@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from .agravantes_atenuantes import CircunstanciaLegal, Direcao
-from .faixa import Faixa
-from .passo import Passo
-from .pena import Pena
-from .quantum import EstrategiaQuantum
+from ..circunstancias.legais import CircunstanciaLegal, Direcao
+from ..valores.faixa import Faixa
+from ..relatorio.passo import Passo
+from ..valores.pena import Pena
+from ..quantum.estrategias import EstrategiaQuantum
 
 
 @dataclass(frozen=True, slots=True)

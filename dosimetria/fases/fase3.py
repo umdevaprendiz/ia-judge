@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
 
-from .causas import CausaModificadora, DirecaoCausa, OrigemCausa, racional
-from .passo import Passo
-from .pena import Pena
+from ..circunstancias.causas import CausaModificadora, DirecaoCausa, OrigemCausa, racional
+from ..relatorio.passo import Passo
+from ..valores.pena import Pena
 
 FASE = "3ª fase (pena definitiva)"
 

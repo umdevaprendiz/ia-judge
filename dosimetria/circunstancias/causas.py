@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
 
-from .fracao import Fracao
+from ..valores.fracao import Fracao
 
 
 class DirecaoCausa(Enum):

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from .faixa import Faixa
-from .fracao import Fracao
-from .pena import Pena
+from ..valores.faixa import Faixa
+from ..valores.fracao import Fracao
+from ..valores.pena import Pena
 
 
 class EstrategiaQuantum(ABC):

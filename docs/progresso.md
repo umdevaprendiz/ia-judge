@@ -3,29 +3,44 @@
 Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
 `plano-ia-dosimetria-penal.pdf`.
 
+## Estrutura do pacote `dosimetria/`
+
+```
+dosimetria/
+  __init__.py        API pública reexportada (from dosimetria import ...)
+  valores/           Fracao, Pena, Faixa (tipos de valor imutáveis)
+  circunstancias/    judiciais.py (art. 59), legais.py (arts. 61-67), causas.py (3ª fase)
+  quantum/           estrategias.py (Strategy do quantum das fases 1 e 2)
+  fases/             fase1.py, fase2.py, fase3.py, completa.py
+  relatorio/         passo.py (unidade do passo a passo)
+```
+
+Quem usa o motor importa sempre de `dosimetria` (ex.: `from dosimetria import
+Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
+
 ## Feito
 
-- `dosimetria/fracao.py` — `Fracao(numerador, denominador)`, imutável, nunca usa `float`.
+- `dosimetria/valores/fracao.py` — `Fracao(numerador, denominador)`, imutável, nunca usa `float`.
   `aplicar(dias)` trunca o resto (art. 11 do CP — frações de dia são desprezadas).
-- `dosimetria/pena.py` — `Pena(dias)`, imutável, comparável (`<`, `==`), rejeita dias
+- `dosimetria/valores/pena.py` — `Pena(dias)`, imutável, comparável (`<`, `==`), rejeita dias
   negativos. Convenção do projeto: 1 ano = 365 dias, 1 mês = 30 dias.
-- `dosimetria/faixa.py` — `Faixa(minimo, maximo, origem)`. `contem()` e `limitar()`
+- `dosimetria/valores/faixa.py` — `Faixa(minimo, maximo, origem)`. `contem()` e `limitar()`
   (clamp) são a base de "não sai da faixa" nas fases 1 e 2.
-- `dosimetria/circunstancias.py` — enum `CircunstanciaJudicial` com as 8 do art. 59,
+- `dosimetria/circunstancias/judiciais.py` — enum `CircunstanciaJudicial` com as 8 do art. 59,
   e `Valoracao` (favorável/neutra/desfavorável).
-- `dosimetria/quantum.py` — `EstrategiaQuantum` (Strategy, ABC) com duas
+- `dosimetria/quantum/estrategias.py` — `EstrategiaQuantum` (Strategy, ABC) com duas
   implementações citadas no plano: `FracaoDoIntervalo` (padrão 1/8 do intervalo) e
   `FracaoDoMinimo` (padrão 1/6 do mínimo). Não há default escondido: quem chama o
   motor escolhe a estratégia explicitamente.
-- `dosimetria/passo.py` — `Passo` (fase, regra, dispositivo, valor_antes,
+- `dosimetria/relatorio/passo.py` — `Passo` (fase, regra, dispositivo, valor_antes,
   valor_depois, motivo), a unidade do "passo a passo" do relatório.
-- `dosimetria/fase1.py` — `calcular_pena_base(faixa, circunstancias, estrategia)`.
+- `dosimetria/fases/fase1.py` — `calcular_pena_base(faixa, circunstancias, estrategia)`.
   Exige as 8 circunstâncias do art. 59 (lança `ValueError` se faltar/sobrar alguma).
   Só circunstâncias desfavoráveis somam; resultado sempre dentro da faixa.
-- `dosimetria/agravantes_atenuantes.py` — `CircunstanciaLegal` (código, dispositivo,
+- `dosimetria/circunstancias/legais.py` — `CircunstanciaLegal` (código, dispositivo,
   `Direcao.AGRAVANTE`/`ATENUANTE`, `preponderante: bool`). Bis in idem é
   responsabilidade do validador (camada de extração), não do motor.
-- `dosimetria/fase2.py` — `calcular_pena_intermediaria(faixa, pena_base,
+- `dosimetria/fases/fase2.py` — `calcular_pena_intermediaria(faixa, pena_base,
   circunstancias, estrategia)`. Regras implementadas:
   - Sem concurso (só agravante, só atenuante, ou nenhuma): soma/subtrai um
     incremento por circunstância.
@@ -41,14 +56,14 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
   `py -m jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb`
   Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3,
   Dosimetria completa.
-- `dosimetria/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
+- `dosimetria/circunstancias/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
   AUMENTO/DIMINUICAO, `OrigemCausa` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
   `fracao_max` opcional, `fracao_escolhida` opcional, `justificativa`). Aplica a
   fração mínima por padrão; escolher outra exige estar no intervalo legal **e** ter
   justificativa (senão `ValueError`) — regra da seção 3.3 do plano / Súmula 443.
   Vale igualmente para aumento e diminuição (validar isso com professor: na
   diminuição, a mínima é a fração menos favorável ao réu).
-- `dosimetria/fase3.py` — `calcular_pena_definitiva(pena_intermediaria, causas,
+- `dosimetria/fases/fase3.py` — `calcular_pena_definitiva(pena_intermediaria, causas,
   composicao)` → `ResultadoFase3(aplicando_todas, limitada_art68)`:
   - Não recebe `Faixa`: a 3ª fase pode sair da faixa, e assim a regra de limite
     não tem como vazar para cá (responde à pergunta da Fase 2 do plano).
@@ -66,7 +81,7 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
     as descartadas aparecem como `Passo` sem efeito. O motor não escolhe.
   - Sem causas: um `Passo` explicando que pena definitiva = intermediária.
 
-- `dosimetria/completa.py` — `calcular_dosimetria_completa(faixa,
+- `dosimetria/fases/completa.py` — `calcular_dosimetria_completa(faixa,
   circunstancias_judiciais, agravantes_atenuantes, causas, estrategia,
   composicao)` encadeia as três fases e devolve `ResultadoDosimetria` (seção 7.2
   do plano): `faixa_aplicada`, `pena_base`, `pena_intermediaria`,
