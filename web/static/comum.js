@@ -50,6 +50,8 @@ const NOMES_CAMPOS = {
   pena_base: "pena-base",
   pena_intermediaria: "pena intermediária",
   pena_definitiva: "pena definitiva",
+  descricao: "Descrição",
+  consentimento: "Concordância",
 };
 
 export class ApiError extends Error {
@@ -59,18 +61,20 @@ export class ApiError extends Error {
   }
 }
 
-/** GET quando não há corpo; POST com JSON quando há. Erros viram ApiError com mensagens legíveis. */
-export async function chamarApi(caminho, corpo) {
+/** GET sem corpo; POST com JSON quando há corpo; ou o método indicado (ex.: DELETE).
+ *  Erros viram ApiError com mensagens legíveis. Respostas sem conteúdo (204) devolvem null. */
+export async function chamarApi(caminho, corpo, metodo) {
   const opcoes =
     corpo === undefined
-      ? {}
-      : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) };
+      ? { method: metodo || "GET" }
+      : { method: metodo || "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo) };
   let resposta;
   try {
     resposta = await fetch(caminho, opcoes);
   } catch {
     throw new ApiError(["Não foi possível falar com o servidor. Verifique a conexão e tente de novo."]);
   }
+  if (resposta.status === 204) return null;
   const dados = await resposta.json().catch(() => null);
   if (!resposta.ok) throw new ApiError(mensagensDeErro(resposta.status, dados));
   return dados;
@@ -142,7 +146,7 @@ export function preencherPena(grupo, pena = {}) {
 export function mostrarErros(caixa, erro) {
   const mensagens = erro instanceof ApiError ? erro.mensagens : [String(erro && erro.message ? erro.message : erro)];
   caixa.replaceChildren(
-    el("p", { texto: mensagens.length > 1 ? "Corrija estes pontos:" : "Não foi possível calcular:" }),
+    el("p", { texto: mensagens.length > 1 ? "Corrija estes pontos:" : "Não foi possível concluir:" }),
     el("ul", {}, mensagens.map((mensagem) => el("li", { texto: mensagem })))
   );
   caixa.hidden = false;

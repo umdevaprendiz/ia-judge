@@ -31,6 +31,9 @@ from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
 
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
+from .casos import roteador as rotas_dos_casos
+from .seguranca import SecurityHeadersMiddleware
+
 from .esquemas import (
     ComparisonOutput,
     SentencingRequest,
@@ -55,11 +58,15 @@ app = FastAPI(
     ),
 )
 
-# API pública e sem login: qualquer site (ex.: uma página feita pelos estudantes) pode chamá-la
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
+# Outros sites só podem LER dados públicos (GET). Envios (POST/DELETE) só a partir das nossas
+# próprias páginas: assim um site de terceiros não consegue gravar casos em nome de um visitante.
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=[])
+# adicionado por último = executa primeiro: cabeçalhos de segurança e limite de tamanho em tudo
+app.add_middleware(SecurityHeadersMiddleware)
 
 # páginas para estudantes (web/): /, /calcular, /praticar, /como-funciona, e seus CSS/JS
 app.include_router(rotas_das_paginas)
+app.include_router(rotas_dos_casos)
 app.mount("/static", StaticFiles(directory=PASTA_ESTATICOS), name="static")
 
 
@@ -91,13 +98,23 @@ async def erro_de_validacao(_: Request, erro: RequestValidationError) -> JSONRes
     detalhes = []
     for item in erro.errors():
         campo = ".".join(str(parte) for parte in item["loc"] if parte != "body")
-        if item["type"] == "enum":
+        contexto = item.get("ctx") or {}
+        if item["type"] == "string_too_short" and contexto.get("min_length", 0) > 1:
+            mensagem = f"precisa ter pelo menos {contexto['min_length']} caracteres"
+        elif item["type"] == "string_too_long":
+            mensagem = f"pode ter no máximo {contexto.get('max_length')} caracteres"
+        elif item["type"] == "enum":
             opcoes = item["ctx"]["expected"].replace(" or ", ", ")
             mensagem = f"valor inválido (opções: {opcoes})"
         else:
             mensagem = _MENSAGENS.get(item["type"], item["msg"])
         # em "campo ausente" o input é o objeto pai inteiro, que só polui a resposta
         recebido = None if item["type"] == "missing" else item.get("input")
+        # não ecoa textos longos (podem trazer dados pessoais e só inflam a resposta)
+        if isinstance(recebido, str) and len(recebido) > 60:
+            recebido = recebido[:60] + "…"
+        elif isinstance(recebido, (dict, list)):
+            recebido = None
         detalhes.append({"campo": campo, "mensagem": mensagem, "valor_recebido": recebido})
     return JSONResponse(status_code=422, content={"detail": detalhes})
 
