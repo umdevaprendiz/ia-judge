@@ -117,7 +117,7 @@ parágrafo único, o encadeamento dos passos das três fases, e os alertas de
 Súmula 231, de agravante travada no máximo, de pena definitiva acima do máximo e
 de pena-base travada no máximo. Todas as seções imprimem `OK`.
 
-- `dados/casos/dosimetrias.json` — conjunto de 10 dosimetrias com resultado
+- `dados/casos/dosimetrias.json` — conjunto de 17 dosimetrias com resultado
   esperado calculado à mão (a conta fica anotada no campo `conta` de cada caso),
   no espírito da tabela `caso_benchmark` do plano. A seção "Casos de dosimetria"
   do notebook lê o arquivo, monta as entradas do motor e compara pena-base,
@@ -125,11 +125,21 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   um caso, basta incluir um objeto no JSON; não é preciso mexer no notebook.
   - 1 caso vem de sentença: `treinamento-04` (caso 04 do
     `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`).
-  - 9 são construídos para cobrir as regras: repouso noturno, roubo com duas
+  - 9 foram construídos primeiro, para cobrir as regras: repouso noturno, roubo com duas
     majorantes (composição sobre a intermediária), homicídio tentado com
     compensação reincidência x confissão, tráfico privilegiado com Súmula 231,
     estelionato com quantum de 1/6 do mínimo, preponderância do art. 67,
     agravante travada no máximo, concurso formal e Súmula 443.
+  - 7 construídos depois, para combinações que faltavam: furto noturno e
+    privilegiado (aumento e diminuição especiais em sentidos opostos, sem o
+    concurso do art. 68), arrependimento posterior (art. 16) com 2/3
+    justificados, crime continuado (art. 71) com 1/3 pelo critério do STJ de 5
+    crimes, compensação simples entre agravante e atenuante não
+    preponderantes, homicídio qualificado com atenuante preponderante
+    (menoridade) vencendo a agravante, tráfico com duas diminuições especiais
+    (§4 e art. 41, as duas opções do art. 68) e tráfico majorado (art. 40, VI)
+    e privilegiado em cascata. Todos bateram com a conta à mão sem ajuste no
+    motor.
 - `dados/casos/conjunto_treinamento.json` — índice das 10 sentenças do PDF de
   treinamento. **Só o caso 04 é penal**; os outros 9 (consumidor, família,
   trabalho, locação, trânsito, previdenciário, saúde, contratos) não têm pena a

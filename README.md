@@ -184,7 +184,7 @@ docs/progresso.md        o que foi feito, decisões tomadas e próximos passos
 Os testes ficam no notebook `tests/dosimetria_tests.ipynb`. Cada seção
 imprime `OK`, e qualquer `assert` que falhar interrompe a execução naquele ponto.
 
-A seção "Casos de dosimetria" lê `dados/casos/dosimetrias.json`: são 10
+A seção "Casos de dosimetria" lê `dados/casos/dosimetrias.json`: são 17
 dosimetrias com o resultado esperado calculado à mão, e a conta de cada uma fica
 anotada no próprio arquivo. Uma vem do caso 04 de
 `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`; as outras foram
@@ -200,7 +200,7 @@ dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
 sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
 confirma que nelas não há dosimetria a calcular.
 
-A seção "API" testa todas as rotas com o `TestClient` do FastAPI: os 10 exemplos
+A seção "API" testa todas as rotas com o `TestClient` do FastAPI: os 17 exemplos
 pela rota de cálculo, a correção do estudante (inclusive aceitando a opção do
 art. 68, parágrafo único) e as mensagens de erro.
 
