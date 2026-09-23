@@ -105,6 +105,27 @@ def citar(rotulo: str, base: LegalSearchIndex | None = None) -> dict:
     }
 
 
+def com_fontes_citadas(resultado: dict, agravantes_atenuantes) -> dict:
+    """Acrescenta ao resultado do motor o texto de cada dispositivo citado, conferido na base.
+
+    Rótulo que não está na base volta com encontrado=false: a fundamentação nunca cita um
+    texto que não existe (fase 4 do plano, verificador de citações). `agravantes_atenuantes`
+    são os da entrada (objetos ou dicionários com "dispositivo"), que não aparecem nos passos.
+    """
+    passos = list(resultado["passos"])
+    if resultado["alternativa_art68"]:
+        passos += resultado["alternativa_art68"]["passos"]
+    rotulos = [
+        resultado["faixa_aplicada"]["origem"],
+        "CP.art59",  # 1ª fase
+        *(item["dispositivo"] if isinstance(item, dict) else item.dispositivo for item in agravantes_atenuantes),
+        "CP.art68",  # o sistema trifásico e o concurso de causas
+        *(passo["dispositivo"] for passo in passos),
+    ]
+    unicos = list(dict.fromkeys(r for r in rotulos if r and r != "-"))[:30]
+    return {**resultado, "fontes_citadas": [citar(rotulo) for rotulo in unicos]}
+
+
 def _nome_da_sigla(sigla: str) -> str:
     for norma, (sigla_conhecida, nome) in LEIS_CONHECIDAS.items():
         if sigla_conhecida == sigla:

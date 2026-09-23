@@ -36,8 +36,9 @@ from banco import banco_configurado
 from fontes.busca import base_de_fontes
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
+from .agente import roteador as rotas_do_agente
 from .casos import roteador as rotas_dos_casos
-from .fontes import citar, roteador as rotas_das_fontes
+from .fontes import com_fontes_citadas, roteador as rotas_das_fontes
 from .seguranca import RateLimiter, SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
@@ -77,6 +78,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.include_router(rotas_das_paginas)
 app.include_router(rotas_dos_casos)
 app.include_router(rotas_das_fontes)
+app.include_router(rotas_do_agente)
 
 # a base de legislação leva uns 2 s para carregar: começa já, para o primeiro visitante não esperar
 Thread(target=base_de_fontes, daemon=True).start()
@@ -201,7 +203,7 @@ def obter_exemplo(id_exemplo: str) -> dict:
 def calcular(entrada: SentencingRequest) -> dict:
     """Calcula a dosimetria completa: as três fases, o passo a passo, os alertas e a fundamentação."""
     resultado = entrada_de_dict(entrada.model_dump(mode="json")).calcular()
-    return _com_fontes_citadas(resultado_para_dict(resultado), entrada)
+    return com_fontes_citadas(resultado_para_dict(resultado), entrada.agravantes_atenuantes)
 
 
 @app.post("/ensino/comparar", response_model=ComparisonOutput, tags=["ensino"], dependencies=[Depends(limite_calculo)])
@@ -234,28 +236,8 @@ def comparar(pedido: ComparisonRequest) -> dict:
             }
             for fase in comparacao.fases
         ],
-        "gabarito": _com_fontes_citadas(resultado_para_dict(resultado), pedido.entrada),
+        "gabarito": com_fontes_citadas(resultado_para_dict(resultado), pedido.entrada.agravantes_atenuantes),
     }
-
-
-def _com_fontes_citadas(resultado: dict, entrada: SentencingRequest) -> dict:
-    """Acrescenta o texto de cada dispositivo citado no cálculo, conferido na base de legislação.
-
-    Rótulo que não está na base volta com encontrado=false: a fundamentação nunca cita um
-    texto que não existe (fase 4 do plano, verificador de citações).
-    """
-    passos = list(resultado["passos"])
-    if resultado["alternativa_art68"]:
-        passos += resultado["alternativa_art68"]["passos"]
-    rotulos = [
-        resultado["faixa_aplicada"]["origem"],
-        "CP.art59",  # 1ª fase
-        *(item.dispositivo for item in entrada.agravantes_atenuantes),  # 2ª fase
-        "CP.art68",  # o sistema trifásico e o concurso de causas
-        *(passo["dispositivo"] for passo in passos),
-    ]
-    unicos = list(dict.fromkeys(r for r in rotulos if r and r != "-"))[:30]
-    return {**resultado, "fontes_citadas": [citar(rotulo) for rotulo in unicos]}
 
 
 @cache

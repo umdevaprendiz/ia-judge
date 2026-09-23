@@ -73,6 +73,37 @@ tratada como requisito em cada funcionalidade:
   vulnerabilidades conhecidas; o Dependabot abre PRs de atualização toda semana.
 - O contêiner roda com usuário sem privilégios de root.
 
+## Agente da aba "Analisar caso"
+
+O estudante descreve o caso com as próprias palavras e o agente, próprio e sem IA de
+terceiros, responde. **Nada é gravado**: a descrição é anonimizada, analisada e descartada.
+
+1. **Identifica o crime** entre os **316 tipos penais** da base (CP, Contravenções, crimes do
+   CDC e de outras leis): um léxico de indícios fortes ("anunciou o assalto" indica roubo,
+   "produto de furto" indica receptação) mais a semelhança de palavras com a epígrafe e o
+   caput de cada crime. O artigo citado na descrição ("art. 180 do CP") vai para o topo.
+2. **Lê a estrutura do crime direto da lei** (`agente/lei.py`): a pena do caput, as formas
+   com pena própria (qualificadas, privilegiadas, culposas) e as causas de aumento e de
+   diminuição com a fração ("de 1/3 (um terço) até metade", "em dobro"). Nada é transcrito à
+   mão: vale para qualquer crime da base.
+3. **Sugere, com evidência**: qualificadoras, causas, agravantes, atenuantes, causas gerais
+   (tentativa, arrependimento posterior, continuidade delitiva...) e circunstâncias judiciais,
+   cada uma com a frase do caso que a motivou, e diz o que a descrição não informa (idade do
+   réu, antecedentes, confissão...).
+4. **O estudante confere e calcula**: o motor faz as três fases. Regras aplicadas e
+   explicadas: a segunda qualificadora vira circunstância judicial; incisos do mesmo
+   parágrafo contam como uma causa (Súmula 443); agravante que já qualificou não se repete
+   (bis in idem); repouso noturno não se aplica ao furto qualificado (STJ, Tema 1.087).
+
+Casos de teste em `dados/agente/casos.json` (`python -m agente.avaliacao`): 25 descrições de
+estudante, de furto a peculato; hoje o crime certo vem em 1º lugar em todas, com todas as
+sugestões esperadas e nenhuma indevida. Rotas: `POST /agente/analisar`, `POST
+/agente/estrutura`, `GET /agente/crimes`, `POST /agente/calcular` (30 por minuto por visitante).
+A Lei de Drogas ainda não está na base, e o agente avisa quando o caso é de tráfico.
+
+Guardar o caso para ensinar o agente depois continua possível, mas é opcional e só aparece
+com o banco de dados ligado.
+
 ## Base de legislação e busca (RAG)
 
 O agente consulta a lei numa base própria, sem IA de terceiros: **5.260 artigos** extraídos

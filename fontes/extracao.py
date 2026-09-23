@@ -50,6 +50,9 @@ _NUMERAL_DA_ESTRUTURA = re.compile(r"(?i)^\s*(?:[ivxlc]+\b|[úu]nic[oa]|geral|es
 
 # linhas que começam uma parte do artigo: ficam em linha própria no texto final
 _MARCA_DE_DISPOSITIVO = re.compile(r"^(Art\.|§|Parágrafo único|Pena\b|[IVXLC]+\s*[–-]|[a-z]\)|“)")
+_CONTINUA_EM_PARAGRAFO = re.compile(
+    r"(?<![;:])\s(no|nos|na|nas|do|dos|da|das|ao|aos|o|os|pelo|pela|pelos|pelas|em|de|com|e|ou|arts?\.)\s*$"
+)
 _REVOGADO = re.compile(r"^\(?\s*(Revogad|Vetad|Suprimid)", re.IGNORECASE)
 
 
@@ -289,7 +292,9 @@ def _reorganizar(linhas: list[str]) -> str:
     for posicao, linha in enumerate(linhas):
         seguinte = linhas[posicao + 1] if posicao + 1 < len(linhas) else ""
         epigrafe_interna = _parece_epigrafe(linha) and bool(re.match(r"^(§|Art\.)", seguinte))
-        if not saida or _MARCA_DE_DISPOSITIVO.match(linha) or epigrafe_interna or saida[-1].endswith("\u0000"):
+        # "...as indicadas no" + "§ 9º deste artigo, aumenta-se...": o "§" citado continua a frase
+        citacao_de_paragrafo = bool(saida) and linha.startswith("§") and bool(_CONTINUA_EM_PARAGRAFO.search(saida[-1]))
+        if not saida or (_MARCA_DE_DISPOSITIVO.match(linha) and not citacao_de_paragrafo) or epigrafe_interna or saida[-1].endswith("\u0000"):
             saida.append(linha + ("\u0000" if epigrafe_interna else ""))
         else:
             saida[-1] = f"{saida[-1]} {linha}"

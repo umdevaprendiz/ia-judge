@@ -344,3 +344,23 @@ mark { background: color-mix(in srgb, var(--realce) 30%, transparent); color: in
 .dispositivo__fonte--antiga { color: var(--alerta); }
 .dispositivo__ausente { color: var(--alerta); }
 .fontes-citadas { margin-top: 1.5rem; }
+
+/* ---------- Analisar caso: sugestões do agente ---------- */
+.analise { margin-top: 2rem; }
+.opcoes { display: grid; gap: .6rem; }
+.opcoes--colunas { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.opcao { display: flex; gap: .6rem; align-items: flex-start; padding: .6rem .75rem; border: 1px solid var(--borda); border-radius: var(--raio); cursor: pointer; }
+.opcao input { margin-top: .25rem; flex-shrink: 0; }
+.opcao--sugerida { border-color: var(--primaria); background: var(--superficie-2); }
+.opcao__corpo { display: grid; gap: .2rem; min-width: 0; }
+.opcao__titulo { font-weight: 600; }
+.opcao__detalhe, .opcao__rotulo { color: var(--texto-suave); font-size: .88rem; }
+.opcao__texto { font-size: .9rem; overflow-wrap: anywhere; }
+.opcao__indicio { font-size: .88rem; color: var(--texto-suave); margin: .25rem 0 0; }
+.opcao__indicio q { font-style: italic; color: var(--texto); margin-right: .4rem; }
+.opcao__observacao { font-size: .85rem; color: var(--alerta); }
+.selo-sugerido { margin-left: .5rem; font-size: .75rem; font-weight: 700; color: var(--primaria-texto); background: var(--primaria); border-radius: 999px; padding: .05rem .5rem; vertical-align: middle; }
+.contribuir { margin-top: 2.5rem; }
+.outras-opcoes { margin-top: .25rem; }
+.outras-opcoes > summary { cursor: pointer; color: var(--texto-suave); font-weight: 600; padding: .35rem 0; }
+.outras-opcoes > .opcoes { margin-top: .5rem; }

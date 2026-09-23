@@ -2,30 +2,27 @@
 {% block conteudo %}
 <header class="cabecalho-pagina">
   <h1>Analisar caso</h1>
-  <p>Descreva o caso com o máximo de detalhes. Nesta etapa do projeto, o caso é guardado (anonimizado) para
-    formar a base de estudo do agente; a análise automática chega nas próximas etapas.</p>
+  <p>Descreva o caso com o máximo de detalhes. O agente identifica o crime, sugere qualificadoras, causas de
+    aumento e de diminuição, agravantes e atenuantes (mostrando a frase do caso que motivou cada sugestão) e,
+    depois que você conferir, calcula a pena nas três fases.</p>
 </header>
 
 <aside class="aviso aviso--privacidade" aria-label="Privacidade">
   <h2>Sua privacidade</h2>
   <ul>
-    <li>Não é preciso usar nomes reais. Mesmo assim, antes de salvar, <strong>nomes, CPF, RG, telefones, e-mails,
-      endereços, placas e números de processo são trocados por marcadores</strong> como [PESSOA 1].</li>
-    <li>Você vê o texto exatamente como será guardado antes de salvar. <strong>O texto original não é guardado.</strong></li>
-    <li>Ao salvar, você recebe um código: com ele, consulta ou exclui o caso quando quiser.</li>
+    <li>Não é preciso usar nomes reais. Mesmo assim, <strong>nomes, CPF, RG, telefones, e-mails, endereços, placas e
+      números de processo são trocados por marcadores</strong> como [PESSOA 1] antes da análise.</li>
+    <li><strong>A análise não guarda o caso.</strong> A descrição é usada só para responder e depois é descartada.</li>
   </ul>
 </aside>
 
-<details class="bloco roteiro" open>
+<details class="bloco roteiro">
   <summary>O que incluir na descrição</summary>
   <ul>
-    <li><strong>O crime e o dispositivo:</strong> ex.: furto qualificado pelo concurso de pessoas (art. 155, §4º, IV, do CP).</li>
-    <li><strong>Os fatos:</strong> quando, onde, como, com que meios, valores e prejuízos.</li>
-    <li><strong>O réu:</strong> antecedentes e reincidência (com condenação definitiva?), conduta social, personalidade, idade na data do fato.</li>
-    <li><strong>Circunstâncias do crime:</strong> motivos, consequências e comportamento da vítima.</li>
-    <li><strong>Agravantes e atenuantes:</strong> confissão, reparação do dano, vítima idosa ou criança, motivo fútil etc.</li>
-    <li><strong>Causas de aumento e de diminuição:</strong> tentativa, arma, concurso de pessoas, repouso noturno, arrependimento posterior etc.</li>
-    <li><strong>Qualificadoras</strong>, se houver.</li>
+    <li><strong>A conduta:</strong> o que o réu fez (subtraiu, ameaçou, agrediu, enganou...), e se o crime se consumou.</li>
+    <li><strong>Como foi:</strong> quando (à noite?), com que meios (arma, faca, arrombamento), sozinho ou com outras pessoas.</li>
+    <li><strong>O réu:</strong> antecedentes e reincidência, idade na data do fato, se confessou.</li>
+    <li><strong>A vítima e as consequências:</strong> idade, prejuízo, lesões, se o dano foi reparado.</li>
   </ul>
 </details>
 
@@ -33,47 +30,106 @@
   <fieldset class="bloco">
     <legend>Descrição do caso</legend>
     <label class="campo" for="descricao">Descreva o caso
-      <textarea id="descricao" name="descricao" rows="12" minlength="50" maxlength="20000"
-        placeholder="Ex.: Em março de 2024, à noite, o réu, reincidente em furto, entrou em uma loja fechada..."></textarea>
+      <textarea id="descricao" name="descricao" rows="10" minlength="50" maxlength="20000"
+        placeholder="Ex.: Por volta das 2h da madrugada, o réu, reincidente, entrou em uma loja fechada e subtraiu dois celulares. Interrogado, confessou."></textarea>
     </label>
     <p class="ajuda" id="contador" aria-live="polite">0 de 20.000 caracteres (mínimo 50)</p>
     <div class="acoes">
-      <button type="submit" class="botao botao--primario" id="revisar">Revisar anonimização</button>
+      <button type="submit" class="botao botao--primario" id="analisar-caso">Analisar o caso</button>
     </div>
   </fieldset>
 </form>
 
 <div id="erros" class="aviso aviso--erro" role="alert" hidden></div>
 
-<section id="previa" class="bloco previa" aria-live="polite" hidden>
-  <h2>Como o caso será guardado</h2>
-  <p class="ajuda">Confira se nenhum dado pessoal escapou. Se escapou, edite a descrição acima e revise de novo.</p>
-  <div id="texto-anonimizado" class="texto-anonimizado"></div>
-  <div id="trocas"></div>
-  <label class="caixa consentimento">
-    <input type="checkbox" id="consentimento">
-    <span>Concordo que a descrição anonimizada acima seja guardada e, depois de validada pelo responsável pelo
-      projeto, usada para ensinar o agente. Sei que posso excluí-la a qualquer momento com o código do caso e que,
-      se não for validada, ela é apagada automaticamente 90 dias depois do envio.</span>
-  </label>
-  <div class="acoes">
-    <button type="button" class="botao botao--primario" id="salvar" disabled>Salvar caso</button>
+<section id="analise" class="analise" aria-live="polite" hidden>
+  <h2>O que o agente entendeu</h2>
+  <div id="avisos-agente" class="aviso aviso--privacidade"></div>
+
+  <div class="bloco">
+    <label class="campo campo--meio" for="crime">Crime
+      <select id="crime"></select>
+    </label>
+    <div id="crime-detalhes"></div>
   </div>
+  <div id="ausentes" class="aviso aviso--alerta" hidden></div>
+
+  <form id="form-dosimetria" class="formulario" novalidate>
+    <fieldset class="bloco"><legend>Forma do crime (troca a faixa de pena)</legend><div id="grupo-formas" class="opcoes"></div></fieldset>
+    <fieldset class="bloco"><legend>1ª fase: circunstâncias judiciais desfavoráveis (art. 59)</legend><div id="grupo-circunstancias" class="opcoes opcoes--colunas"></div></fieldset>
+    <fieldset class="bloco"><legend>2ª fase: agravantes (arts. 61 e 62)</legend><div id="grupo-agravantes" class="opcoes"></div></fieldset>
+    <fieldset class="bloco"><legend>2ª fase: atenuantes (arts. 65 e 66)</legend><div id="grupo-atenuantes" class="opcoes"></div></fieldset>
+    <fieldset class="bloco"><legend>3ª fase: causas de aumento e de diminuição</legend><div id="grupo-causas" class="opcoes"></div></fieldset>
+    <fieldset class="bloco">
+      <legend>Critérios do cálculo</legend>
+      <div class="grade grade--3">
+        <label class="campo" for="estrategia_tipo">Quantum das fases 1 e 2
+          <select id="estrategia_tipo" name="estrategia_tipo">
+            <option value="fracao_do_intervalo">fração do intervalo entre mínimo e máximo</option>
+            <option value="fracao_do_minimo">fração da pena mínima</option>
+          </select>
+        </label>
+        <label class="campo" for="estrategia_fracao">Fração
+          <input id="estrategia_fracao" name="estrategia_fracao" value="1/8" maxlength="9" inputmode="numeric">
+        </label>
+        <label class="campo" for="composicao">Várias causas na 3ª fase
+          <select id="composicao" name="composicao">
+            <option value="cascata">em cascata (cada fração sobre a pena já modificada)</option>
+            <option value="sobre_pena_intermediaria">sobre a pena intermediária (efeitos somados)</option>
+          </select>
+        </label>
+      </div>
+      <p class="ajuda">Nas causas com fração variável, o agente usa a mínima: fração maior exige fundamentação concreta
+        (Súmula 443 do STJ). Para escolher outra, abra o caso na aba Calcular.</p>
+    </fieldset>
+    <div class="acoes">
+      <button type="submit" class="botao botao--primario" id="calcular-pena">Calcular a pena</button>
+    </div>
+  </form>
+
+  <div id="alertas-agente" class="aviso aviso--alerta" hidden></div>
+  <section id="resultado-agente" class="resultado" hidden></section>
 </section>
 
-<section id="salvo" class="aviso aviso--sucesso" aria-live="polite" hidden></section>
+<section id="contribuir" class="bloco contribuir" hidden>
+  <h2>Contribuir com este caso</h2>
+  <p>Se quiser, guarde a descrição (anonimizada) para ensinar o agente depois que o responsável pelo projeto
+    validá-la. É opcional: a análise acima funciona sem guardar nada.</p>
+  <div class="acoes">
+    <button type="button" class="botao" id="revisar">Revisar anonimização para guardar</button>
+  </div>
 
-<section class="bloco consulta">
-  <h2>Consultar ou excluir um caso</h2>
-  <form id="form-consulta" class="linha-consulta" novalidate>
-    <label class="campo" for="codigo">Código do caso
-      <input id="codigo" name="codigo" autocomplete="off" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9_-]{8,16}">
+  <section id="previa" class="previa" aria-live="polite" hidden>
+    <h3>Como o caso será guardado</h3>
+    <p class="ajuda">Confira se nenhum dado pessoal escapou. Se escapou, edite a descrição acima e revise de novo.</p>
+    <div id="texto-anonimizado" class="texto-anonimizado"></div>
+    <div id="trocas"></div>
+    <label class="caixa consentimento">
+      <input type="checkbox" id="consentimento">
+      <span>Concordo que a descrição anonimizada acima seja guardada e, depois de validada pelo responsável pelo
+        projeto, usada para ensinar o agente. Sei que posso excluí-la a qualquer momento com o código do caso e que,
+        se não for validada, ela é apagada automaticamente 90 dias depois do envio.</span>
     </label>
-    <button type="submit" class="botao">Consultar</button>
-  </form>
-  <div id="consulta" hidden></div>
+    <div class="acoes">
+      <button type="button" class="botao botao--primario" id="salvar" disabled>Salvar caso</button>
+    </div>
+  </section>
+
+  <section id="salvo" class="aviso aviso--sucesso" aria-live="polite" hidden></section>
+
+  <section class="consulta">
+    <h3>Consultar ou excluir um caso guardado</h3>
+    <form id="form-consulta" class="linha-consulta" novalidate>
+      <label class="campo" for="codigo">Código do caso
+        <input id="codigo" name="codigo" autocomplete="off" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9_-]{8,16}">
+      </label>
+      <button type="submit" class="botao">Consultar</button>
+    </form>
+    <div id="consulta" hidden></div>
+  </section>
 </section>
 {% endblock %}
 {% block scripts %}
+<script type="module" src="/static/agente.js?v={{ versao }}"></script>
 <script type="module" src="/static/analisar.js?v={{ versao }}"></script>
 {% endblock %}

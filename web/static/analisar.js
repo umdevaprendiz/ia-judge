@@ -1,4 +1,5 @@
-// Página Analisar caso: revisão da anonimização, consentimento, gravação, consulta e exclusão.
+// Página Analisar caso, parte opcional "Contribuir com este caso": revisão da anonimização,
+// consentimento, gravação, consulta e exclusão. Só aparece com o banco ligado (veja agente.js).
 // Todo texto entra na página via textContent (nunca innerHTML).
 import { ApiError, chamarApi, el, esconder, mostrarErros } from "./comum.js";
 
@@ -10,7 +11,6 @@ const NOMES_TIPOS = {
   CEP: "CEP", PLACA: "placa", ENDERECO: "endereço", PROCESSO: "número de processo",
 };
 
-const formulario = document.getElementById("formulario");
 const campoDescricao = document.getElementById("descricao");
 const contador = document.getElementById("contador");
 const caixaErros = document.getElementById("erros");
@@ -79,8 +79,7 @@ caixaConsentimento.addEventListener("change", () => {
   botaoSalvar.disabled = !(caixaConsentimento.checked && descricaoRevisada === campoDescricao.value);
 });
 
-formulario.addEventListener("submit", async (evento) => {
-  evento.preventDefault();
+document.getElementById("revisar").addEventListener("click", async () => {
   esconder(caixaErros, secaoSalvo);
   const descricao = campoDescricao.value;
   if (descricao.trim().length < MINIMO) {

@@ -319,6 +319,10 @@ class LegalSearchIndex:
                 resultados[dispositivo.rotulo] = SearchResult(dispositivo, round(valor, 3), self._trecho(dispositivo, pesos), "texto")
         return list(resultados.values())[:limite]
 
+    def referencias(self, consulta: str) -> list[str]:
+        """Artigos citados diretamente na consulta ("art. 155 do CP" -> ["CP.art155"])."""
+        return [f"{sigla}.art{artigo}" for sigla, artigo in self._referencias(normalizar(consulta), None)]
+
     def leis_ausentes(self, consulta: str) -> list[str]:
         """Leis que a pergunta cita e que não estão na base ("art. 33 da Lei de Drogas")."""
         normalizada = normalizar(consulta)

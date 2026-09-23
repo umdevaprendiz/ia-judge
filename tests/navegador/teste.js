@@ -196,39 +196,80 @@ const verificar = (condicao, mensagem) => {
   await pagina.waitForURL((url) => url.search.includes("furto") && !url.search.includes("lei="));
   verificar(await pagina.evaluate(() => window.injetado2 === undefined && !document.querySelector("#resultados img")), "Pesquisar: busca digitada não é interpretada como HTML");
 
-  // ---------- Analisar caso (precisa do banco: SEM_BANCO=1 pula) ----------
+  // ---------- Analisar caso: o agente ----------
   await pagina.goto(`${BASE}/analisar`);
+  await pagina.fill("#descricao", "curto demais");
+  await pagina.click("#analisar-caso");
+  verificar((await pagina.locator("#erros").textContent()).includes("pelo menos 50"), "Agente: descrição curta é recusada");
+  const casoFurto =
+    "Por volta das 2h da madrugada, o réu Rafael Souza, junto com um comparsa, arrombou a porta de uma loja e subtraiu " +
+    "dois celulares. Ele é reincidente, com condenação definitiva anterior. Interrogado, confessou o crime.";
+  await pagina.fill("#descricao", casoFurto);
+  await pagina.click("#analisar-caso");
+  await pagina.locator("#form-dosimetria").waitFor({ state: "visible" });
+  verificar((await pagina.inputValue("#crime")) === "CP.art155", "Agente: identifica o furto");
+  const marcadosFurto = await pagina.$$eval("#form-dosimetria input:checked", (caixas) => caixas.map((c) => c.value));
+  verificar(
+    ["CP.art155.§4.I", "CP.art155.§4.IV", "reincidencia", "confissao_espontanea"].every((v) => marcadosFurto.includes(v)),
+    `Agente: sugere arrombamento, concurso de pessoas, reincidência e confissão (${marcadosFurto.join(", ")})`
+  );
+  verificar(!marcadosFurto.includes("CP.art155.§1"), "Agente: não sugere repouso noturno no furto qualificado (Tema 1.087)");
+  verificar((await pagina.locator("#analise").textContent()).includes("idade do réu"), "Agente: avisa o que a descrição não diz");
+  verificar(!(await pagina.locator("#analise").textContent()).includes("Rafael"), "Agente: evidências mostram o texto anonimizado");
+  verificar(!/null|undefined/.test(await pagina.locator("#form-dosimetria").textContent()), "Agente: nenhum \"null\" ou \"undefined\" na tela");
+  await pagina.click("#calcular-pena");
+  await pagina.locator("#resultado-agente").waitFor({ state: "visible" });
+  const penaAgente = await pagina.locator("#resultado-agente .pena--destaque .pena__valor").textContent();
+  verificar(penaAgente === "2 anos, 9 meses, 3 dias", `Agente: calcula a pena com o que foi confirmado (${penaAgente})`);
+  verificar((await pagina.locator("#alertas-agente").textContent()).includes("mais de uma qualificadora"), "Agente: explica a segunda qualificadora");
+  await pagina.screenshot({ path: `${FOTOS}/8-analisar.png`, fullPage: true });
+  // desmarcar uma sugestão muda o cálculo
+  await pagina.locator('#form-dosimetria input[value="reincidencia"]').uncheck();
+  await pagina.click("#calcular-pena");
+  await pagina.waitForFunction(() => !document.querySelector("#resultado-agente .fundamentacao").textContent.includes("reincidencia"));
+  verificar(true, "Agente: o estudante pode desmarcar uma sugestão");
+  // trocar o crime refaz a estrutura
+  await pagina.selectOption("#crime", "CP.art157");
+  await pagina.waitForFunction(() => document.querySelector("#crime-detalhes").textContent.includes("de 4 anos a 10 anos"));
+  verificar((await pagina.locator("#grupo-causas").textContent()).includes("§ 2º-A"), "Agente: trocar o crime mostra as causas do roubo");
+  // conteúdo digitado não vira HTML
+  await pagina.fill("#descricao", '<img src=x onerror="window.injetado3=1"> O réu subtraiu uma bicicleta de noite, sem violência, e fugiu.');
+  await pagina.click("#analisar-caso");
+  await pagina.waitForFunction(() => document.querySelector("#crime").value === "CP.art155");
+  verificar(await pagina.evaluate(() => window.injetado3 === undefined && !document.querySelector("#analise img")), "Agente: descrição não é interpretada como HTML");
+
+  // ---------- Analisar caso: guardar o caso (precisa do banco: SEM_BANCO=1 pula) ----------
   const descricao =
     "O réu Rafael Souza e Silva, CPF 123.456.789-09, reincidente, entrou à noite na loja da Rua das Flores, 120, " +
     "e subtraiu um celular da vítima Maria, de 72 anos. Rafael confessou. Telefone (21) 98765-4321.";
-  // texto curto: recusado no próprio navegador
-  await pagina.fill("#descricao", "curto demais");
-  await pagina.click("#revisar");
-  verificar((await pagina.locator("#erros").textContent()).includes("pelo menos 50"), "Analisar: descrição curta é recusada");
-  await pagina.fill("#descricao", descricao);
-  verificar((await pagina.locator("#contador").textContent()).startsWith(`${descricao.length}`), "Analisar: contador de caracteres");
-  await pagina.click("#revisar");
-  await pagina.locator("#previa").waitFor({ state: "visible" });
-  const previa = await pagina.locator("#texto-anonimizado").textContent();
-  verificar(
-    !["Rafael", "123.456.789-09", "Flores", "Maria", "98765"].some((dado) => previa.includes(dado)),
-    `Analisar: prévia sem dados pessoais (${previa.slice(0, 80)}…)`
-  );
-  verificar(await pagina.locator("#texto-anonimizado mark").count() >= 5, "Analisar: marcadores destacados na prévia");
-  verificar(await pagina.locator("#salvar").isDisabled(), "Analisar: salvar bloqueado sem concordância");
-  await pagina.check("#consentimento");
-  verificar(await pagina.locator("#salvar").isEnabled(), "Analisar: salvar liberado com concordância");
-  // editar depois de revisar obriga a revisar de novo
-  await pagina.locator("#descricao").press("End");
-  await pagina.locator("#descricao").type(" Fim.");
-  verificar(await pagina.locator("#previa").isHidden(), "Analisar: editar o texto invalida a prévia");
-  await pagina.click("#revisar");
-  await pagina.locator("#previa").waitFor({ state: "visible" });
-  await pagina.check("#consentimento");
-
   if (process.env.SEM_BANCO === "1") {
-    console.log("(pulando gravação: SEM_BANCO=1)");
+    console.log("(pulando a gravação de casos: SEM_BANCO=1)");
   } else {
+    await pagina.locator("#contribuir").waitFor({ state: "visible" });
+    await pagina.fill("#descricao", "curto demais");
+    await pagina.click("#revisar");
+    verificar((await pagina.locator("#erros").textContent()).includes("pelo menos 50"), "Analisar: descrição curta é recusada");
+    await pagina.fill("#descricao", descricao);
+    verificar((await pagina.locator("#contador").textContent()).startsWith(`${descricao.length}`), "Analisar: contador de caracteres");
+    await pagina.click("#revisar");
+    await pagina.locator("#previa").waitFor({ state: "visible" });
+    const previa = await pagina.locator("#texto-anonimizado").textContent();
+    verificar(
+      !["Rafael", "123.456.789-09", "Flores", "Maria", "98765"].some((dado) => previa.includes(dado)),
+      `Analisar: prévia sem dados pessoais (${previa.slice(0, 80)}…)`
+    );
+    verificar(await pagina.locator("#texto-anonimizado mark").count() >= 5, "Analisar: marcadores destacados na prévia");
+    verificar(await pagina.locator("#salvar").isDisabled(), "Analisar: salvar bloqueado sem concordância");
+    await pagina.check("#consentimento");
+    verificar(await pagina.locator("#salvar").isEnabled(), "Analisar: salvar liberado com concordância");
+    // editar depois de revisar obriga a revisar de novo
+    await pagina.locator("#descricao").press("End");
+    await pagina.locator("#descricao").type(" Fim.");
+    verificar(await pagina.locator("#previa").isHidden(), "Analisar: editar o texto invalida a prévia");
+    await pagina.click("#revisar");
+    await pagina.locator("#previa").waitFor({ state: "visible" });
+    await pagina.check("#consentimento");
+
     await pagina.click("#salvar");
     await pagina.locator("#salvo").waitFor({ state: "visible" });
     const codigo = (await pagina.locator("#salvo .codigo").textContent()).trim();
@@ -253,8 +294,6 @@ const verificar = (condicao, mensagem) => {
     verificar(true, "Analisar: caso excluído não é mais encontrado");
     verificar(!(await pagina.locator("#salvo").textContent()).includes(codigo), "Analisar: cartão do caso salvo some após a exclusão");
   }
-  await pagina.screenshot({ path: `${FOTOS}/8-analisar.png`, fullPage: true });
-
   // cabeçalhos de segurança nas páginas
   const resposta = await pagina.request.get(`${BASE}/analisar`);
   const cabecalhos = resposta.headers();

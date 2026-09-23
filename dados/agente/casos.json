@@ -1,0 +1,150 @@
+{
+ "descricao": "Casos de teste do agente da aba Analisar caso: a descrição, o crime que precisa vir em 1º lugar e o que precisa ser sugerido (rótulos de formas e causas, códigos de agravantes, atenuantes e circunstâncias). 'nao_sugerir' lista o que não pode aparecer como sugestão (ex.: bis in idem).",
+ "casos": [
+  {
+   "id": "furto-noturno-reincidente",
+   "descricao": "Em março de 2024, por volta das 2h da madrugada, o réu entrou em uma loja fechada e subtraiu dois celulares. Ele é reincidente em furto, com condenação definitiva anterior. Interrogado, confessou o crime.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art155.§1", "reincidencia", "confissao_espontanea"],
+   "nao_sugerir": ["CP.art14.parágrafo_único"]
+  },
+  {
+   "id": "furto-qualificado-arrombamento-comparsa",
+   "descricao": "O acusado, junto com um comparsa, arrombou a porta de uma residência durante o dia e subtraiu uma televisão e joias. Os dois foram presos dias depois com os objetos.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art155.§4.I", "CP.art155.§4.IV"]
+  },
+  {
+   "id": "furto-tentado",
+   "descricao": "O réu tentou subtrair uma bicicleta que estava presa no bicicletário de um mercado, mas foi impedido pelo segurança antes de conseguir sair com ela. O bem foi devolvido intacto à vítima.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art14.parágrafo_único"]
+  },
+  {
+   "id": "roubo-faca",
+   "descricao": "O réu abordou a vítima em um ponto de ônibus e, com uma faca, anunciou o assalto e levou a bolsa e o celular dela. Foi preso em flagrante minutos depois.",
+   "crime": "CP.art157",
+   "sugerir": ["CP.art157.§2.VII"]
+  },
+  {
+   "id": "roubo-arma-de-fogo-dupla",
+   "descricao": "Dois homens armados com um revólver renderam o motorista de um aplicativo, mantiveram a vítima no porta-malas por duas horas e levaram o carro. O acusado tinha 19 anos na data do fato.",
+   "crime": "CP.art157",
+   "sugerir": ["CP.art157.§2-A.I", "CP.art157.§2.II", "CP.art157.§2.V", "menoridade_ou_senilidade"],
+   "nao_sugerir": ["CP.art157.§2-B"]
+  },
+  {
+   "id": "latrocinio",
+   "descricao": "Durante o assalto a uma farmácia, o réu atirou no farmacêutico, que morreu no local, e fugiu com o dinheiro do caixa.",
+   "crime": "CP.art157",
+   "sugerir": ["CP.art157.§3.II", "CP.art157.§2-A.I"]
+  },
+  {
+   "id": "homicidio-motivo-futil",
+   "descricao": "Após uma discussão por causa de uma vaga de estacionamento, o acusado matou a vítima com vários golpes de faca. O motivo foi considerado fútil pela acusação.",
+   "crime": "CP.art121",
+   "sugerir": ["CP.art121.§2.II"],
+   "nao_sugerir": ["motivo_futil_ou_torpe"]
+  },
+  {
+   "id": "homicidio-culposo-transito",
+   "descricao": "O réu dirigia em excesso de velocidade, perdeu o controle do carro e atropelou um pedestre, que morreu. Foi um acidente, sem intenção de matar.",
+   "crime": "CP.art121",
+   "sugerir": ["CP.art121.§3"]
+  },
+  {
+   "id": "lesao-grave-fratura",
+   "descricao": "Em uma briga de bar, o réu agrediu a vítima com socos e chutes, causando fratura no braço e afastamento do trabalho por 45 dias.",
+   "crime": "CP.art129",
+   "sugerir": ["CP.art129.§1.I"]
+  },
+  {
+   "id": "lesao-violencia-domestica",
+   "descricao": "O réu agrediu a companheira dentro de casa, causando hematomas no rosto e nos braços. O caso foi registrado como violência doméstica.",
+   "crime": "CP.art129",
+   "sugerir": ["CP.art129.§9"]
+  },
+  {
+   "id": "estelionato-idoso",
+   "descricao": "A ré se passou por funcionária do banco, enganou uma vítima de 78 anos e obteve dela R$ 15.000,00 em transferências, induzindo-a em erro com um falso estorno.",
+   "crime": "CP.art171",
+   "sugerir": ["CP.art171.§4"],
+   "nao_sugerir": ["vitima_vulneravel"]
+  },
+  {
+   "id": "fraude-eletronica",
+   "descricao": "O acusado enviou mensagens de WhatsApp com um link falso de promoção e, com os dados bancários obtidos, fez transferências por PIX das contas das vítimas, obtendo vantagem ilícita.",
+   "crime": "CP.art171",
+   "sugerir": ["CP.art171.§2-A"]
+  },
+  {
+   "id": "receptacao",
+   "descricao": "O réu comprou um celular de um desconhecido na rua por R$ 100, sabendo que o aparelho era produto de furto, e o revendeu depois.",
+   "crime": "CP.art180"
+  },
+  {
+   "id": "ameaca",
+   "descricao": "Por mensagens, o réu ameaçou de morte o vizinho, dizendo que iria matá-lo se ele reclamasse de novo do barulho.",
+   "crime": "CP.art147"
+  },
+  {
+   "id": "apropriacao-indebita",
+   "descricao": "O funcionário recebeu o dinheiro das vendas do dia para depositar no banco, mas se apropriou da quantia e não devolveu à empresa.",
+   "crime": "CP.art168"
+  },
+  {
+   "id": "estupro",
+   "descricao": "O réu constrangeu a vítima, mediante violência, a ter conjunção carnal com ele, em um terreno baldio.",
+   "crime": "CP.art213"
+  },
+  {
+   "id": "extorsao",
+   "descricao": "O acusado constrangeu o comerciante, mediante grave ameaça, a pagar mensalmente uma quantia em dinheiro para não ter a loja destruída, obtendo indevida vantagem econômica.",
+   "crime": "CP.art158"
+  },
+  {
+   "id": "dano",
+   "descricao": "Irritado com o vizinho, o réu destruiu o portão e quebrou os vidros do carro dele com um pedaço de pau.",
+   "crime": "CP.art163"
+  },
+  {
+   "id": "peculato",
+   "descricao": "O servidor público, valendo-se do cargo, desviou em proveito próprio dinheiro público de que tinha a posse em razão do cargo na prefeitura.",
+   "crime": "CP.art312"
+  },
+  {
+   "id": "corrupcao-passiva",
+   "descricao": "O fiscal da prefeitura solicitou propina ao dono do restaurante para não aplicar a multa, recebendo vantagem indevida em razão da função.",
+   "crime": "CP.art317"
+  },
+  {
+   "id": "sequestro-carcere",
+   "descricao": "O réu privou a ex-namorada de sua liberdade, mantendo-a trancada em cárcere privado no apartamento por três dias.",
+   "crime": "CP.art148"
+  },
+  {
+   "id": "furto-continuado-empregada",
+   "descricao": "A empregada doméstica, de confiança da família, subtraiu joias da patroa em várias ocasiões ao longo de seis meses.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art155.§4.II", "CP.art71"]
+  },
+  {
+   "id": "citacao-direta",
+   "descricao": "Caso de receptação qualificada, art. 180 do CP, em que o réu, comerciante de autopeças, vendia peças de carros roubados na sua loja.",
+   "crime": "CP.art180"
+  },
+  {
+   "id": "furto-qualificado-noturno",
+   "descricao": "Por volta das 2h da madrugada, o réu, junto com um comparsa, arrombou a porta de uma loja e subtraiu dois celulares.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art155.§4.I", "CP.art155.§4.IV"],
+   "nao_sugerir": ["CP.art155.§1"]
+  },
+  {
+   "id": "furto-privilegiado",
+   "descricao": "O réu, primário, subtraiu de um supermercado um pacote de carne no valor de R$ 45,00. O bem foi recuperado.",
+   "crime": "CP.art155",
+   "sugerir": ["CP.art155.§2"]
+  }
+ ]
+}
