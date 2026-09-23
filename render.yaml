@@ -29,3 +29,6 @@ services:
         sync: false
       - key: MYSQL_CA_CERT
         sync: false
+      # usuário que cria e altera tabelas, só para as migrações (o site usa DATABASE_URL)
+      - key: DATABASE_URL_MIGRACAO
+        sync: false

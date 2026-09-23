@@ -29,5 +29,7 @@ COPY --chown=dosimetria:dosimetria . .
 USER dosimetria
 EXPOSE 8000
 # Aplica as migrações do banco (se DATABASE_URL estiver definida) e sobe a API.
+# A API sobe sem DATABASE_URL_MIGRACAO no ambiente: a senha do usuário que altera tabelas
+# só existe durante as migrações, e o processo do site nunca a vê.
 # A porta pode ser trocada pela variável PORT (plataformas de hospedagem costumam defini-la).
-CMD ["sh", "-c", "python -m banco.migrar && exec uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]
+CMD ["sh", "-c", "python -m banco.migrar && exec env -u DATABASE_URL_MIGRACAO uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]

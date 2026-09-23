@@ -1,7 +1,7 @@
 """Anonimização por regras da descrição de um caso, antes de qualquer gravação (LGPD).
 
-Troca documentos, contatos, endereços, números de processo e nomes de pessoas por
-marcadores como [CPF] ou [PESSOA 1]. O mesmo nome recebe sempre o mesmo número, e
+Troca documentos, contatos, endereços, bairros, datas de nascimento, apelidos, números de
+processo e nomes de pessoas por marcadores como [CPF] ou [PESSOA 1]. O mesmo nome recebe sempre o mesmo número, e
 menções parciais a um nome já trocado ("Rafael", depois de "Rafael Souza") também
 são trocadas. A detecção de nomes é heurística: por isso o estudante vê o texto
 anonimizado e confirma antes de salvar, e o texto original nunca é gravado.
@@ -28,6 +28,37 @@ _PADROES_FIXOS: list[tuple[str, re.Pattern]] = [
         re.compile(
             r"\b(?:Rua|R\.|Avenida|Av\.|Travessa|Alameda|Estrada|Rodovia|Praça|Largo|Beco)\s+"
             r"[^,;\n]{2,60}?(?:,\s*(?:n[º°o]\.?\s*)?\d+[A-Za-z]?)?(?=[,;.\n]|$)"
+        ),
+    ),
+]
+
+# só o grupo 1 é trocado; o texto antes dele fica ("vulgo [APELIDO]", "bairro [BAIRRO]").
+# A idade não é trocada de propósito: ela muda a pena (arts. 61, II, h, e 65, I, do CP).
+_LETRA_MAIUSCULA = "A-ZÁÉÍÓÚÂÊÔÃÕÇ"
+_PADROES_COM_CONTEXTO: list[tuple[str, re.Pattern]] = [
+    # apelido entre aspas, depois de vulgo/apelido/alcunha/conhecido como: "vulgo 'Baixinho'"
+    (
+        "APELIDO",
+        re.compile(
+            r"(?i:\b(?:vulgo|apelid(?:o|ad[oa])|alcunha|conhecid[oa]\s+(?:como|por))\b)[\s:,]*"
+            r"([\"“'‘][^\"”'’\n]{1,40}[\"”'’])"
+        ),
+    ),
+    # apelido sem aspas, mesmo em minúsculas: "vulgo baixinho" (só depois de vulgo/alcunha,
+    # porque "conhecido como" também aparece antes de lugares e coisas)
+    ("APELIDO", re.compile(r"(?i:\b(?:vulgo|alcunha)\b)[\s:,]*([^\s,.;:!?()\[\]\"“”'‘’]{2,30})")),
+    (
+        "NASCIMENTO",
+        re.compile(
+            r"(?i:\b(?:nascid[oa]\s+(?:em|no\s+dia|aos)|data\s+de\s+nascimento)\b)[\s:,]*"
+            r"(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{1,2}(?:º|°)?\s+de\s+[a-zç]+\s+de\s+\d{4})"
+        ),
+    ),
+    (
+        "BAIRRO",
+        re.compile(
+            rf"(?i:\bbairro)[\s:]*(?:(?i:d[aeo]s?)\s+)?"
+            rf"([{_LETRA_MAIUSCULA}][\w'-]+(?:\s+(?:(?:de|da|do|das|dos)\s+)?[{_LETRA_MAIUSCULA}][\w'-]+){{0,3}})"
         ),
     ),
 ]
@@ -159,6 +190,18 @@ def anonimizar(texto: str) -> AnonymizationResult:
 
     for tipo, padrao in _PADROES_FIXOS:
         texto = padrao.sub(trocar_fixo(tipo), texto)
+
+    def trocar_grupo(tipo: str):
+        def trocar(match: re.Match) -> str:
+            marcador = f"[{tipo}]"
+            substituicoes.append(Replacement(tipo, match.group(1), marcador))
+            inicio = match.start(1) - match.start()
+            return match.group(0)[:inicio] + marcador + match.group(0)[match.end(1) - match.start():]
+
+        return trocar
+
+    for tipo, padrao in _PADROES_COM_CONTEXTO:
+        texto = padrao.sub(trocar_grupo(tipo), texto)
 
     # lugares (capitais e estados) ficam protegidos durante a busca por nomes, senão
     # "São Paulo" viraria "São [PESSOA 1]" e "João Pessoa" seria tomado por uma pessoa

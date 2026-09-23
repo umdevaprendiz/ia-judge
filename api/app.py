@@ -10,7 +10,7 @@ import os
 from functools import cache
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import http_exception_handler
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -31,10 +31,11 @@ from dosimetria import (
 )
 from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
 
+from banco import banco_configurado
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
 from .casos import roteador as rotas_dos_casos
-from .seguranca import SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
+from .seguranca import RateLimiter, SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
     ComparisonOutput,
@@ -47,6 +48,9 @@ from .esquemas import (
 )
 
 ARQUIVO_EXEMPLOS = Path(__file__).resolve().parent.parent / "dados" / "casos" / "dosimetrias.json"
+
+# cálculo e correção: folga para um estudante praticando, sem deixar um script ocupar o servidor
+limite_calculo = RateLimiter("calculo", limite=60, janela=60, limite_global=3000)
 
 app = FastAPI(
     title="sergius-ia-Judge",
@@ -116,6 +120,10 @@ async def erro_de_validacao(_: Request, erro: RequestValidationError) -> JSONRes
             mensagem = f"precisa ter pelo menos {contexto['min_length']} caracteres"
         elif item["type"] == "string_too_long":
             mensagem = f"pode ter no máximo {contexto.get('max_length')} caracteres"
+        elif item["type"] == "too_long":
+            mensagem = f"pode ter no máximo {contexto.get('max_length')} itens"
+        elif item["type"] == "less_than_equal":
+            mensagem = f"não pode passar de {contexto.get('le')}"
         elif item["type"] == "enum":
             opcoes = item["ctx"]["expected"].replace(" or ", ", ")
             mensagem = f"valor inválido (opções: {opcoes})"
@@ -137,12 +145,14 @@ def saude(request: Request) -> dict:
     """Verificação de funcionamento. `commit` é o commit publicado (definido pelo Render).
 
     `protecao_ip` diz de onde vem o IP usado no limite de requisições, e se o cabeçalho
-    esperado chegou nesta requisição. Não expõe nenhum IP.
+    esperado chegou nesta requisição. Não expõe nenhum IP. `banco` diz se a gravação de casos
+    está ligada (o motivo, quando desligada, fica só no log do servidor).
     """
     cabecalho = cabecalho_de_ip()
     return {
         "status": "ok",
         "commit": os.environ.get("RENDER_GIT_COMMIT"),
+        "banco": "ligado" if banco_configurado() else "desligado",
         "protecao_ip": {
             "origem": protecao_de_ip(),
             "cabecalho_presente": bool(cabecalho and request.headers.get(cabecalho)),
@@ -178,14 +188,16 @@ def obter_exemplo(id_exemplo: str) -> dict:
     return {k: caso[k] for k in ("id", "descricao", "fonte", "entrada")}
 
 
-@app.post("/dosimetria/calcular", response_model=SentencingOutput, tags=["dosimetria"])
+@app.post(
+    "/dosimetria/calcular", response_model=SentencingOutput, tags=["dosimetria"], dependencies=[Depends(limite_calculo)]
+)
 def calcular(entrada: SentencingRequest) -> dict:
     """Calcula a dosimetria completa: as três fases, o passo a passo, os alertas e a fundamentação."""
     resultado = entrada_de_dict(entrada.model_dump(mode="json")).calcular()
     return resultado_para_dict(resultado)
 
 
-@app.post("/ensino/comparar", response_model=ComparisonOutput, tags=["ensino"])
+@app.post("/ensino/comparar", response_model=ComparisonOutput, tags=["ensino"], dependencies=[Depends(limite_calculo)])
 def comparar(pedido: ComparisonRequest) -> dict:
     """Corrige a dosimetria de um estudante, fase a fase, e devolve o gabarito completo."""
     resultado = entrada_de_dict(pedido.entrada.model_dump(mode="json")).calcular()

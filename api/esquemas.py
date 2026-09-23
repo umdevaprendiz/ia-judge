@@ -11,7 +11,13 @@ from dosimetria import (
 )
 from dosimetria.entrada import ESTRATEGIAS
 
-PADRAO_FRACAO = r"^\s*\d+\s*/\s*\d+\s*$"  # ex.: "1/3"
+PADRAO_FRACAO = r"^\s*\d{1,4}\s*/\s*\d{1,4}\s*$"  # ex.: "1/3" (até 4 dígitos: frações legais são pequenas)
+
+# limites de tamanho: bem acima de qualquer caso real, e baixos o bastante para uma
+# requisição não ocupar o servidor (a maior pena em abstrato do CP é de 30 anos)
+MAXIMO_ANOS = 1000
+TEXTO_CURTO = 100
+TEXTO_LONGO = 2000
 
 EXEMPLO_ENTRADA = {
     "faixa": {"origem": "CP.art155", "minimo": {"anos": 1}, "maximo": {"anos": 4}},
@@ -41,22 +47,24 @@ class PenaltyInput(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    anos: int = Field(0, ge=0)
-    meses: int = Field(0, ge=0)
-    dias: int = Field(0, ge=0)
+    anos: int = Field(0, ge=0, le=MAXIMO_ANOS)
+    meses: int = Field(0, ge=0, le=MAXIMO_ANOS * 12)
+    dias: int = Field(0, ge=0, le=MAXIMO_ANOS * 365)
 
 
 class PenaltyRangeInput(BaseModel):
     """Pena em abstrato do tipo penal já escolhido (simples ou qualificado)."""
 
-    origem: str = Field(min_length=1, examples=["CP.art155"], description="Rótulo do dispositivo que define a faixa.")
+    origem: str = Field(
+        min_length=1, max_length=TEXTO_CURTO, examples=["CP.art155"], description="Rótulo do dispositivo que define a faixa."
+    )
     minimo: PenaltyInput
     maximo: PenaltyInput
 
 
 class AggravatingMitigatingInput(BaseModel):
-    codigo: str = Field(min_length=1, examples=["reincidencia"])
-    dispositivo: str = Field(min_length=1, examples=["CP.art61.I"])
+    codigo: str = Field(min_length=1, max_length=TEXTO_CURTO, examples=["reincidencia"])
+    dispositivo: str = Field(min_length=1, max_length=TEXTO_CURTO, examples=["CP.art61.I"])
     direcao: CircumstanceDirection
     preponderante: bool = Field(
         False, description="Motivos determinantes, personalidade ou reincidência (art. 67 do CP)."
@@ -66,8 +74,8 @@ class AggravatingMitigatingInput(BaseModel):
 class CauseInput(BaseModel):
     """Causa de aumento ou de diminuição (3ª fase)."""
 
-    codigo: str = Field(min_length=1, examples=["repouso_noturno"])
-    dispositivo: str = Field(min_length=1, examples=["CP.art155.§1"])
+    codigo: str = Field(min_length=1, max_length=TEXTO_CURTO, examples=["repouso_noturno"])
+    dispositivo: str = Field(min_length=1, max_length=TEXTO_CURTO, examples=["CP.art155.§1"])
     direcao: CauseDirection
     origem: CauseOrigin
     fracao_min: str = Field(pattern=PADRAO_FRACAO, examples=["1/3"])
@@ -77,11 +85,12 @@ class CauseInput(BaseModel):
         pattern=PADRAO_FRACAO,
         description="Outra fração dentro do intervalo legal; exige justificativa.",
     )
-    justificativa: str | None = None
+    justificativa: str | None = Field(None, max_length=TEXTO_LONGO)
 
 
 class StrategyInput(BaseModel):
     tipo: str = Field(
+        max_length=TEXTO_CURTO,
         examples=["fracao_do_intervalo"], description=f"Opções: {', '.join(ESTRATEGIAS)}."
     )
     fracao: str = Field(pattern=PADRAO_FRACAO, examples=["1/8"])
@@ -94,10 +103,10 @@ class SentencingRequest(BaseModel):
 
     faixa: PenaltyRangeInput
     circunstancias_desfavoraveis: list[JudicialCircumstance] = Field(
-        default_factory=list, description="Circunstâncias do art. 59 valoradas contra o réu."
+        default_factory=list, max_length=8, description="Circunstâncias do art. 59 valoradas contra o réu."
     )
-    agravantes_atenuantes: list[AggravatingMitigatingInput] = Field(default_factory=list)
-    causas: list[CauseInput] = Field(default_factory=list)
+    agravantes_atenuantes: list[AggravatingMitigatingInput] = Field(default_factory=list, max_length=30)
+    causas: list[CauseInput] = Field(default_factory=list, max_length=20)
     estrategia: StrategyInput
     composicao: Composition
 

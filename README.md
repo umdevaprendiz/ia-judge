@@ -38,28 +38,34 @@ entram na página só como texto (`textContent`), nunca como HTML.
 O site é público e recebe textos que podem conter dados pessoais, então a segurança é
 tratada como requisito em cada funcionalidade:
 
-- **Anonimização antes de gravar** (`privacidade/`): nomes, CPF, CNPJ, RG, e-mails,
-  telefones, CEPs, placas, endereços e números de processo viram marcadores como
-  `[PESSOA 1]`. O estudante vê e confirma o texto anonimizado; **o texto original nunca
-  é gravado**. Cada caso tem um código aleatório (não sequencial) para consulta e
-  **exclusão** a qualquer momento (LGPD).
+- **Anonimização antes de gravar** (`privacidade/`): nomes, apelidos, CPF, CNPJ, RG,
+  e-mails, telefones, CEPs, placas, endereços, bairros, datas de nascimento e números de
+  processo viram marcadores como `[PESSOA 1]`. A idade fica, porque muda a pena. O
+  estudante vê e confirma o texto anonimizado; **o texto original nunca é gravado**. Cada
+  caso tem um código aleatório (não sequencial) para consulta e **exclusão** a qualquer
+  momento (LGPD).
+- **Prazo de guarda**: casos não validados (recebidos ou rejeitados) são apagados
+  automaticamente 90 dias depois do envio, na inicialização do serviço e a cada novo envio.
 - **Consentimento explícito** antes de salvar; só casos **validados pelo responsável**
   serão usados para ensinar o agente.
 - **Cabeçalhos de segurança** em todas as respostas (`api/seguranca.py`): CSP sem scripts
   de terceiros nem inline, proibição de exibir o site dentro de outro (frame), `nosniff`,
   política de referência e HSTS em HTTPS. Respostas com casos não ficam em cache.
 - **Limites**: tamanho máximo da requisição (256 KB, verificado enquanto o corpo chega)
-  e da descrição (20 mil caracteres); limite de requisições por visitante e um teto
-  global por rota. O IP do visitante vem do cabeçalho `CF-Connecting-IP`, que o Cloudflare
+  e da descrição (20 mil caracteres), dos valores e das listas do cálculo; limite de
+  requisições por visitante e um teto global por rota, inclusive no cálculo e na correção. O IP do visitante vem do cabeçalho `CF-Connecting-IP`, que o Cloudflare
   (na frente do Render) preenche e sobrescreve; valores forjáveis, como o
   `X-Forwarded-For` enviado pelo próprio visitante, não são usados.
 - **Outros sites só leem** (CORS libera apenas `GET`): nenhum site de terceiros consegue
   gravar ou excluir casos pelo navegador de um visitante.
 - **Erros sem detalhes internos**: falhas de banco viram uma mensagem genérica, e erros de
   validação não ecoam textos longos.
-- **Banco**: consultas parametrizadas (SQLAlchemy), conexão TLS com a Aiven (com
-  verificação do certificado quando `MYSQL_CA_CERT` está definido) e esquema versionado
-  por migrações (Alembic).
+- **Banco**: consultas parametrizadas (SQLAlchemy) e esquema versionado por migrações
+  (Alembic). Em produção, a conexão é sempre TLS **com verificação do servidor**: sem um
+  `MYSQL_CA_CERT` válido, a gravação de casos fica desligada em vez de conectar sem
+  verificar (o `/saude` mostra `"banco": "desligado"`, e o motivo vai para o log). O site
+  usa um usuário que só lê e grava dados; criar e alterar tabelas é tarefa de outro
+  usuário, que só existe durante as migrações.
 - **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
   Render e do GitHub. O MySQL local usa senhas aleatórias num `.env` fora do git. O CI
   procura segredos no código e reprova o build se achar algum.
@@ -72,17 +78,24 @@ tratada como requisito em cada funcionalidade:
 Em produção, os casos ficam no **MySQL da Aiven**. Configuração, feita uma vez:
 
 1. Na Aiven, no serviço MySQL, aba **Databases**: crie o banco `sergius_ia_judge`.
-2. Aba **Users**: crie um usuário só para este projeto (ex.: `sergius_app`). Com o
-   usuário administrador, dê a ele acesso **apenas** a esse banco:
-   `GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES ON sergius_ia_judge.* TO 'sergius_app'@'%';`
+2. Aba **Users**: crie dois usuários só para este projeto, com senhas diferentes. Com o
+   usuário administrador, dê a cada um acesso **apenas** a esse banco:
+   - `sergius_app`, usado pelo site, só lê e grava dados:
+     `GRANT SELECT, INSERT, UPDATE, DELETE ON sergius_ia_judge.* TO 'sergius_app'@'%';`
+   - `sergius_migracao`, usado só pelas migrações, cria e altera tabelas:
+     `GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES ON sergius_ia_judge.* TO 'sergius_migracao'@'%';`
 3. No Render, no serviço, aba **Environment**, crie:
-   - `DATABASE_URL`: a *Service URI* da Aiven com o usuário, a senha e o banco acima, no
-     formato `mysql://<usuario>:<senha>@<host>:<porta>/sergius_ia_judge?ssl-mode=REQUIRED`;
-   - `MYSQL_CA_CERT`: o conteúdo do certificado CA da Aiven (**Overview → CA certificate**),
-     para a conexão também verificar a identidade do servidor.
+   - `DATABASE_URL`: a *Service URI* da Aiven com o usuário `sergius_app`, a senha dele e
+     o banco acima, no formato
+     `mysql://<usuario>:<senha>@<host>:<porta>/sergius_ia_judge?ssl-mode=REQUIRED`;
+   - `DATABASE_URL_MIGRACAO`: a mesma URI, com o usuário `sergius_migracao` e a senha dele;
+   - `MYSQL_CA_CERT`: o conteúdo do certificado CA da Aiven (**Overview → CA certificate**).
+     É **obrigatório**: sem ele, a gravação de casos fica desligada.
 
-As migrações rodam sozinhas quando o serviço inicia. Sem `DATABASE_URL`, o site funciona
-normalmente e só a gravação de casos fica indisponível.
+As migrações rodam sozinhas quando o serviço inicia, e a API sobe sem a
+`DATABASE_URL_MIGRACAO` no ambiente. Sem `DATABASE_URL_MIGRACAO`, as migrações usam a
+`DATABASE_URL` (e esse usuário precisa das permissões de criar tabelas). Sem
+`DATABASE_URL`, o site funciona normalmente e só a gravação de casos fica indisponível.
 
 Localmente, o `docker compose` sobe um MySQL próprio na porta 33307 (para não conflitar
 com outros projetos). Antes, gere o `.env` com senhas aleatórias:

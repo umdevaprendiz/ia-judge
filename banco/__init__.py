@@ -2,7 +2,7 @@
 
 from .config import banco_configurado, fabrica_de_sessoes, obter_engine
 from .modelos import Base, CaseRecord, CaseStatus
-from .repositorio import obter_caso, salvar_caso
+from .repositorio import PRAZO_SEM_VALIDACAO, apagar_casos_expirados, obter_caso, salvar_caso
 
 __all__ = [
     "banco_configurado",
@@ -11,6 +11,8 @@ __all__ = [
     "Base",
     "CaseRecord",
     "CaseStatus",
+    "PRAZO_SEM_VALIDACAO",
+    "apagar_casos_expirados",
     "obter_caso",
     "salvar_caso",
 ]
