@@ -1,0 +1,79 @@
+# A cada push na main: roda os testes, publica a imagem da API no GitHub Container
+# Registry (gratuito para repositório público) e atualiza o Azure Container Apps.
+# Em pull requests, só roda os testes.
+#
+# O deploy no Azure só acontece depois que as variáveis do repositório (Settings ->
+# Secrets and variables -> Actions -> Variables) estiverem configuradas:
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
+#   AZURE_RESOURCE_GROUP, AZURE_CONTAINERAPP
+# O login no Azure usa OIDC (credencial federada): nenhuma senha fica guardada no GitHub.
+# Passo a passo em docs/deploy-azure.md.
+
+name: Testes e deploy no Azure
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IMAGEM: ghcr.io/umdevaprendiz/sergius-ia-judge
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Roda o notebook de testes no contêiner
+        run: docker compose run --rm testes
+
+  publicar-imagem:
+    needs: testes
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Gera e publica a imagem da API
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: api
+          push: true
+          tags: |
+            ${{ env.IMAGEM }}:${{ github.sha }}
+            ${{ env.IMAGEM }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.description=API do motor de dosimetria penal sergius-ia-Judge
+
+  deploy-azure:
+    needs: publicar-imagem
+    if: github.event_name != 'pull_request' && vars.AZURE_CLIENT_ID != ''
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Atualiza o Container App com a imagem nova
+        run: |
+          az containerapp update \
+            --name "${{ vars.AZURE_CONTAINERAPP }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "${{ env.IMAGEM }}:${{ github.sha }}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv
