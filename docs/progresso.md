@@ -39,7 +39,37 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
 - Testes: `tests/dosimetria_tests.ipynb` (notebook, não pytest — decisão do
   usuário). Rodar com:
   `py -m jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb`
-  Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2.
+  Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3.
+- `dosimetria/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
+  AUMENTO/DIMINUICAO, `OrigemCausa` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
+  `fracao_max` opcional, `fracao_escolhida` opcional, `justificativa`). Aplica a
+  fração mínima por padrão; escolher outra exige estar no intervalo legal **e** ter
+  justificativa (senão `ValueError`) — regra da seção 3.3 do plano / Súmula 443.
+  Vale igualmente para aumento e diminuição (validar isso com professor: na
+  diminuição, a mínima é a fração menos favorável ao réu).
+- `dosimetria/fase3.py` — `calcular_pena_definitiva(pena_intermediaria, causas,
+  composicao)` → `ResultadoFase3(aplicando_todas, limitada_art68)`:
+  - Não recebe `Faixa`: a 3ª fase pode sair da faixa, e assim a regra de limite
+    não tem como vazar para cá (responde à pergunta da Fase 2 do plano).
+  - `Composicao.CASCATA` (cada fração sobre a pena já modificada) ou
+    `Composicao.SOBRE_PENA_INTERMEDIARIA` (todas sobre a intermediária, efeitos
+    somados). Sem padrão implícito, como no quantum. Na composição "sobre a
+    intermediária", diminuições que somem mais de 100% dão `ValueError`.
+  - Cálculo exato com `fractions.Fraction`; frações de dia desprezadas **uma
+    única vez**, no fim da fase (seção 6.1 do plano). Por isso, na cascata, a
+    ordem das causas não muda o resultado. Os `Passo`s mostram os valores
+    intermediários truncados e encadeiam (depois de um = antes do seguinte).
+  - Art. 68, parágrafo único: havendo 2+ causas da Parte Especial no mesmo
+    sentido, `limitada_art68` traz a alternativa com só a que mais aumenta e/ou só
+    a que mais diminui (causas da Parte Geral seguem aplicadas nas duas opções);
+    as descartadas aparecem como `Passo` sem efeito. O motor não escolhe.
+  - Sem causas: um `Passo` explicando que pena definitiva = intermediária.
+
+Testes: a seção "Fase 3" do notebook cobre furto noturno, pena acima do máximo e
+abaixo do mínimo, fração sem justificativa/fora do intervalo, cascata x sobre a
+intermediária, arredondamento único (365·7/6·7/6 = 496, não 495), roubo com
+concurso de pessoas + arma de fogo + tentativa (duas opções), concurso de
+diminuições. Todas as seções imprimem `OK`.
 
 ## Decisões de projeto tomadas nesta sessão
 
@@ -62,33 +92,15 @@ usuário decidiu fechá-la e seguir só nesta sessão. Se ao retomar amanhã hou
 mais de uma sessão aberta nesta pasta, confirme com o usuário antes de continuar
 para não duplicar trabalho de novo.
 
-## Próximo passo (Fase 3 do motor — causas de aumento e diminuição)
+## Próximo passo
 
-Base: art. 68, caput e parágrafo único, do CP. Diferença central em relação às
-fases 1 e 2: **aqui a pena pode sair da faixa** (ultrapassar o máximo ou ficar
-abaixo do mínimo) — não usar `Faixa.limitar` no resultado final desta fase.
-
-Pontos do plano a implementar/decidir:
-- Causas de aumento e de diminuição são frações (ex.: 1/3, 2/3, metade) aplicadas
-  sobre a pena intermediária, uma de cada vez ou compostas — decidir e testar as
-  duas formas de composição (sequencial vs. sobre a base original) e documentar
-  a escolhida.
-- Frações variáveis (ex.: "1/3 até metade"): o plano manda usar a mínima por
-  padrão e só aumentar se houver justificativa registrada — a assinatura da
-  função provavelmente precisa de um campo de "justificativa" opcional por
-  causa aplicada.
-- Concurso de causas de aumento/diminuição da Parte Especial (art. 68, parágrafo
-  único): o juiz pode aplicar só a que mais aumente ou só a que mais diminua. O
-  plano pede que o motor calcule e mostre as duas opções, não que escolha
-  sozinho.
-- Reaproveitar `Passo` para registrar cada causa aplicada (frações da Parte
-  Geral, como causas de aumento genéricas, normalmente compõem com as da Parte
-  Especial; as da própria Parte Especial em concurso seguem a regra acima).
-- Adicionar as células de teste correspondentes no notebook, incluindo o caso de
-  pena saindo da faixa (abaixo do mínimo ou acima do máximo) e o caso de
-  concurso mostrando as duas opções.
-
-Depois da Fase 3, o motor puro (Fases 1–3) estará completo e dá pra montar uma
-função `calcular_dosimetria_completa` que encadeia as três fases e devolve um
-`ResultadoDosimetria` com a lista de `Passo` de tudo — o próximo marco natural
-antes de partir para ingestão (Planalto → banco) ou extração via LLM.
+O motor puro (Fases 1–3) está completo. Próximo marco:
+- `calcular_dosimetria_completa(faixa, circunstancias_judiciais,
+  agravantes_atenuantes, causas, estrategia, composicao)` encadeando as três
+  fases e devolvendo `ResultadoDosimetria` (seção 7.2 do plano): faixa aplicada,
+  pena-base, intermediária, definitiva (ou as duas opções do art. 68, parágrafo
+  único), lista completa de `Passo`, `criterio_quantum` e `alertas` (ex.: Súmula
+  231 travou a atenuante).
+- Reproduzir no notebook ao menos 10 dosimetrias reais (critério de pronto da
+  Fase 2 do plano), tiradas de sentenças ou manuais.
+- Depois: ingestão (Planalto → banco) ou extração via LLM.
