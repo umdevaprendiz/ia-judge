@@ -57,8 +57,19 @@ português (ex.: `"causas.0.fracao_min": "formato inválido (frações no format
 (ex.: fração acima da mínima sem justificativa).
 
 A API não tem login nem guarda dados: ela só calcula. A imagem Docker padrão
-(`docker build .`) já é a da API e respeita a variável `PORT`, o que permite
-hospedá-la em serviços que rodam contêineres.
+(`docker build .`) já é a da API e respeita a variável `PORT`.
+
+### Hospedagem no Render
+
+O arquivo `render.yaml` descreve a publicação no [Render](https://render.com),
+no plano gratuito. Para publicar pela primeira vez: no painel do Render, clique
+em **New → Blueprint**, conecte a conta do GitHub, escolha este repositório e
+clique em **Apply**. A API fica em `https://<nome-do-serviço>.onrender.com/docs`.
+
+Depois disso, cada push na `main` publica uma versão nova, mas só depois que o
+workflow de testes do GitHub (`.github/workflows/testes.yml`) passar. No plano
+gratuito, o serviço dorme depois de um tempo sem acesso, e a primeira requisição
+seguinte pode levar cerca de um minuto para responder.
 
 ## O que o motor faz
 
@@ -219,7 +230,7 @@ O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
 
 - Reunir 10 dosimetrias de sentenças penais **reais**. Hoje só há uma: no
   conjunto de treinamento, apenas o caso 04 é penal.
-- Hospedar a API num endereço público para os estudantes.
+- Divulgar o endereço público da API (Render) para os estudantes.
 - Ingestão do Código Penal (Planalto → banco) e extração dos fatos do caso via LLM.
 
 Os detalhes estão em [`docs/progresso.md`](docs/progresso.md).

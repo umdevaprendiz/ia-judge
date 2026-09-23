@@ -1,0 +1,19 @@
+# Roda o notebook de testes no contêiner a cada push na main e em pull requests.
+# O Render (render.yaml) só publica uma versão nova depois que este workflow passa.
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Roda o notebook de testes no contêiner
+        run: docker compose run --rm testes
