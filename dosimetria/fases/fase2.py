@@ -49,7 +49,10 @@ def calcular_pena_intermediaria(
     dias_bruto = pena_base.dias + incremento * len(agravantes) - incremento * len(atenuantes)
     pena_intermediaria = faixa.limitar(Pena(max(dias_bruto, 0)))
 
-    partes_motivo = [f"{len(agravantes)} agravante(s), {len(atenuantes)} atenuante(s)"]
+    partes_motivo = [
+        f"{len(agravantes)} agravante(s){_codigos(agravantes)}, "
+        f"{len(atenuantes)} atenuante(s){_codigos(atenuantes)}"
+    ]
     if regra_preponderancia:
         partes_motivo.append(regra_preponderancia)
     if pena_intermediaria.dias != dias_bruto:
@@ -79,3 +82,10 @@ def calcular_pena_intermediaria(
     return ResultadoFase2(
         pena_intermediaria=pena_intermediaria, passo=passo, alertas=tuple(alertas)
     )
+
+
+def _codigos(circunstancias: list[CircunstanciaLegal]) -> str:
+    """Ex.: " (reincidencia, confissao_espontanea)", ou vazio se não houver nenhuma."""
+    if not circunstancias:
+        return ""
+    return " (" + ", ".join(c.codigo for c in circunstancias) + ")"

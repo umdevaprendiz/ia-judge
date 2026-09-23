@@ -83,14 +83,18 @@ Saída:
 
 ```
 Pena definitiva: 2 anos, 3 meses, 29 dias
-- 1ª fase (pena-base): 1 ano -> 1 ano, 4 meses, 16 dias (1 circunstância(s) desfavorável(is) do art. 59, fração do intervalo (1/8) cada)
-- 2ª fase (pena intermediária): 1 ano, 4 meses, 16 dias -> 1 ano, 9 meses, 2 dias (1 agravante(s), 0 atenuante(s))
+- 1ª fase (pena-base): 1 ano -> 1 ano, 4 meses, 16 dias (1 circunstância(s) desfavorável(is) do art. 59 (culpabilidade), fração do intervalo (1/8) cada)
+- 2ª fase (pena intermediária): 1 ano, 4 meses, 16 dias -> 1 ano, 9 meses, 2 dias (1 agravante(s) (reincidencia), 0 atenuante(s))
 - 3ª fase (pena definitiva): 1 ano, 9 meses, 2 dias -> 2 anos, 3 meses, 29 dias (repouso_noturno: aumento de 1/3 (em cascata))
 ```
 
 Além de `pena_definitiva` e `passos`, o `ResultadoDosimetria` traz `pena_base`,
 `pena_intermediaria`, `alternativa_art68`, `criterio_quantum`, `composicao` e
 `alertas`.
+
+Para o texto completo, no formato da seção de dosimetria de uma sentença (faixa,
+critério, as três fases, a opção do art. 68, parágrafo único, e os alertas), use
+`gerar_fundamentacao(resultado)`.
 
 ## Estrutura
 
@@ -100,7 +104,7 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   circunstancias/        judiciais (art. 59), legais (arts. 61-67), causas (3ª fase)
   quantum/               estratégias de quantum das fases 1 e 2
   fases/                 fase1, fase2, fase3 e a dosimetria completa
-  relatorio/             Passo (unidade do passo a passo)
+  relatorio/             Passo e gerar_fundamentacao (texto da dosimetria)
 tests/
   dosimetria_tests.ipynb notebook de testes
   casos/                 casos de dosimetria com resultado esperado (JSON)
