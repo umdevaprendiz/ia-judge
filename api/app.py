@@ -1,7 +1,8 @@
 """API HTTP do sergius-ia-Judge.
 
 Rodar localmente:  uvicorn api.app:app --reload
-Documentação interativa: http://127.0.0.1:8000/docs
+Páginas para estudantes: http://127.0.0.1:8000/
+Documentação interativa da API: http://127.0.0.1:8000/docs
 """
 
 import json
@@ -13,6 +14,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from dosimetria import (
     JudicialCircumstance,
@@ -26,6 +28,8 @@ from dosimetria import (
     resultado_para_dict,
 )
 from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
+
+from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
 from .esquemas import (
     ComparisonOutput,
@@ -54,6 +58,10 @@ app = FastAPI(
 # API pública e sem login: qualquer site (ex.: uma página feita pelos estudantes) pode chamá-la
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
 
+# páginas para estudantes (web/): /, /calcular, /praticar, /como-funciona, e seus CSS/JS
+app.include_router(rotas_das_paginas)
+app.mount("/static", StaticFiles(directory=PASTA_ESTATICOS), name="static")
+
 
 @app.exception_handler(ValueError)
 async def erro_de_entrada(_: Request, erro: ValueError) -> JSONResponse:
@@ -70,6 +78,7 @@ _MENSAGENS = {
     "int_from_float": "deve ser um número inteiro",
     "bool_parsing": "deve ser true ou false",
     "string_type": "deve ser um texto",
+    "string_too_short": "não pode ficar vazio",
     "list_type": "deve ser uma lista",
     "model_attributes_type": "deve ser um objeto",
     "json_invalid": "JSON inválido",
@@ -91,15 +100,6 @@ async def erro_de_validacao(_: Request, erro: RequestValidationError) -> JSONRes
         recebido = None if item["type"] == "missing" else item.get("input")
         detalhes.append({"campo": campo, "mensagem": mensagem, "valor_recebido": recebido})
     return JSONResponse(status_code=422, content={"detail": detalhes})
-
-
-@app.get("/", tags=["geral"])
-def inicio() -> dict:
-    return {
-        "nome": "sergius-ia-Judge",
-        "descricao": "Motor de dosimetria penal para estudo",
-        "documentacao": "/docs",
-    }
 
 
 @app.get("/saude", tags=["geral"])

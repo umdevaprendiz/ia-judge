@@ -5,8 +5,10 @@ brasileiro), pensado para estudantes de Direito. Hoje o repositório contém:
 
 - o **motor de cálculo**, em Python puro, sem banco e sem LLM, que aplica o
   sistema trifásico do art. 68 do CP e devolve o passo a passo de cada fase;
-- uma **API HTTP** (FastAPI) para qualquer pessoa usar o motor pelo navegador ou
-  por outro programa, incluindo a **correção da dosimetria feita pelo estudante**.
+- **páginas para estudantes**, em https://sergius-ia-judge.onrender.com: calcular
+  uma dosimetria com o passo a passo e praticar com casos, com correção fase a fase;
+- uma **API HTTP** (FastAPI), usada pelas páginas e aberta a qualquer programa,
+  incluindo a **correção da dosimetria feita pelo estudante**.
 
 > Projeto educacional. O resultado não substitui a análise de um profissional.
 > Confira as regras no texto compilado vigente do Planalto e, se possível,
@@ -15,6 +17,20 @@ brasileiro), pensado para estudantes de Direito. Hoje o repositório contém:
 O plano completo do projeto está em `plano-ia-dosimetria-penal.pdf`, e o
 registro do que já foi feito e dos próximos passos está em
 [`docs/progresso.md`](docs/progresso.md).
+
+## Páginas para estudantes
+
+| Página | O que o estudante faz |
+|---|---|
+| [Início](https://sergius-ia-judge.onrender.com/) | Visão geral do sistema trifásico |
+| [Calcular](https://sergius-ia-judge.onrender.com/calcular) | Preenche a faixa, as circunstâncias, as agravantes e atenuantes e as causas (ou carrega um dos exemplos) e vê as três penas, os alertas, o passo a passo e a fundamentação, que pode ser copiada |
+| [Praticar](https://sergius-ia-judge.onrender.com/praticar) | Recebe um caso (sem a descrição, que entregaria a resposta), faz a dosimetria e recebe a correção fase a fase, com a diferença em dias, a explicação e o gabarito |
+| [Como funciona](https://sergius-ia-judge.onrender.com/como-funciona) | As regras usadas pelo motor, em linguagem de estudo |
+
+As páginas ficam em `web/` (templates HTML, CSS e JavaScript sem framework) e são
+servidas pelo mesmo app da API, no mesmo contêiner. O JavaScript só chama a API
+JSON, então nenhuma regra do motor é duplicada no navegador. Os textos do usuário
+entram na página só como texto (`textContent`), nunca como HTML.
 
 ## Usando a API
 
@@ -69,7 +85,7 @@ clique em **Apply**. A API deste repositório está em
 https://sergius-ia-judge.onrender.com/docs.
 
 Quem publica as versões novas é o GitHub Actions (`.github/workflows/testes.yml`):
-a cada push na `main`, ele roda os testes e, se passarem, chama o *deploy hook*
+a cada push na `main`, ele roda os testes (notebook e navegador) e, se passarem, chama o *deploy hook*
 do Render com o commit exato e espera a API pública responder com esse commit
 (`GET /saude` informa o commit publicado). O Render não publica sozinho
 (`autoDeployTrigger: "off"` no `render.yaml`).
@@ -188,9 +204,11 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   ensino.py              comparar_resposta: correção da dosimetria do estudante
 sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
 api/                     API HTTP (FastAPI): app.py (rotas) e esquemas.py (formatos)
+web/                     páginas: rotas.py, templates/ (HTML) e static/ (CSS e JS)
 dados/casos/             casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
 tests/
   dosimetria_tests.ipynb notebook de testes
+  navegador/             teste das páginas num navegador de verdade (Playwright)
 docs/progresso.md        o que foi feito, decisões tomadas e próximos passos
 ```
 
@@ -214,6 +232,17 @@ teste extrai a dosimetria que a juíza escreveu (pena-base, pena definitiva,
 dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
 sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
 confirma que nelas não há dosimetria a calcular.
+
+A seção "Páginas para estudantes" confere que as páginas respondem, que referenciam
+só arquivos que existem e que o JavaScript chama só rotas que a API tem.
+
+O teste em `tests/navegador/teste.js` usa as páginas num navegador de verdade, como
+um estudante: carrega exemplos, calcula, provoca erros de preenchimento, pratica e
+confere a correção, verifica que o texto digitado não vira HTML, que não há rolagem
+horizontal no celular e que o console fica sem erros. No GitHub Actions ele roda com
+o Chrome contra a mesma imagem Docker que vai para o Render. Localmente, com a API
+rodando em `http://127.0.0.1:8000`: `cd tests/navegador && npm ci && node teste.js`
+(usa o Microsoft Edge; `NAVEGADOR=chrome` para o Chrome).
 
 A seção "API" testa todas as rotas com o `TestClient` do FastAPI: os 17 exemplos
 pela rota de cálculo, a correção do estudante (inclusive aceitando a opção do

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<section class="destaque">
+  <p class="destaque__rotulo">Sistema trifásico · art. 68 do Código Penal</p>
+  <h1>Dosimetria da pena, passo a passo</h1>
+  <p class="destaque__texto">
+    Calcule a pena-base, a pena intermediária e a pena definitiva de um caso, veja por que
+    cada número mudou e treine fazendo a dosimetria por conta própria.
+  </p>
+  <div class="acoes">
+    <a class="botao botao--primario" href="/calcular">Calcular uma dosimetria</a>
+    <a class="botao" href="/praticar">Praticar com um caso</a>
+  </div>
+</section>
+
+<section class="cartoes" aria-label="O que dá para fazer">
+  <a class="cartao cartao--link" href="/calcular">
+    <h2>Calcular</h2>
+    <p>Preencha a faixa de pena, as circunstâncias, as agravantes, as atenuantes e as causas de aumento
+      e diminuição. Receba as três penas, o passo a passo e a fundamentação pronta.</p>
+  </a>
+  <a class="cartao cartao--link" href="/praticar">
+    <h2>Praticar</h2>
+    <p>Receba um caso, faça a dosimetria e confira fase a fase onde você acertou, onde errou e por quê.</p>
+  </a>
+  <a class="cartao cartao--link" href="/como-funciona">
+    <h2>Como funciona</h2>
+    <p>Entenda as regras usadas: quantum por circunstância, Súmula 231, frações da 3ª fase e o
+      concurso de causas do art. 68, parágrafo único.</p>
+  </a>
+</section>
+
+<section class="fases" aria-label="As três fases">
+  <h2>As três fases</h2>
+  <ol class="fases__lista">
+    <li>
+      <span class="fases__numero">1ª</span>
+      <div><h3>Pena-base</h3><p>As 8 circunstâncias judiciais do art. 59. A pena não sai da faixa.</p></div>
+    </li>
+    <li>
+      <span class="fases__numero">2ª</span>
+      <div><h3>Pena intermediária</h3><p>Agravantes e atenuantes (arts. 61 a 67). Também não sai da faixa (Súmula 231 do STJ).</p></div>
+    </li>
+    <li>
+      <span class="fases__numero">3ª</span>
+      <div><h3>Pena definitiva</h3><p>Causas de aumento e de diminuição, em frações. Aqui a pena pode sair da faixa.</p></div>
+    </li>
+  </ol>
+</section>
+{% endblock %}

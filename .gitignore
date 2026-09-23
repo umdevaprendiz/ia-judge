@@ -12,3 +12,7 @@ venv/
 *.pfx
 *.p12
 .azure/
+
+# teste no navegador: dependências e fotos de tela
+tests/navegador/node_modules/
+tests/navegador/fotos/

@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<header class="cabecalho-pagina">
+  <h1>Calcular uma dosimetria</h1>
+  <p>Preencha os dados do caso e clique em <strong>Calcular</strong>. Para ver como funciona, carregue um dos exemplos.</p>
+</header>
+
+<div class="barra-exemplo">
+  <label for="exemplo">Carregar exemplo</label>
+  <select id="exemplo"><option value="">Carregando exemplos…</option></select>
+  <button type="button" class="botao" id="limpar">Limpar formulário</button>
+</div>
+
+<form id="formulario" class="formulario" novalidate>
+  <fieldset class="bloco">
+    <legend>Faixa de pena</legend>
+    <p class="ajuda">A pena em abstrato do tipo penal já escolhido. Se houver qualificadora, use a faixa dela.</p>
+    <div class="grade grade--3">
+      <label class="campo campo--largo">Dispositivo
+        <input name="faixa_origem" placeholder="ex.: CP.art155" required>
+      </label>
+    </div>
+    <div class="grade grade--2">
+      <div class="campo-pena" data-pena="minimo">
+        <span class="campo-pena__rotulo">Pena mínima</span>
+        <label>anos <input type="number" min="0" name="anos" inputmode="numeric"></label>
+        <label>meses <input type="number" min="0" name="meses" inputmode="numeric"></label>
+        <label>dias <input type="number" min="0" name="dias" inputmode="numeric"></label>
+      </div>
+      <div class="campo-pena" data-pena="maximo">
+        <span class="campo-pena__rotulo">Pena máxima</span>
+        <label>anos <input type="number" min="0" name="anos" inputmode="numeric"></label>
+        <label>meses <input type="number" min="0" name="meses" inputmode="numeric"></label>
+        <label>dias <input type="number" min="0" name="dias" inputmode="numeric"></label>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset class="bloco">
+    <legend>1ª fase: circunstâncias judiciais (art. 59)</legend>
+    <p class="ajuda">Marque as que foram valoradas <strong>contra</strong> o réu. As demais contam como neutras.</p>
+    <div class="grade grade--4" id="circunstancias"></div>
+    <div class="grade grade--2">
+      <label class="campo">Critério do quantum
+        <select name="estrategia_tipo">
+          <option value="fracao_do_intervalo">Fração do intervalo entre mínimo e máximo</option>
+          <option value="fracao_do_minimo">Fração da pena mínima</option>
+        </select>
+      </label>
+      <label class="campo">Fração por circunstância
+        <input name="estrategia_fracao" value="1/8" placeholder="1/8" required>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset class="bloco">
+    <legend>2ª fase: agravantes e atenuantes (arts. 61 a 67)</legend>
+    <p class="ajuda">Marque "preponderante" para motivos determinantes, personalidade e reincidência (art. 67).</p>
+    <div class="linhas" id="agravantes"></div>
+    <button type="button" class="botao botao--pequeno" data-adicionar="agravante">+ Adicionar agravante ou atenuante</button>
+  </fieldset>
+
+  <fieldset class="bloco">
+    <legend>3ª fase: causas de aumento e de diminuição</legend>
+    <p class="ajuda">Frações no formato 1/3. Sem fração escolhida, vale a mínima; escolher outra exige justificativa.</p>
+    <div class="linhas" id="causas"></div>
+    <button type="button" class="botao botao--pequeno" data-adicionar="causa">+ Adicionar causa</button>
+    <label class="campo campo--meio">Como somar várias causas
+      <select name="composicao">
+        <option value="cascata">Em cascata (cada fração sobre a pena já modificada)</option>
+        <option value="sobre_pena_intermediaria">Sobre a pena intermediária (efeitos somados)</option>
+      </select>
+    </label>
+  </fieldset>
+
+  <div class="acoes">
+    <button type="submit" class="botao botao--primario">Calcular</button>
+  </div>
+</form>
+
+<div id="erros" class="aviso aviso--erro" role="alert" hidden></div>
+<section id="resultado" class="resultado" aria-live="polite" hidden></section>
+
+<template id="modelo-agravante">
+  <div class="linha">
+    <label class="campo">Tipo
+      <select name="direcao">
+        <option value="agravante">Agravante</option>
+        <option value="atenuante">Atenuante</option>
+      </select>
+    </label>
+    <label class="campo">Nome<input name="codigo" placeholder="ex.: reincidencia" required></label>
+    <label class="campo">Dispositivo<input name="dispositivo" placeholder="ex.: CP.art61.I" required></label>
+    <label class="caixa"><input type="checkbox" name="preponderante"> preponderante</label>
+    <button type="button" class="botao botao--remover" data-remover aria-label="Remover linha">✕</button>
+  </div>
+</template>
+
+<template id="modelo-causa">
+  <div class="linha linha--causa">
+    <label class="campo">Tipo
+      <select name="direcao">
+        <option value="aumento">Aumento</option>
+        <option value="diminuicao">Diminuição</option>
+      </select>
+    </label>
+    <label class="campo">Previsão
+      <select name="origem">
+        <option value="parte_especial">Parte Especial / lei especial</option>
+        <option value="parte_geral">Parte Geral</option>
+      </select>
+    </label>
+    <label class="campo">Nome<input name="codigo" placeholder="ex.: repouso_noturno" required></label>
+    <label class="campo">Dispositivo<input name="dispositivo" placeholder="ex.: CP.art155.§1" required></label>
+    <label class="campo campo--curto">Fração mínima<input name="fracao_min" placeholder="1/3" required></label>
+    <label class="campo campo--curto">Fração máxima<input name="fracao_max" placeholder="(fixa)"></label>
+    <label class="campo campo--curto">Fração escolhida<input name="fracao_escolhida" placeholder="(mínima)"></label>
+    <label class="campo campo--largo">Justificativa<input name="justificativa" placeholder="obrigatória se escolher fração acima da mínima"></label>
+    <button type="button" class="botao botao--remover" data-remover aria-label="Remover linha">✕</button>
+  </div>
+</template>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/calcular.js?v={{ versao }}"></script>
+{% endblock %}

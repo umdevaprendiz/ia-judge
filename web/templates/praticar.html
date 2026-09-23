@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<header class="cabecalho-pagina">
+  <h1>Praticar</h1>
+  <p>Escolha um caso, faça a dosimetria por conta própria e confira a correção fase a fase.
+    Pode responder só as fases que quiser.</p>
+</header>
+
+<div class="barra-exemplo">
+  <label for="caso">Caso</label>
+  <select id="caso"><option value="">Carregando casos…</option></select>
+  <button type="button" class="botao" id="sortear">Sortear caso</button>
+</div>
+
+<article id="enunciado" class="cartao enunciado" hidden></article>
+
+<form id="resposta" class="formulario" novalidate hidden>
+  <fieldset class="bloco">
+    <legend>Sua dosimetria</legend>
+    <div class="grade grade--3">
+      <div class="campo-pena" data-pena="pena_base">
+        <span class="campo-pena__rotulo">Pena-base</span>
+        <label>anos <input type="number" min="0" name="anos" inputmode="numeric"></label>
+        <label>meses <input type="number" min="0" name="meses" inputmode="numeric"></label>
+        <label>dias <input type="number" min="0" name="dias" inputmode="numeric"></label>
+      </div>
+      <div class="campo-pena" data-pena="pena_intermediaria">
+        <span class="campo-pena__rotulo">Pena intermediária</span>
+        <label>anos <input type="number" min="0" name="anos" inputmode="numeric"></label>
+        <label>meses <input type="number" min="0" name="meses" inputmode="numeric"></label>
+        <label>dias <input type="number" min="0" name="dias" inputmode="numeric"></label>
+      </div>
+      <div class="campo-pena" data-pena="pena_definitiva">
+        <span class="campo-pena__rotulo">Pena definitiva</span>
+        <label>anos <input type="number" min="0" name="anos" inputmode="numeric"></label>
+        <label>meses <input type="number" min="0" name="meses" inputmode="numeric"></label>
+        <label>dias <input type="number" min="0" name="dias" inputmode="numeric"></label>
+      </div>
+    </div>
+    <p class="ajuda">Frações de dia são desprezadas (art. 11 do CP). Deixe em branco a fase que não quiser corrigir.</p>
+  </fieldset>
+  <div class="acoes">
+    <button type="submit" class="botao botao--primario">Corrigir</button>
+  </div>
+</form>
+
+<div id="erros" class="aviso aviso--erro" role="alert" hidden></div>
+<section id="correcao" class="resultado" aria-live="polite" hidden></section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/praticar.js?v={{ versao }}"></script>
+{% endblock %}
