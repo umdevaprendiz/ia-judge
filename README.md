@@ -105,6 +105,7 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   quantum/               estratégias de quantum das fases 1 e 2
   fases/                 fase1, fase2, fase3 e a dosimetria completa
   relatorio/             Passo e gerar_fundamentacao (texto da dosimetria)
+sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
 tests/
   dosimetria_tests.ipynb notebook de testes
   casos/                 casos de dosimetria com resultado esperado (JSON)
@@ -122,6 +123,15 @@ anotada no próprio arquivo. Uma vem do caso 04 de
 `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`; as outras foram
 construídas para cobrir as regras do motor. Para acrescentar um caso, basta
 incluir um objeto no JSON.
+
+A seção "Sentenças do conjunto de treinamento" lê o próprio PDF com o pacote
+`sentencas/`, separa as 10 sentenças (ramo, tema, processo, partes, resultado,
+relatório, fundamentação, dispositivo e magistrado) e as confere com a anotação
+de `tests/casos/conjunto_treinamento.json`. Na única sentença penal (caso 04), o
+teste extrai a dosimetria que a juíza escreveu (pena-base, pena definitiva,
+dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
+sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
+confirma que nelas não há dosimetria a calcular.
 
 ### Com Docker (recomendado)
 
@@ -143,8 +153,8 @@ pip install -r requirements-dev.txt
 jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb
 ```
 
-O motor não tem dependências externas (`requirements.txt` está vazio de
-propósito); o Jupyter só é necessário para os testes.
+O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
+(`sentencas/`) usa `pypdf`, e o Jupyter só é necessário para os testes.
 
 ## Próximos passos
 

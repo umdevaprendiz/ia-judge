@@ -13,6 +13,7 @@ dosimetria/
   quantum/           estrategias.py (Strategy do quantum das fases 1 e 2)
   fases/             fase1.py, fase2.py, fase3.py, completa.py
   relatorio/         passo.py (passo a passo) e fundamentacao.py (texto)
+sentencas/           leitor do PDF de sentenças (fora do motor, que não depende de PDF)
 ```
 
 Quem usa o motor importa sempre de `dosimetria` (ex.: `from dosimetria import
@@ -136,7 +137,22 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   se algum assert falhar. `docker compose up jupyter` abre o JupyterLab em
   `http://127.0.0.1:8888/lab?token=dosimetria` (token mudável pela variável
   `JUPYTER_TOKEN`; a porta só escuta em 127.0.0.1). O motor em si não tem
-  dependências (`requirements.txt` vazio de propósito).
+  dependências; `requirements.txt` só traz o `pypdf`, usado pelo leitor de
+  sentenças. O `.dockerignore` deixa o PDF do conjunto de treinamento entrar na
+  imagem, porque os testes o leem.
+- `sentencas/` — leitura do `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`
+  com `pypdf`. `ler_sentencas(pdf)` separa as 10 sentenças pela marca
+  "CASO NN DE 10" e devolve `Sentenca` (número, órgão, ramo, tema, processo,
+  classe, partes, resultado, relatório, fundamentação, dispositivo, magistrado,
+  cargo). `extrair_dosimetria_declarada(sentenca)` lê, por regras, o parágrafo
+  "Dosimetria:" do dispositivo de uma sentença penal: pena-base, pena
+  definitiva (entende "2 (dois) anos", "5 anos, 3 meses e 10 dias"),
+  dias-multa e regime inicial. Para sentenças não penais, devolve `None`. Isso
+  não é a extração com LLM do plano; serve de referência para testar o motor.
+  A seção "Sentenças do conjunto de treinamento" do notebook confere as 10
+  sentenças com `tests/casos/conjunto_treinamento.json` e, no caso 04, verifica
+  que o motor chega à pena declarada pela juíza (2 anos). Antes os testes só
+  usavam números do caso 04 transcritos à mão, sem ler o PDF.
 
 ## Decisões de projeto tomadas nesta sessão
 
