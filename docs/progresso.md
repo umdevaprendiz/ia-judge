@@ -18,6 +18,8 @@ dosimetria/
 sentencas/           leitor do PDF de sentenças (fora do motor, que não depende de PDF)
 api/                 API HTTP em FastAPI (app.py e esquemas.py)
 web/                 páginas para estudantes (rotas.py, templates/, static/)
+banco/, migracoes/   MySQL (SQLAlchemy + PyMySQL) e migrações (Alembic)
+privacidade/         anonimização das descrições (LGPD)
 dados/casos/         dosimetrias.json e conjunto_treinamento.json
 ```
 
@@ -260,6 +262,47 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
     `tests/navegador/teste.js` (Playwright, 38 verificações), que roda no job
     `navegador` do GitHub Actions com o Chrome, contra a imagem Docker da API.
     O deploy só acontece se `testes` e `navegador` passarem.
+
+- **Agente de análise, etapa A (banco e aba "Analisar caso").** Decisões do
+  usuário: agente **próprio**, sem IA de terceiros (Claude/OpenAI etc.), treinado
+  pelos casos do projeto; banco **MySQL da Aiven** (a mesma conta de outro projeto
+  dele); **só casos validados** por ele ensinam o agente; construção em etapas:
+  A (banco + aba), B (base de fontes oficiais e busca), C (agente v1 com regras,
+  fontes, casos parecidos, revisão e cálculo), D (aprendizado com modelos treinados
+  pelos casos validados). **Segurança é a prioridade principal** (pedido explícito).
+  - `privacidade/anonimizacao.py`: regras para documentos, contatos, endereços,
+    processos e nomes (compostos, em maiúsculas, após papel processual, prenomes
+    comuns e menções repetidas), com lugares protegidos e marcadores numerados na
+    ordem de aparição. O texto original nunca é gravado.
+  - `banco/`: conexão a partir de `DATABASE_URL` (aceita a Service URI da Aiven),
+    TLS com verificação por `MYSQL_CA_CERT`, tabela `casos` (código aleatório,
+    descrição anonimizada, contagem das substituições, consentimento, status
+    recebido/validado/rejeitado, e colunas `fatos`/`resultado` para as próximas
+    etapas), migração `0001` (Alembic) aplicada no início do contêiner.
+  - `api/casos.py`: `POST /casos/previa` (anonimiza sem gravar), `POST /casos`
+    (exige consentimento), `GET /casos/{codigo}` e `DELETE /casos/{codigo}`, com
+    limites de requisições por visitante e globais, e 503 genérico sem banco.
+  - `api/seguranca.py`: CSP e cabeçalhos de segurança, HSTS atrás do proxy, limite
+    de 256 KB no corpo (413 também sem Content-Length), IP real pelo último valor
+    do `X-Forwarded-For` só com `CONFIAR_PROXY=1` (definido no `render.yaml`). CORS
+    passou a liberar só `GET` para outros sites.
+  - Página `/analisar`: roteiro do que descrever, revisão obrigatória da
+    anonimização (editar depois invalida a revisão), consentimento, código para
+    consultar e excluir; o texto original sai da página depois de salvo.
+  - MySQL local no Docker na porta 33307 (3306 e 3307 já são de outros projetos do
+    usuário), com senhas aleatórias num `.env` gerado por
+    `scripts/preparar_ambiente.py` e fora do git.
+  - Segurança no CI: job `seguranca` com `pip-audit`, `npm audit` e varredura de
+    segredos; Dependabot semanal. O `pip-audit` achou vulnerabilidade no
+    `cryptography` 49.0.0 (PYSEC-2026-3552), e o projeto passou a usar a 50.0.1.
+    No Python global do usuário ficou a 49, porque o mlflow de outro projeto
+    exige menos que 50; o ideal é este projeto usar um `.venv` próprio.
+  - Testes: seções "Anonimização" e "Casos e segurança" no notebook (com MySQL; no
+    CI o banco é obrigatório) e o fluxo completo de "Analisar caso" no teste de
+    navegador (52 verificações).
+  - **Falta o usuário configurar a Aiven** (banco e usuário dedicados,
+    `DATABASE_URL` e `MYSQL_CA_CERT` no Render). Até lá, a gravação de casos fica
+    indisponível no site publicado.
 
 ## Decisões de projeto tomadas nesta sessão
 
