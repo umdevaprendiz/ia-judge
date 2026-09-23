@@ -240,8 +240,17 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
     uma causa na tela o valor era lido vazio. Agora ele se chama `faixa_origem`,
     e a API recusa `origem`, `codigo` e `dispositivo` vazios (`min_length=1`,
     mensagem "não pode ficar vazio").
+  - Dois bugs achados ao rodar o teste de navegador contra o site publicado
+    (com a latência real da internet) e corrigidos: (1) ao trocar de caso no
+    Praticar, o enunciado anterior continuava na tela até o novo chegar, e uma
+    resposta enviada nesse intervalo era corrigida contra o caso errado. Agora
+    o enunciado e o formulário somem até o caso novo carregar. (2) O
+    `display: grid` de `.formulario` anulava o atributo `hidden`, então o
+    formulário nunca ficava escondido; `[hidden] { display: none !important }`
+    no CSS resolve para qualquer elemento. O teste simula 1,5 s de latência
+    nesse pedido para reproduzir o cenário localmente.
   - Testes: a seção "Páginas para estudantes" do notebook, e
-    `tests/navegador/teste.js` (Playwright, 32 verificações), que roda no job
+    `tests/navegador/teste.js` (Playwright, 35 verificações), que roda no job
     `navegador` do GitHub Actions com o Chrome, contra a imagem Docker da API.
     O deploy só acontece se `testes` e `navegador` passarem.
 

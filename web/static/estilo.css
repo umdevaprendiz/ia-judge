@@ -48,6 +48,9 @@
 
 * { box-sizing: border-box; }
 
+/* o atributo hidden sempre esconde, mesmo em elementos com display definido (ex.: .formulario) */
+[hidden] { display: none !important; }
+
 html { font-size: 16px; }
 
 body {

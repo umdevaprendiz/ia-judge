@@ -94,6 +94,7 @@ const verificar = (condicao, mensagem) => {
   // ---------- Praticar ----------
   await pagina.goto(`${BASE}/praticar`);
   await pagina.waitForFunction(() => document.querySelectorAll("#caso option").length > 1);
+  verificar(await pagina.locator("#resposta").isHidden(), "Praticar: formulário fica escondido até escolher um caso");
   const nomesCasos = await pagina.locator("#caso option").allTextContents();
   verificar(!nomesCasos.some((n) => n.includes("Súmula") || n.includes("preponderante")), "Praticar: lista de casos não entrega a resposta");
   await pagina.selectOption("#caso", "construido-01");
@@ -126,8 +127,16 @@ const verificar = (condicao, mensagem) => {
   await pagina.screenshot({ path: `${FOTOS}/5-praticar-correcao.png`, fullPage: true });
 
   // opção do art. 68 aceita como certa
+  // simula a latência da internet neste pedido, como no site publicado (onde o bug apareceu)
+  await pagina.route("**/exemplos/construido-02", async (rota) => {
+    await new Promise((resolver) => setTimeout(resolver, 1500));
+    await rota.continue();
+  });
   await pagina.selectOption("#caso", "construido-02");
+  // trocar de caso esconde o enunciado anterior até o novo chegar (evita corrigir contra o caso errado)
+  verificar(await pagina.locator("#resposta").isHidden(), "Praticar: formulário some enquanto o novo caso carrega");
   await pagina.locator("#enunciado").waitFor({ state: "visible" });
+  verificar((await pagina.locator("#enunciado").textContent()).includes("CP.art157"), "Praticar: enunciado é o do caso novo");
   await preencher("pena_definitiva", 6, 8, 3);
   await pagina.click('#resposta button[type="submit"]');
   await pagina.locator(".placar").waitFor();
