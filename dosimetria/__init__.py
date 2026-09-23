@@ -7,6 +7,8 @@ from .quantum import EstrategiaQuantum, FracaoDoIntervalo, FracaoDoMinimo
 from .fase1 import ResultadoFase1, calcular_pena_base
 from .agravantes_atenuantes import CircunstanciaLegal, Direcao
 from .fase2 import ResultadoFase2, calcular_pena_intermediaria
+from .causas import CausaModificadora, DirecaoCausa, OrigemCausa
+from .fase3 import Composicao, OpcaoFase3, ResultadoFase3, calcular_pena_definitiva
 
 __all__ = [
     "Fracao",
@@ -24,4 +26,11 @@ __all__ = [
     "Direcao",
     "ResultadoFase2",
     "calcular_pena_intermediaria",
+    "CausaModificadora",
+    "DirecaoCausa",
+    "OrigemCausa",
+    "Composicao",
+    "OpcaoFase3",
+    "ResultadoFase3",
+    "calcular_pena_definitiva",
 ]
