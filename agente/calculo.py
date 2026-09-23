@@ -13,7 +13,14 @@ As regras de montagem, todas visíveis ao estudante como alertas:
 from fractions import Fraction
 
 from .analise import CrimeAgent
-from .catalogo import AGRAVANTES, ATENUANTES, CIRCUNSTANCIAS_JUDICIAIS, CONFLITOS_DE_AGRAVANTES, INCOMPATIBILIDADES
+from .catalogo import (
+    AGRAVANTES,
+    ATENUANTES,
+    CIRCUNSTANCIAS_JUDICIAIS,
+    CONFLITOS_DE_AGRAVANTES,
+    ELEMENTARES_DO_TIPO,
+    INCOMPATIBILIDADES,
+)
 
 _AGRAVANTES = {a.codigo: a for a in AGRAVANTES}
 _ATENUANTES = {a.codigo: a for a in ATENUANTES}
@@ -102,6 +109,9 @@ def montar_entrada(agente: CrimeAgent, escolhas: dict) -> tuple[dict, list[str]]
     agravantes_atenuantes = []
     for codigo in dict.fromkeys(escolhas.get("agravantes", [])):
         agravante = _AGRAVANTES[codigo]
+        if codigo in ELEMENTARES_DO_TIPO.get(escolhas["crime"], ()):
+            alertas.append(f"agravante \"{agravante.titulo}\" não aplicada: já é elementar do crime (bis in idem)")
+            continue
         conflito = CONFLITOS_DE_AGRAVANTES.get(codigo)
         if conflito is not None and conflito.search(textos_usados):
             alertas.append(

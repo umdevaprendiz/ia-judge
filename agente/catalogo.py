@@ -27,7 +27,9 @@ def _re(padrao: str) -> re.Pattern:
     return re.compile(padrao, re.IGNORECASE)
 
 
-_REU = r"(?:r[ée]u|acusad[oa]|agente|autor|denunciad[oa]|condenad[oa])"
+_REU = r"(?:r[ée]u|acusad[oa]|agente|autor|denunciad[oa]|condenad[oa]|homem|rapaz|jovem|indiv[íi]duo|suspeit[oa])"
+# esposa, companheira, namorada, noiva, ex-mulher...: relação doméstica e familiar com a vítima
+_PARCEIRA = r"\b(?:(?:sua|a própria|a) (?:esposa|companheira|namorada|noiva|mulher)|esposa|companheira|namorada|noiva|ex-(?:mulher|esposa|companheira|namorada|noiva))\b"
 
 AGRAVANTES: tuple[GeneralCircumstance, ...] = (
     GeneralCircumstance(
@@ -188,6 +190,8 @@ INDICIOS_DAS_OPCOES: tuple[tuple[re.Pattern, re.Pattern, bool], ...] = tuple(
         (r"gravidez|gestante|acelera[çc][ãa]o de parto|aborto", r"gr[áa]vida|gestante|aborto|parto"),
         (r"debilidade permanente|perda ou inutiliza[çc][ãa]o|deformidade permanente", r"debilidade permanente|perdeu (?:a vis[ãa]o|o movimento|um dedo|a m[ãa]o|um olho)|cicatriz|deformidade"),
         (r"ocupa[çc][õo]es habituais, por mais de trinta dias", r"(?:mais de |por )(?:3\d|[4-9]\d) dias|afastad\w+ (?:do trabalho|das atividades)"),
+        (r"presen[çc]a f[íi]sica ou virtual de descendente ou de ascendente", r"na (?:frente|presen[çc]a) d[aeo]s? (?:filh[oa]s?|pais|m[ãa]e|pai|av[óô]s?)|os filhos (?:viram|assistiram|presenciaram)"),
+        (r"medidas protetivas de urg[êe]ncia", r"medida(?:s)? protetiva"),
         (r"ascendente, descendente, irm[ãa]o, c[ôo]njuge|rela[çc][õo]es dom[ée]sticas", r"viol[êe]ncia dom[ée]stica|esposa|marido|companheir|filh[oa]|\bpai\b|\bm[ãa]e\b|irm[ãa]o?"),
     )
     for exigido in [bool(resto and resto[0])]
@@ -202,7 +206,15 @@ INDICIOS_DE_CRIMES: tuple[tuple[str, float, re.Pattern], ...] = tuple(
     for rotulo, peso, padrao in (
         ("CP.art155", 20, r"subtrai|furt(?:ou|ar|o\b|ad)|surrupi|levou (?:escondido|sem que)|pegou (?:escondido|sem pagar)"),
         ("CP.art157", 32, r"assalt|roub(?:ou|ar|o\b|ad)|rend(?:eu|eram|ido)|anunci\w+ o assalto|mediante (?:grave )?amea[çc]a[^.;]{0,80}(?:subtrai|levou|levaram)|(?:com|armad\w*) (?:uma |um )?(?:faca|rev[óo]lver|pistola|arma)[^.;]{0,80}(?:levou|levaram|subtraiu|subtra[íi]ram)"),
-        ("CP.art121", 26, r"\bmat(?:ou|ar|aram)\b|assassin|homic[íi]di|atropel\w+[^.;]{0,60}(?:morreu|faleceu|morte)"),
+        ("CP.art121", 26, r"\bmat(?:a|am|ou|ar|aram|ando|ado|ada)\b|assassin|homic[íi]di|tirou a vida|atropel\w+[^.;]{0,60}(?:morreu|faleceu|morte)"),
+        # feminicídio (art. 121-A, crime autônomo desde a Lei 14.994/2024): morte de mulher no contexto
+        # de violência doméstica e familiar (esposa, companheira, namorada, ex)
+        (
+            "CP.art121-A",
+            44,
+            rf"feminic[íi]di|\b(?:mat(?:a|am|ou|ar|aram|ando)|assassin\w*|esfaque\w*)\b[^.;]{{0,60}}{_PARCEIRA}"
+            rf"|{_PARCEIRA}[^.;]{{0,60}}\b(?:morreu|morta|faleceu|assassinad)",
+        ),
         ("CP.art129", 22, r"agred|les[ãa]o corporal|\bsocos?\b|chutes?|espanc|machuc|feriu|hematoma|fratur"),
         ("CP.art171", 26, r"engan|golpe|estelionat|fraude|se passou por|induz\w* (?:a v[íi]tima )?em erro|link falso|falso (?:estorno|boleto|leil[ãa]o)|vantagem il[íi]cita"),
         ("CP.art180", 38, r"recepta|produto de (?:furto|roubo|crime)|sabendo (?:que|ser)[^.;]{0,40}(?:roubad|furtad|produto de|origem il[íi]cita)|pe[çc]as de (?:carros|ve[íi]culos) roubad"),
@@ -242,6 +254,12 @@ CONFLITOS_DE_AGRAVANTES: dict[str, re.Pattern] = {
     "contra_familiar": _re(r"ascendente, descendente, irm[ãa]o|c[ôo]njuge"),
     "facilitar_outro_crime": _re(r"assegurar a execu[çc][ãa]o|impunidade ou vantagem de outro crime"),
     "mediante_paga": _re(r"paga ou promessa de recompensa"),
+}
+
+# agravantes que já são elementares do tipo: aplicá-las seria bis in idem (crime -> códigos)
+ELEMENTARES_DO_TIPO: dict[str, tuple[str, ...]] = {
+    # no feminicídio, a violência doméstica e familiar contra a mulher é a própria razão do crime
+    "CP.art121-A": ("relacoes_domesticas", "contra_familiar"),
 }
 
 # causas que não se aplicam junto com certas formas do crime: (causa, prefixo da forma, motivo)

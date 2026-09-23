@@ -27,6 +27,7 @@ from .catalogo import (
     CIRCUNSTANCIAS_JUDICIAIS,
     COM_VIOLENCIA,
     CONFLITOS_DE_AGRAVANTES,
+    ELEMENTARES_DO_TIPO,
     INDICIOS_DAS_OPCOES,
     INDICIOS_DE_CRIMES,
     INCOMPATIBILIDADES,
@@ -44,9 +45,16 @@ _AUSENCIAS = (
     ("se o réu confessou", re.compile(r"confess|negou|admitiu|sil[êe]ncio|permaneceu calado", re.I)),
     (
         "a idade do réu na data do fato (menor de 21 ou maior de 70 muda a pena)",
-        re.compile(r"(?:r[ée]u|acusad[oa]|agente|autor)[^.;]{0,60}\b\d{2} anos|\b\d{2} anos[^.;]{0,40}(?:r[ée]u|acusad)", re.I),
+        re.compile(
+            r"(?:r[ée]u|acusad[oa]|agente|autor|homem|rapaz|jovem|indiv[íi]duo|suspeit[oa])[^.;]{0,60}\b\d{2} anos"
+            r"|\b\d{2} anos[^.;]{0,40}(?:r[ée]u|acusad)",
+            re.I,
+        ),
     ),
-    ("se o crime se consumou ou ficou na tentativa", re.compile(r"consum|conseguiu|levou|fugiu com|subtraiu|matou|morreu|tent|ficou com|recebeu", re.I)),
+    (
+        "se o crime se consumou ou ficou na tentativa",
+        re.compile(r"consum|conseguiu|levou|fugiu com|subtrai|\bmat(?:a|am|ou)\b|morre|morta|faleceu|[óo]bito|tent|ficou com|recebeu", re.I),
+    ),
 )
 
 
@@ -176,6 +184,8 @@ class CrimeAgent:
             conflito = CONFLITOS_DE_AGRAVANTES.get(agravante.codigo)
             if item["sugerido"] and conflito is not None and conflito.search(textos_sugeridos):
                 item.update(sugerido=False, observacao="já considerada na qualificadora ou causa de aumento sugerida (bis in idem)")
+            if agravante.codigo in ELEMENTARES_DO_TIPO.get(crime.rotulo, ()):
+                item.update(sugerido=False, observacao=f"já é elementar do crime ({crime.nome}): aplicá-la seria bis in idem")
             agravantes.append(item)
 
         return {
@@ -240,10 +250,16 @@ def _sugerir(circunstancia: GeneralCircumstance, frases: list[str]) -> dict:
     return {"sugerido": evidencia is not None, "evidencia": evidencia}
 
 
+# "não confessou", "nunca foi condenado", "sem arma": o indício logo depois de uma negação não vale
+_NEGACAO_ANTES = re.compile(r"\b(?:n[ãa]o|nunca|jamais|sem|nem|negou)\s+(?:\S+\s+){0,2}$", re.IGNORECASE)
+
+
 def _frase_com(padrao: re.Pattern, frases: list[str]) -> str | None:
     for frase in frases:
-        if padrao.search(frase):
-            return _encurtar(frase)
+        for correspondencia in padrao.finditer(frase):
+            antes = frase[max(0, correspondencia.start() - 30) : correspondencia.start()]
+            if not _NEGACAO_ANTES.search(antes):
+                return _encurtar(frase)
     return None
 
 

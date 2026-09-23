@@ -134,6 +134,24 @@
    "crime": "CP.art180"
   },
   {
+   "id": "feminicidio-esposa-nao-confessou",
+   "descricao": "Por volta das 2 horas da manhã, um homem com 23 anos mata sua esposa com facadas em sua cabeça, dia 23 de setembro e não confessou, a vitima foi uma mulher de 29 anos identificada como Lane",
+   "crime": "CP.art121-A",
+   "nao_sugerir": ["confissao_espontanea", "relacoes_domesticas", "contra_familiar", "CP.art155.§1"]
+  },
+  {
+   "id": "feminicidio-na-frente-dos-filhos",
+   "descricao": "O acusado assassinou a ex-companheira a golpes de faca, na frente dos filhos do casal, descumprindo a medida protetiva que o proibia de se aproximar dela.",
+   "crime": "CP.art121-A",
+   "sugerir": ["CP.art121-A.§2.III", "CP.art121-A.§2.IV"]
+  },
+  {
+   "id": "homicidio-verbo-no-presente",
+   "descricao": "Depois de uma briga no bar, o réu mata o vizinho com dois tiros e foge. Ele nunca foi condenado antes e não é reincidente.",
+   "crime": "CP.art121",
+   "nao_sugerir": ["reincidencia"]
+  },
+  {
    "id": "furto-qualificado-noturno",
    "descricao": "Por volta das 2h da madrugada, o réu, junto com um comparsa, arrombou a porta de uma loja e subtraiu dois celulares.",
    "crime": "CP.art155",

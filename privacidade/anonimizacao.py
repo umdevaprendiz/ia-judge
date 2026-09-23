@@ -148,7 +148,8 @@ _NOME_MAIUSCULO = re.compile(rf"\b{_PALAVRA_MAIUSCULA}(?:\s+(?:{_CONECTOR}\s+)?{
 _NOME_APOS_PAPEL = re.compile(
     r"(?i:\b(?:réu|ré|acusad[oa]|denunciad[oa]|investigad[oa]|vítima|vitima|testemunha|autor|autora|"
     r"sr\.?|sra\.?|senhor|senhora|menor|adolescente|criança|crianca|filh[oa]|espos[oa]|marido|"
-    r"companheir[oa]|namorad[oa]|irmã|irmão|irma|irmao|mãe|pai|mae|chamad[oa]|conhecid[oa] como)"
+    r"companheir[oa]|namorad[oa]|irmã|irmão|irma|irmao|mãe|pai|mae|chamad[oa]|conhecid[oa] como|"
+    r"identificad[oa] como|de nome|nomead[oa])"
     r")[\s:,]+(" + _PALAVRA + r")\b"
 )
 
