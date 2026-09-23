@@ -55,7 +55,7 @@ Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
   usuário). Rodar com:
   `py -m jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb`
   Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3,
-  Dosimetria completa.
+  Dosimetria completa, Casos de dosimetria.
 - `dosimetria/circunstancias/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
   AUMENTO/DIMINUICAO, `OrigemCausa` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
   `fracao_max` opcional, `fracao_escolhida` opcional, `justificativa`). Aplica a
@@ -106,6 +106,24 @@ parágrafo único, o encadeamento dos passos das três fases, e os alertas de
 Súmula 231, de agravante travada no máximo, de pena definitiva acima do máximo e
 de pena-base travada no máximo. Todas as seções imprimem `OK`.
 
+- `tests/casos/dosimetrias.json` — conjunto de 10 dosimetrias com resultado
+  esperado calculado à mão (a conta fica anotada no campo `conta` de cada caso),
+  no espírito da tabela `caso_benchmark` do plano. A seção "Casos de dosimetria"
+  do notebook lê o arquivo, monta as entradas do motor e compara pena-base,
+  intermediária, definitiva, alternativa do art. 68 e alertas. Para acrescentar
+  um caso, basta incluir um objeto no JSON; não é preciso mexer no notebook.
+  - 1 caso vem de sentença: `treinamento-04` (caso 04 do
+    `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`).
+  - 9 são construídos para cobrir as regras: repouso noturno, roubo com duas
+    majorantes (composição sobre a intermediária), homicídio tentado com
+    compensação reincidência x confissão, tráfico privilegiado com Súmula 231,
+    estelionato com quantum de 1/6 do mínimo, preponderância do art. 67,
+    agravante travada no máximo, concurso formal e Súmula 443.
+- `tests/casos/conjunto_treinamento.json` — índice das 10 sentenças do PDF de
+  treinamento. **Só o caso 04 é penal**; os outros 9 (consumidor, família,
+  trabalho, locação, trânsito, previdenciário, saúde, contratos) não têm pena a
+  calcular e ficam anotados como exemplos negativos para a etapa de extração.
+
 ## Decisões de projeto tomadas nesta sessão
 
 - Stack 100% Python (o plano original previa Java/Spring Boot; o usuário pediu
@@ -129,11 +147,14 @@ para não duplicar trabalho de novo.
 
 ## Próximo passo
 
-O motor puro está completo (Fases 1–3 + `calcular_dosimetria_completa`).
-Próximos marcos:
-- Reproduzir no notebook ao menos 10 dosimetrias reais (critério de pronto da
-  Fase 2 do plano), tiradas de sentenças ou manuais, comparando pena-base,
-  intermediária e definitiva com as da decisão.
-- Formatação do relatório para leitura humana (texto da fundamentação a partir
-  dos `Passo`s e alertas).
+- **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
+  dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
+  sentenças penais reais conforme forem aparecendo.
+- **Formatação de `Pena` com a convenção 365/30**: 726 dias aparecem como
+  "1 ano, 12 meses, 1 dia", porque sobram até 365 dias depois dos anos inteiros
+  e 12 meses são só 360. Decidir com o usuário: manter os 365 dias por ano e
+  ajustar só a exibição, ou adotar 1 ano = 12 meses = 360 dias, que é o costume
+  nas sentenças.
+- Texto do relatório para leitura humana (fundamentação a partir dos `Passo`s e
+  alertas).
 - Depois: ingestão (Planalto → banco) ou extração via LLM.
