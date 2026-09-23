@@ -123,6 +123,14 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   treinamento. **Só o caso 04 é penal**; os outros 9 (consumidor, família,
   trabalho, locação, trânsito, previdenciário, saúde, contratos) não têm pena a
   calcular e ficam anotados como exemplos negativos para a etapa de extração.
+- Docker: `Dockerfile` (python:3.14-slim, usuário sem root, com as
+  dependências de `requirements-dev.txt`) e `docker-compose.yml` com dois
+  serviços. `docker compose run --rm testes` executa o notebook contra o código
+  atual (pasta montada só para leitura, cópia executada em `/tmp`) e sai com erro
+  se algum assert falhar. `docker compose up jupyter` abre o JupyterLab em
+  `http://127.0.0.1:8888/lab?token=dosimetria` (token mudável pela variável
+  `JUPYTER_TOKEN`; a porta só escuta em 127.0.0.1). O motor em si não tem
+  dependências (`requirements.txt` vazio de propósito).
 
 ## Decisões de projeto tomadas nesta sessão
 

@@ -1,0 +1,2 @@
+# O motor de dosimetria (pacote dosimetria/) usa só a biblioteca padrão do Python.
+# Dependências de execução entram aqui quando surgirem (ex.: banco, API, LLM).
