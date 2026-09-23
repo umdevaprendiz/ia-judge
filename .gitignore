@@ -25,3 +25,6 @@ tests/navegador/fotos/
 
 # configuração local do editor/assistente
 .claude/
+
+# diário de trabalho local (decisões e próximos passos), fora do repositório público
+docs/progresso.md

@@ -133,8 +133,8 @@ def cabecalho_de_ip() -> str:
     """Cabeçalho confiável com o IP do visitante, se houver.
 
     Explícito por IP_CLIENTE_CABECALHO; no Render, cf-connecting-ip automaticamente, porque
-    ele fica atrás do Cloudflare. A detecção automática existe porque a variável do
-    render.yaml não chegou a ser aplicada em produção, e o limite continuou burlável.
+    ele fica atrás do Cloudflare. A detecção pelo RENDER=true não depende de a variável do
+    render.yaml ter sido aplicada ao serviço.
     """
     explicito = os.environ.get("IP_CLIENTE_CABECALHO", "").strip().lower()
     if explicito:
@@ -165,9 +165,8 @@ def ip_do_cliente(request: Request) -> str:
       imediato; os da esquerda podem ter sido enviados pelo cliente).
     - Senão: o endereço da conexão. Cabeçalhos são ignorados, porque qualquer um os escreve.
 
-    Lição registrada: no Render, o último valor do X-Forwarded-For é o IP do servidor do
-    Cloudflare, que muda a cada requisição. Usá-lo deixava o limite burlável (testado em
-    produção). Por isso o render.yaml define IP_CLIENTE_CABECALHO=cf-connecting-ip.
+    No Render, o último valor do X-Forwarded-For é o IP do servidor do Cloudflare, que muda a
+    cada requisição; usá-lo tornaria o limite burlável. Por isso vale o cf-connecting-ip.
     """
     cabecalho = cabecalho_de_ip()
     if cabecalho:

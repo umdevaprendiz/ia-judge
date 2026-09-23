@@ -14,10 +14,6 @@ brasileiro), pensado para estudantes de Direito. Hoje o repositório contém:
 > Confira as regras no texto compilado vigente do Planalto e, se possível,
 > valide com um professor de Direito Penal.
 
-O plano do projeto é um PDF do autor, fora do repositório; o
-registro do que já foi feito e dos próximos passos está em
-[`docs/progresso.md`](docs/progresso.md).
-
 ## Páginas para estudantes
 
 | Página | O que o estudante faz |
@@ -154,8 +150,8 @@ As migrações rodam sozinhas quando o serviço inicia, e a API sobe sem a
 `DATABASE_URL` (e esse usuário precisa das permissões de criar tabelas). Sem
 `DATABASE_URL`, o site funciona normalmente e só a gravação de casos fica indisponível.
 
-Localmente, o `docker compose` sobe um MySQL próprio na porta 33307 (para não conflitar
-com outros projetos). Antes, gere o `.env` com senhas aleatórias:
+Localmente, o `docker compose` sobe um MySQL próprio na porta 33307 (para não colidir com
+um MySQL na porta padrão, 3306). Antes, gere o `.env` com usuário, banco e senhas aleatórios:
 
 ```bash
 python scripts/preparar_ambiente.py
@@ -343,7 +339,6 @@ dados/casos/             casos de dosimetria com resultado esperado e anotação
 tests/
   dosimetria_tests.ipynb notebook de testes
   navegador/             teste das páginas num navegador de verdade (Playwright)
-docs/progresso.md        o que foi feito, decisões tomadas e próximos passos
 ```
 
 ## Testes
@@ -411,8 +406,6 @@ O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
 - Reunir 10 dosimetrias de sentenças penais **reais**. Hoje só há uma: no
   conjunto de treinamento, apenas o caso 04 é penal.
 - Ingestão do Código Penal (Planalto → banco) e extração dos fatos do caso via LLM.
-
-Os detalhes estão em [`docs/progresso.md`](docs/progresso.md).
 
 ## Autor
 
