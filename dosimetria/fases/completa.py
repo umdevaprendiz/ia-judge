@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 
-from ..circunstancias.legais import CircunstanciaLegal
-from ..circunstancias.causas import CausaModificadora
-from ..circunstancias.judiciais import CircunstanciaJudicial, Valoracao
-from ..valores.faixa import Faixa
+from ..circunstancias.legais import LegalCircumstance
+from ..circunstancias.causas import ModifyingCause
+from ..circunstancias.judiciais import JudicialCircumstance, Assessment
+from ..valores.faixa import PenaltyRange
 from .fase1 import calcular_pena_base
 from .fase2 import calcular_pena_intermediaria
-from .fase3 import Composicao, OpcaoFase3, calcular_pena_definitiva
-from ..relatorio.passo import Passo
-from ..valores.pena import Pena
-from ..quantum.estrategias import EstrategiaQuantum
+from .fase3 import Composition, Phase3Option, calcular_pena_definitiva
+from ..relatorio.passo import Step
+from ..valores.pena import Penalty
+from ..quantum.estrategias import QuantumStrategy
 
 
 @dataclass(frozen=True, slots=True)
-class ResultadoDosimetria:
+class SentencingResult:
     """Saída do motor (seção 7.2 do plano): as três penas, o passo a passo e os alertas.
 
     `pena_definitiva` e `passos` aplicam todas as causas da 3ª fase. Quando há
@@ -21,25 +21,25 @@ class ResultadoDosimetria:
     art. 68, parágrafo único (com os passos só da 3ª fase); a escolha é do juiz.
     """
 
-    faixa_aplicada: Faixa
-    pena_base: Pena
-    pena_intermediaria: Pena
-    pena_definitiva: Pena
-    alternativa_art68: OpcaoFase3 | None
-    passos: tuple[Passo, ...]
+    faixa_aplicada: PenaltyRange
+    pena_base: Penalty
+    pena_intermediaria: Penalty
+    pena_definitiva: Penalty
+    alternativa_art68: Phase3Option | None
+    passos: tuple[Step, ...]
     criterio_quantum: str
-    composicao: Composicao
+    composicao: Composition
     alertas: tuple[str, ...]
 
 
 def calcular_dosimetria_completa(
-    faixa: Faixa,
-    circunstancias_judiciais: dict[CircunstanciaJudicial, Valoracao],
-    agravantes_atenuantes: list[CircunstanciaLegal],
-    causas: list[CausaModificadora],
-    estrategia: EstrategiaQuantum,
-    composicao: Composicao,
-) -> ResultadoDosimetria:
+    faixa: PenaltyRange,
+    circunstancias_judiciais: dict[JudicialCircumstance, Assessment],
+    agravantes_atenuantes: list[LegalCircumstance],
+    causas: list[ModifyingCause],
+    estrategia: QuantumStrategy,
+    composicao: Composition,
+) -> SentencingResult:
     """Sistema trifásico do art. 68 do CP: encadeia as três fases e monta o relatório.
 
     A faixa já deve ser a aplicada (simples ou qualificada): escolher a faixa é tarefa
@@ -65,7 +65,7 @@ def calcular_dosimetria_completa(
             "a escolha é do juiz (art. 68, parágrafo único, do CP)"
         )
 
-    return ResultadoDosimetria(
+    return SentencingResult(
         faixa_aplicada=faixa,
         pena_base=fase1.pena_base,
         pena_intermediaria=fase2.pena_intermediaria,

@@ -8,7 +8,7 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
 ```
 dosimetria/
   __init__.py        API pública reexportada (from dosimetria import ...)
-  valores/           Fracao, Pena, Faixa (tipos de valor imutáveis)
+  valores/           Fraction, Penalty, PenaltyRange (tipos de valor imutáveis)
   circunstancias/    judiciais.py (art. 59), legais.py (arts. 61-67), causas.py (3ª fase)
   quantum/           estrategias.py (Strategy do quantum das fases 1 e 2)
   fases/             fase1.py, fase2.py, fase3.py, completa.py
@@ -25,25 +25,25 @@ Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
 
 ## Feito
 
-- `dosimetria/valores/fracao.py` — `Fracao(numerador, denominador)`, imutável, nunca usa `float`.
+- `dosimetria/valores/fracao.py` — `Fraction(numerador, denominador)`, imutável, nunca usa `float`.
   `aplicar(dias)` trunca o resto (art. 11 do CP — frações de dia são desprezadas).
-- `dosimetria/valores/pena.py` — `Pena(dias)`, imutável, comparável (`<`, `==`), rejeita dias
+- `dosimetria/valores/pena.py` — `Penalty(dias)`, imutável, comparável (`<`, `==`), rejeita dias
   negativos. Convenção do projeto: 1 ano = 365 dias, 1 mês = 30 dias.
-- `dosimetria/valores/faixa.py` — `Faixa(minimo, maximo, origem)`. `contem()` e `limitar()`
+- `dosimetria/valores/faixa.py` — `PenaltyRange(minimo, maximo, origem)`. `contem()` e `limitar()`
   (clamp) são a base de "não sai da faixa" nas fases 1 e 2.
-- `dosimetria/circunstancias/judiciais.py` — enum `CircunstanciaJudicial` com as 8 do art. 59,
-  e `Valoracao` (favorável/neutra/desfavorável).
-- `dosimetria/quantum/estrategias.py` — `EstrategiaQuantum` (Strategy, ABC) com duas
-  implementações citadas no plano: `FracaoDoIntervalo` (padrão 1/8 do intervalo) e
-  `FracaoDoMinimo` (padrão 1/6 do mínimo). Não há default escondido: quem chama o
+- `dosimetria/circunstancias/judiciais.py` — enum `JudicialCircumstance` com as 8 do art. 59,
+  e `Assessment` (favorável/neutra/desfavorável).
+- `dosimetria/quantum/estrategias.py` — `QuantumStrategy` (Strategy, ABC) com duas
+  implementações citadas no plano: `IntervalFraction` (padrão 1/8 do intervalo) e
+  `MinimumFraction` (padrão 1/6 do mínimo). Não há default escondido: quem chama o
   motor escolhe a estratégia explicitamente.
-- `dosimetria/relatorio/passo.py` — `Passo` (fase, regra, dispositivo, valor_antes,
+- `dosimetria/relatorio/passo.py` — `Step` (fase, regra, dispositivo, valor_antes,
   valor_depois, motivo), a unidade do "passo a passo" do relatório.
 - `dosimetria/fases/fase1.py` — `calcular_pena_base(faixa, circunstancias, estrategia)`.
   Exige as 8 circunstâncias do art. 59 (lança `ValueError` se faltar/sobrar alguma).
   Só circunstâncias desfavoráveis somam; resultado sempre dentro da faixa.
-- `dosimetria/circunstancias/legais.py` — `CircunstanciaLegal` (código, dispositivo,
-  `Direcao.AGRAVANTE`/`ATENUANTE`, `preponderante: bool`). Bis in idem é
+- `dosimetria/circunstancias/legais.py` — `LegalCircumstance` (código, dispositivo,
+  `CircumstanceDirection.AGRAVANTE`/`ATENUANTE`, `preponderante: bool`). Bis in idem é
   responsabilidade do validador (camada de extração), não do motor.
 - `dosimetria/fases/fase2.py` — `calcular_pena_intermediaria(faixa, pena_base,
   circunstancias, estrategia)`. Regras implementadas:
@@ -55,47 +55,47 @@ Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
   - Concurso com preponderância dos dois lados ou de nenhum → compensação
     líquida (conta simples de quantas agravam menos quantas atenuam).
   - Resultado sempre dentro da faixa; em particular a atenuante nunca reduz
-    abaixo do mínimo (Súmula 231 do STJ), reaproveitando `Faixa.limitar`.
+    abaixo do mínimo (Súmula 231 do STJ), reaproveitando `PenaltyRange.limitar`.
 - Testes: `tests/dosimetria_tests.ipynb` (notebook, não pytest — decisão do
   usuário). Rodar com:
   `py -m jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb`
-  Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3,
+  Hoje todas as seções imprimem `OK`: Fraction, Penalty, PenaltyRange, Quantum, Fase 1, Fase 2, Fase 3,
   Dosimetria completa, Casos de dosimetria.
-- `dosimetria/circunstancias/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
-  AUMENTO/DIMINUICAO, `OrigemCausa` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
+- `dosimetria/circunstancias/causas.py` — `ModifyingCause` (código, dispositivo, `CauseDirection`
+  AUMENTO/DIMINUICAO, `CauseOrigin` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
   `fracao_max` opcional, `fracao_escolhida` opcional, `justificativa`). Aplica a
   fração mínima por padrão; escolher outra exige estar no intervalo legal **e** ter
   justificativa (senão `ValueError`) — regra da seção 3.3 do plano / Súmula 443.
   Vale igualmente para aumento e diminuição (validar isso com professor: na
   diminuição, a mínima é a fração menos favorável ao réu).
 - `dosimetria/fases/fase3.py` — `calcular_pena_definitiva(pena_intermediaria, causas,
-  composicao)` → `ResultadoFase3(aplicando_todas, limitada_art68)`:
-  - Não recebe `Faixa`: a 3ª fase pode sair da faixa, e assim a regra de limite
+  composicao)` → `Phase3Result(aplicando_todas, limitada_art68)`:
+  - Não recebe `PenaltyRange`: a 3ª fase pode sair da faixa, e assim a regra de limite
     não tem como vazar para cá (responde à pergunta da Fase 2 do plano).
-  - `Composicao.CASCATA` (cada fração sobre a pena já modificada) ou
-    `Composicao.SOBRE_PENA_INTERMEDIARIA` (todas sobre a intermediária, efeitos
+  - `Composition.CASCATA` (cada fração sobre a pena já modificada) ou
+    `Composition.SOBRE_PENA_INTERMEDIARIA` (todas sobre a intermediária, efeitos
     somados). Sem padrão implícito, como no quantum. Na composição "sobre a
     intermediária", diminuições que somem mais de 100% dão `ValueError`.
   - Cálculo exato com `fractions.Fraction`; frações de dia desprezadas **uma
     única vez**, no fim da fase (seção 6.1 do plano). Por isso, na cascata, a
-    ordem das causas não muda o resultado. Os `Passo`s mostram os valores
+    ordem das causas não muda o resultado. Os `Step`s mostram os valores
     intermediários truncados e encadeiam (depois de um = antes do seguinte).
   - Art. 68, parágrafo único: havendo 2+ causas da Parte Especial no mesmo
     sentido, `limitada_art68` traz a alternativa com só a que mais aumenta e/ou só
     a que mais diminui (causas da Parte Geral seguem aplicadas nas duas opções);
-    as descartadas aparecem como `Passo` sem efeito. O motor não escolhe.
-  - Sem causas: um `Passo` explicando que pena definitiva = intermediária.
+    as descartadas aparecem como `Step` sem efeito. O motor não escolhe.
+  - Sem causas: um `Step` explicando que pena definitiva = intermediária.
 
 - `dosimetria/fases/completa.py` — `calcular_dosimetria_completa(faixa,
   circunstancias_judiciais, agravantes_atenuantes, causas, estrategia,
-  composicao)` encadeia as três fases e devolve `ResultadoDosimetria` (seção 7.2
+  composicao)` encadeia as três fases e devolve `SentencingResult` (seção 7.2
   do plano): `faixa_aplicada`, `pena_base`, `pena_intermediaria`,
   `pena_definitiva` (todas as causas aplicadas), `alternativa_art68` (a outra
   opção do art. 68, parágrafo único, quando existe), `passos` (1ª, 2ª e 3ª fases,
   encadeados), `criterio_quantum`, `composicao` e `alertas`.
   - A faixa recebida já é a aplicada (simples ou qualificada); escolher entre
     elas fica para quem monta o caso (ingestão/extração).
-  - `ResultadoFase1` e `ResultadoFase2` ganharam `alertas`: pena-base travada no
+  - `Phase1Result` e `Phase2Result` ganharam `alertas`: pena-base travada no
     máximo, atenuante travada no mínimo (Súmula 231), agravante travada no
     máximo e concurso resolvido por preponderância (art. 67). A completa soma a
     isso: pena definitiva fora da faixa (permitido na 3ª fase) e existência das
@@ -103,7 +103,7 @@ Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
 - `dosimetria/relatorio/fundamentacao.py` — `gerar_fundamentacao(resultado)`
   monta o texto da dosimetria (faixa, critério de quantum, composição, as três
   fases com cada passo, a opção do art. 68, parágrafo único, e os alertas) só a
-  partir do `ResultadoDosimetria`, sem acrescentar análise nova. Os motivos das
+  partir do `SentencingResult`, sem acrescentar análise nova. Os motivos das
   fases 1 e 2 passaram a nomear as circunstâncias (ex.: "(culpabilidade)",
   "(reincidencia)"). Testado na seção "Fundamentação" do notebook.
 
@@ -158,7 +158,7 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   imagem, porque os testes o leem.
 - `sentencas/` — leitura do `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`
   com `pypdf`. `ler_sentencas(pdf)` separa as 10 sentenças pela marca
-  "CASO NN DE 10" e devolve `Sentenca` (número, órgão, ramo, tema, processo,
+  "CASO NN DE 10" e devolve `CourtDecision` (número, órgão, ramo, tema, processo,
   classe, partes, resultado, relatório, fundamentação, dispositivo, magistrado,
   cargo). `extrair_dosimetria_declarada(sentenca)` lê, por regras, o parágrafo
   "Dosimetria:" do dispositivo de uma sentença penal: pena-base, pena
@@ -170,7 +170,7 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   que o motor chega à pena declarada pela juíza (2 anos). Antes os testes só
   usavam números do caso 04 transcritos à mão, sem ler o PDF.
 - Formato JSON único de entrada e saída: `dosimetria/entrada.py`
-  (`entrada_de_dict(dados)` → `EntradaDosimetria`, com `.calcular()`) e
+  (`entrada_de_dict(dados)` → `SentencingInput`, com `.calcular()`) e
   `dosimetria/relatorio/serializacao.py` (`resultado_para_dict`: penas em
   `total_dias` + anos/meses/dias + texto, passos, alertas e fundamentação).
   Faixa em `{"anos", "meses", "dias"}` e frações como `"1/3"`; erros de formato

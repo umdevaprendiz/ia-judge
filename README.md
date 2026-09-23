@@ -84,8 +84,8 @@ seguinte pode levar cerca de um minuto para responder.
 Regras que o motor respeita:
 
 - **Quantum configurável.** A lei não fixa quanto vale cada circunstância. O
-  critério é plugável e aparece no relatório: `FracaoDoIntervalo` (padrão 1/8
-  do intervalo) ou `FracaoDoMinimo` (padrão 1/6 do mínimo).
+  critério é plugável e aparece no relatório: `IntervalFraction` (padrão 1/8
+  do intervalo) ou `MinimumFraction` (padrão 1/6 do mínimo).
 - **Fração mínima por padrão.** Nas causas de fração variável (ex.: "de 1/3 até
   metade"), usar outra fração exige justificativa registrada (Súmula 443 do STJ).
 - **Art. 68, parágrafo único.** Quando há concurso de causas da Parte Especial,
@@ -105,33 +105,33 @@ em 11 e o excedente fica nos dias: 726 dias aparecem como "1 ano, 11 meses,
 
 ```python
 from dosimetria import (
-    CausaModificadora, CircunstanciaJudicial, CircunstanciaLegal, Composicao, Direcao,
-    DirecaoCausa, Faixa, Fracao, FracaoDoIntervalo, OrigemCausa, Pena, Valoracao,
+    ModifyingCause, JudicialCircumstance, LegalCircumstance, Composition, CircumstanceDirection,
+    CauseDirection, PenaltyRange, Fraction, IntervalFraction, CauseOrigin, Penalty, Assessment,
     calcular_dosimetria_completa,
 )
 
 # Furto simples (art. 155): 1 a 4 anos de reclusão
-faixa = Faixa(Pena.de_anos_meses_dias(anos=1), Pena.de_anos_meses_dias(anos=4), "CP.art155")
+faixa = PenaltyRange(Penalty.de_anos_meses_dias(anos=1), Penalty.de_anos_meses_dias(anos=4), "CP.art155")
 
 # 1ª fase: as 8 circunstâncias do art. 59 (aqui, só a culpabilidade é desfavorável)
-circunstancias = {c: Valoracao.NEUTRA for c in CircunstanciaJudicial}
-circunstancias[CircunstanciaJudicial.CULPABILIDADE] = Valoracao.DESFAVORAVEL
+circunstancias = {c: Assessment.NEUTRA for c in JudicialCircumstance}
+circunstancias[JudicialCircumstance.CULPABILIDADE] = Assessment.DESFAVORAVEL
 
 # 2ª fase: reincidência (agravante preponderante, art. 67)
 agravantes_atenuantes = [
-    CircunstanciaLegal("reincidencia", "CP.art61.I", Direcao.AGRAVANTE, preponderante=True),
+    LegalCircumstance("reincidencia", "CP.art61.I", CircumstanceDirection.AGRAVANTE, preponderante=True),
 ]
 
 # 3ª fase: repouso noturno, aumento de 1/3 (art. 155, §1º)
 causas = [
-    CausaModificadora("repouso_noturno", "CP.art155.§1", DirecaoCausa.AUMENTO,
-                      OrigemCausa.PARTE_ESPECIAL, fracao_min=Fracao(1, 3)),
+    ModifyingCause("repouso_noturno", "CP.art155.§1", CauseDirection.AUMENTO,
+                   CauseOrigin.PARTE_ESPECIAL, fracao_min=Fraction(1, 3)),
 ]
 
 resultado = calcular_dosimetria_completa(
     faixa, circunstancias, agravantes_atenuantes, causas,
-    estrategia=FracaoDoIntervalo(),      # 1/8 do intervalo por circunstância
-    composicao=Composicao.CASCATA,
+    estrategia=IntervalFraction(),      # 1/8 do intervalo por circunstância
+    composicao=Composition.CASCATA,
 )
 
 print("Pena definitiva:", resultado.pena_definitiva)
@@ -148,7 +148,7 @@ Pena definitiva: 2 anos, 3 meses, 29 dias
 - 3ª fase (pena definitiva): 1 ano, 9 meses, 2 dias -> 2 anos, 3 meses, 29 dias (repouso_noturno: aumento de 1/3 (em cascata))
 ```
 
-Além de `pena_definitiva` e `passos`, o `ResultadoDosimetria` traz `pena_base`,
+Além de `pena_definitiva` e `passos`, o `SentencingResult` traz `pena_base`,
 `pena_intermediaria`, `alternativa_art68`, `criterio_quantum`, `composicao` e
 `alertas`.
 
@@ -164,7 +164,7 @@ resultado, e `resultado_para_dict(resultado)` o converte de volta para JSON.
 
 ```
 dosimetria/              motor de cálculo (a API pública é importada de `dosimetria`)
-  valores/               Fracao, Pena, Faixa
+  valores/               Fraction, Penalty, PenaltyRange
   circunstancias/        judiciais (art. 59), legais (arts. 61-67), causas (3ª fase)
   quantum/               estratégias de quantum das fases 1 e 2
   fases/                 fase1, fase2, fase3 e a dosimetria completa

@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from enum import Enum
 
 
-class Direcao(Enum):
+class CircumstanceDirection(Enum):
     AGRAVANTE = "agravante"
     ATENUANTE = "atenuante"
 
 
 @dataclass(frozen=True, slots=True)
-class CircunstanciaLegal:
+class LegalCircumstance:
     """Uma agravante ou atenuante concreta identificada no caso.
 
     O catálogo fechado de códigos e dispositivos (arts. 61 a 66 do CP) vive na
@@ -19,5 +19,5 @@ class CircunstanciaLegal:
 
     codigo: str
     dispositivo: str
-    direcao: Direcao
+    direcao: CircumstanceDirection
     preponderante: bool = False

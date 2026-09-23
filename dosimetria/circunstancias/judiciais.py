@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Valoracao(Enum):
+class Assessment(Enum):
     """Como uma circunstância pesa no caso: favorece o réu, é neutra, ou desfavorece."""
 
     FAVORAVEL = "favoravel"
@@ -9,7 +9,7 @@ class Valoracao(Enum):
     DESFAVORAVEL = "desfavoravel"
 
 
-class CircunstanciaJudicial(Enum):
+class JudicialCircumstance(Enum):
     """As 8 circunstâncias do art. 59 do CP, avaliadas na 1ª fase (pena-base)."""
 
     CULPABILIDADE = "culpabilidade"

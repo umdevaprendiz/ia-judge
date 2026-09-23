@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ..valores.pena import Pena
+from ..valores.pena import Penalty
 from .fundamentacao import gerar_fundamentacao
-from .passo import Passo
+from .passo import Step
 
 if TYPE_CHECKING:  # import só para tipagem: fases/ já depende de relatorio/
-    from ..fases.completa import ResultadoDosimetria
+    from ..fases.completa import SentencingResult
 
 
-def resultado_para_dict(resultado: ResultadoDosimetria) -> dict[str, Any]:
+def resultado_para_dict(resultado: SentencingResult) -> dict[str, Any]:
     """Resultado do motor em tipos simples de JSON, com a fundamentação em texto."""
     alternativa = resultado.alternativa_art68
     faixa = resultado.faixa_aplicada
@@ -38,12 +38,12 @@ def resultado_para_dict(resultado: ResultadoDosimetria) -> dict[str, Any]:
     }
 
 
-def pena_para_dict(pena: Pena) -> dict[str, Any]:
+def pena_para_dict(pena: Penalty) -> dict[str, Any]:
     anos, meses, dias = pena.como_anos_meses_dias()
     return {"total_dias": pena.dias, "anos": anos, "meses": meses, "dias": dias, "texto": str(pena)}
 
 
-def passo_para_dict(passo: Passo) -> dict[str, Any]:
+def passo_para_dict(passo: Step) -> dict[str, Any]:
     return {
         "fase": passo.fase,
         "regra": passo.regra,

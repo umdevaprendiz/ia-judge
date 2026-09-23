@@ -1,11 +1,11 @@
 """Tipos de valor imutáveis: fração legal, pena em dias e faixa de pena em abstrato."""
 
-from .fracao import Fracao
-from .pena import Pena
-from .faixa import Faixa
+from .fracao import Fraction
+from .pena import Penalty
+from .faixa import PenaltyRange
 
 __all__ = [
-    "Fracao",
-    "Pena",
-    "Faixa",
+    "Fraction",
+    "Penalty",
+    "PenaltyRange",
 ]

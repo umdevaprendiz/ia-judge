@@ -2,15 +2,15 @@
 
 from dataclasses import dataclass
 
-from .fases import ResultadoDosimetria
-from .valores import Pena
+from .fases import SentencingResult
+from .valores import Penalty
 
 
 @dataclass(frozen=True, slots=True)
-class ComparacaoFase:
+class PhaseComparison:
     fase: str
-    esperado: Pena
-    resposta: Pena
+    esperado: Penalty
+    resposta: Penalty
     correta: bool
     explicacao: tuple[str, ...]
     observacao: str | None = None
@@ -22,8 +22,8 @@ class ComparacaoFase:
 
 
 @dataclass(frozen=True, slots=True)
-class ComparacaoResposta:
-    fases: tuple[ComparacaoFase, ...]
+class AnswerComparison:
+    fases: tuple[PhaseComparison, ...]
 
     @property
     def acertos(self) -> int:
@@ -35,11 +35,11 @@ class ComparacaoResposta:
 
 
 def comparar_resposta(
-    resultado: ResultadoDosimetria,
-    pena_base: Pena | None = None,
-    pena_intermediaria: Pena | None = None,
-    pena_definitiva: Pena | None = None,
-) -> ComparacaoResposta:
+    resultado: SentencingResult,
+    pena_base: Penalty | None = None,
+    pena_intermediaria: Penalty | None = None,
+    pena_definitiva: Penalty | None = None,
+) -> AnswerComparison:
     """Compara só as fases que o estudante respondeu.
 
     Na pena definitiva, a opção do art. 68, parágrafo único (quando existe) também é
@@ -59,7 +59,7 @@ def comparar_resposta(
         alternativa = resultado.alternativa_art68
         if alternativa is not None and pena_definitiva == alternativa.pena_definitiva:
             fases.append(
-                ComparacaoFase(
+                PhaseComparison(
                     fase=nomes_fases[2],
                     esperado=alternativa.pena_definitiva,
                     resposta=pena_definitiva,
@@ -78,11 +78,11 @@ def comparar_resposta(
             fases.append(
                 _comparar(nomes_fases[2], resultado.pena_definitiva, pena_definitiva, motivos, observacao)
             )
-    return ComparacaoResposta(fases=tuple(fases))
+    return AnswerComparison(fases=tuple(fases))
 
 
-def _comparar(fase, esperado, resposta, motivos, observacao=None) -> ComparacaoFase:
-    return ComparacaoFase(
+def _comparar(fase, esperado, resposta, motivos, observacao=None) -> PhaseComparison:
+    return PhaseComparison(
         fase=fase,
         esperado=esperado,
         resposta=resposta,

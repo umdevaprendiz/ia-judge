@@ -3,10 +3,10 @@ from __future__ import annotations
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from .passo import Passo
+from .passo import Step
 
 if TYPE_CHECKING:  # import só para tipagem: fases/ já depende de relatorio/
-    from ..fases.completa import ResultadoDosimetria
+    from ..fases.completa import SentencingResult
 
 _COMPOSICAO = {
     "cascata": "causas compostas em cascata (cada fração sobre a pena já modificada)",
@@ -14,7 +14,7 @@ _COMPOSICAO = {
 }
 
 
-def gerar_fundamentacao(resultado: ResultadoDosimetria) -> str:
+def gerar_fundamentacao(resultado: SentencingResult) -> str:
     """Texto da dosimetria para leitura humana, montado só a partir do resultado do motor.
 
     Não acrescenta nenhuma conclusão que não esteja nos passos e alertas: o texto é
@@ -54,7 +54,7 @@ def gerar_fundamentacao(resultado: ResultadoDosimetria) -> str:
     return "\n".join(linhas)
 
 
-def _linhas_dos_passos(passos: tuple[Passo, ...] | list[Passo]) -> list[str]:
+def _linhas_dos_passos(passos: tuple[Step, ...] | list[Step]) -> list[str]:
     return [
         f"- {passo.motivo} [{passo.regra}; {passo.dispositivo}]: "
         f"{passo.valor_antes} -> {passo.valor_depois}"
