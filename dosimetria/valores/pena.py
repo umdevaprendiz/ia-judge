@@ -39,8 +39,16 @@ class Pena:
         return Pena(self.dias - dias)
 
     def como_anos_meses_dias(self) -> tuple[int, int, int]:
+        """Decompõe em anos, meses e dias pela convenção do projeto (365 e 30 dias).
+
+        Como 12 meses de 30 dias somam só 360, o resto depois dos anos inteiros pode
+        passar de 12 meses. Para nunca exibir "12 meses", os meses param em 11 e o
+        excedente fica nos dias (ex.: 726 dias = 1 ano, 11 meses, 31 dias).
+        """
         anos, resto = divmod(self.dias, DIAS_POR_ANO)
         meses, dias = divmod(resto, DIAS_POR_MES)
+        if meses == 12:
+            meses, dias = 11, dias + DIAS_POR_MES
         return anos, meses, dias
 
     def __lt__(self, outra: "Pena") -> bool:

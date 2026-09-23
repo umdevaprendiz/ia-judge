@@ -141,6 +141,11 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
 - Motor construído antes da ingestão (inverte a ordem do plano original: Fase 2
   do PDF antes da Fase 1), porque o motor não depende de banco nem de LLM — só
   precisa de `FatosDoCaso` preenchido à mão nos testes.
+- Convenção de unidades: **1 ano = 365 dias** e 1 mês = 30 dias (decisão do
+  usuário; a alternativa de 1 ano = 360 dias foi descartada). Como 12 meses
+  somam só 360 dias, na exibição os meses param em 11 e o excedente fica nos
+  dias: 726 dias = "1 ano, 11 meses, 31 dias" (antes saía "1 ano, 12 meses,
+  1 dia"). A decomposição continua exata e volta para o mesmo total de dias.
 - Estratégias de quantum não têm valor padrão implícito no motor: cada chamada a
   `calcular_pena_base`/`calcular_pena_intermediaria` recebe a estratégia
   explicitamente.
@@ -158,11 +163,6 @@ para não duplicar trabalho de novo.
 - **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
   dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
   sentenças penais reais conforme forem aparecendo.
-- **Formatação de `Pena` com a convenção 365/30**: 726 dias aparecem como
-  "1 ano, 12 meses, 1 dia", porque sobram até 365 dias depois dos anos inteiros
-  e 12 meses são só 360. Decidir com o usuário: manter os 365 dias por ano e
-  ajustar só a exibição, ou adotar 1 ano = 12 meses = 360 dias, que é o costume
-  nas sentenças.
 - Texto do relatório para leitura humana (fundamentação a partir dos `Passo`s e
   alertas).
 - Depois: ingestão (Planalto → banco) ou extração via LLM.
