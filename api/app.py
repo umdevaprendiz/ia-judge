@@ -12,6 +12,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.exception_handlers import http_exception_handler
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -90,6 +92,17 @@ _MENSAGENS = {
     "model_attributes_type": "deve ser um objeto",
     "json_invalid": "JSON inválido",
 }
+
+
+@app.exception_handler(StarletteHTTPException)
+async def erro_http(request: Request, erro: StarletteHTTPException) -> JSONResponse:
+    """Traduz a mensagem que o FastAPI dá quando o corpo não é um JSON legível."""
+    if erro.status_code == 400 and erro.detail == "There was an error parsing the body":
+        return JSONResponse(
+            status_code=400,
+            content={"detail": "O conteúdo enviado não é um JSON válido (confira a codificação UTF-8)."},
+        )
+    return await http_exception_handler(request, erro)
 
 
 @app.exception_handler(RequestValidationError)

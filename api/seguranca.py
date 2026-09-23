@@ -125,13 +125,26 @@ async def _responder_413(enviar) -> None:
 
 
 def ip_do_cliente(request: Request) -> str:
-    """IP de quem fez a requisição.
+    """IP de quem fez a requisição, sem aceitar valores que o próprio visitante possa forjar.
 
-    Atrás do proxy do Render (CONFIAR_PROXY=1), o IP real está no X-Forwarded-For. Usa o
-    último valor da lista, que é o anexado pelo proxy: os valores à esquerda podem ter sido
-    enviados pelo próprio cliente para falsificar o IP. Sem CONFIAR_PROXY, o cabeçalho é
-    ignorado, porque qualquer um poderia escrevê-lo.
+    - IP_CLIENTE_CABECALHO (ex.: cf-connecting-ip no Render, que fica atrás do Cloudflare):
+      o cabeçalho que o proxy da borda preenche e sobrescreve, ignorando o que o cliente
+      mandar. É o único confiável quando há mais de um proxy no caminho.
+    - Senão, com CONFIAR_PROXY=1: o último valor do X-Forwarded-For (o anexado pelo proxy
+      imediato; os da esquerda podem ter sido enviados pelo cliente).
+    - Senão: o endereço da conexão. Cabeçalhos são ignorados, porque qualquer um os escreve.
+
+    Lição registrada: no Render, o último valor do X-Forwarded-For é o IP do servidor do
+    Cloudflare, que muda a cada requisição. Usá-lo deixava o limite burlável (testado em
+    produção). Por isso o render.yaml define IP_CLIENTE_CABECALHO=cf-connecting-ip.
     """
+    cabecalho = os.environ.get("IP_CLIENTE_CABECALHO", "").strip().lower()
+    if cabecalho:
+        valor = request.headers.get(cabecalho, "").strip()
+        if valor:
+            return valor
+        # cabeçalho esperado ausente: não cai para valores forjáveis; todos dividem um balde
+        return "sem-ip-do-proxy"
     if os.environ.get("CONFIAR_PROXY") == "1":
         encaminhado = request.headers.get("x-forwarded-for", "")
         ultimos = [ip.strip() for ip in encaminhado.split(",") if ip.strip()]

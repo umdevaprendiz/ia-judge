@@ -50,8 +50,9 @@ tratada como requisito em cada funcionalidade:
   política de referência e HSTS em HTTPS. Respostas com casos não ficam em cache.
 - **Limites**: tamanho máximo da requisição (256 KB, verificado enquanto o corpo chega)
   e da descrição (20 mil caracteres); limite de requisições por visitante e um teto
-  global por rota. O IP do visitante vem do proxy do Render e não pode ser falsificado
-  pelo cabeçalho `X-Forwarded-For`.
+  global por rota. O IP do visitante vem do cabeçalho `CF-Connecting-IP`, que o Cloudflare
+  (na frente do Render) preenche e sobrescreve; valores forjáveis, como o
+  `X-Forwarded-For` enviado pelo próprio visitante, não são usados.
 - **Outros sites só leem** (CORS libera apenas `GET`): nenhum site de terceiros consegue
   gravar ou excluir casos pelo navegador de um visitante.
 - **Erros sem detalhes internos**: falhas de banco viram uma mensagem genérica, e erros de

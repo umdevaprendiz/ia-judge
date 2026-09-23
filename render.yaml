@@ -17,9 +17,13 @@ services:
     envVars:
       - key: PORT
         value: "8000"
-      # o IP real do visitante vem no X-Forwarded-For anexado pelo proxy do Render
+      # atrás do proxy do Render: HTTPS original informado pelo X-Forwarded-Proto
       - key: CONFIAR_PROXY
         value: "1"
+      # o Render fica atrás do Cloudflare, que preenche (e sobrescreve) o IP real do visitante
+      # neste cabeçalho; o X-Forwarded-For não serve (o último valor é o IP do Cloudflare)
+      - key: IP_CLIENTE_CABECALHO
+        value: cf-connecting-ip
       # segredos: definidos só no painel do Render (Environment), nunca aqui
       - key: DATABASE_URL
         sync: false
