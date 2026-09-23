@@ -1,7 +1,31 @@
 # Nome do projeto no Docker (imagens e nomes do Docker só aceitam minúsculas).
 name: sergius-ia-judge
 
+# As senhas do MySQL local vêm do arquivo .env (fora do git). Crie-o uma vez com:
+#   python scripts/preparar_ambiente.py
+
+x-banco-local: &banco-local
+  DATABASE_URL: mysql+pymysql://app:${MYSQL_SENHA_APP:?rode python scripts/preparar_ambiente.py}@mysql:3306/app
+
 services:
+  # MySQL local para desenvolvimento e testes (em produção, o banco é o MySQL da Aiven)
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_SENHA_ROOT:?rode python scripts/preparar_ambiente.py}
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: ${MYSQL_SENHA_APP:?rode python scripts/preparar_ambiente.py}
+    ports:
+      - "127.0.0.1:${MYSQL_PORTA_LOCAL:-33307}:3306"
+    volumes:
+      - dados-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u app -p$$MYSQL_PASSWORD --silent"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
   # API para os estudantes. Documentação interativa em http://localhost:8000/docs
   #   docker compose up api
   api:
@@ -9,6 +33,10 @@ services:
       context: .
       target: api
     image: sergius-ia-judge:api
+    environment: *banco-local
+    depends_on:
+      mysql:
+        condition: service_healthy
     ports:
       - "8000:8000"
     restart: unless-stopped
@@ -20,6 +48,13 @@ services:
       context: .
       target: dev
     image: sergius-ia-judge:dev
+    environment:
+      <<: *banco-local
+      # no GitHub Actions, a parte dos testes que usa o banco é obrigatória
+      CI: ${CI:-false}
+    depends_on:
+      mysql:
+        condition: service_healthy
     volumes:
       - ./:/app:ro
 
@@ -38,3 +73,6 @@ services:
       - "127.0.0.1:8888:8888"
     volumes:
       - ./:/app
+
+volumes:
+  dados-mysql:
