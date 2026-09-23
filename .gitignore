@@ -20,3 +20,8 @@ tests/navegador/fotos/
 # PDFs novos ficam fora do git: a base de legislação vem deles (scripts/construir_base_de_fontes.py),
 # e o que vai para o repositório é o texto extraído (dados/fontes/). Alguns PDFs são edições comerciais.
 *.pdf
+# exceção: os testes leem as 10 sentenças deste PDF (pacote sentencas/), inclusive no GitHub Actions
+!Conjunto de Treinamento - 10 Sentenças Judiciais.pdf
+
+# configuração local do editor/assistente
+.claude/
