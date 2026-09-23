@@ -12,7 +12,7 @@ _PAPEIS = ("Requerente", "Requerido", "Reclamante", "Reclamada", "Autor", "Réu"
 
 
 @dataclass(frozen=True)
-class Sentenca:
+class CourtDecision:
     """Uma sentença do conjunto de treinamento, com o cabeçalho e as três partes separados."""
 
     numero: int
@@ -30,7 +30,7 @@ class Sentenca:
     cargo: str
 
 
-def ler_sentencas(caminho_pdf: str | Path) -> list[Sentenca]:
+def ler_sentencas(caminho_pdf: str | Path) -> list[CourtDecision]:
     """Lê o PDF do conjunto de treinamento e devolve as sentenças na ordem do arquivo.
 
     O arquivo tem uma sentença por trecho iniciado pela marca "CASO NN DE MM". As
@@ -51,7 +51,7 @@ def ler_sentencas(caminho_pdf: str | Path) -> list[Sentenca]:
     return sentencas
 
 
-def _ler_sentenca(cabecalho_orgao: list[str], linhas: list[str]) -> Sentenca:
+def _ler_sentenca(cabecalho_orgao: list[str], linhas: list[str]) -> CourtDecision:
     numero = int(_MARCA_CASO.search(linhas[0]).group(1))
 
     campos: dict[str, str] = {}
@@ -74,7 +74,7 @@ def _ler_sentenca(cabecalho_orgao: list[str], linhas: list[str]) -> Sentenca:
     if faltando or processo is None:
         raise ValueError(f"caso {numero}: cabeçalho incompleto (faltando {faltando or 'Processo'})")
 
-    return Sentenca(
+    return CourtDecision(
         numero=numero,
         orgao=" — ".join(cabecalho_orgao),
         ramo=campos["Ramo"],

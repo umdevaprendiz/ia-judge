@@ -1,9 +1,9 @@
 import re
 from dataclasses import dataclass
 
-from dosimetria import Pena
+from dosimetria import Penalty
 
-from .leitor import Sentenca
+from .leitor import CourtDecision
 
 # "2 anos", "2 (dois) anos", "1 ano, 4 meses e 10 dias": número, extenso opcional, unidade
 _QUANTIDADE = re.compile(r"(\d+)\s*(?:\([^)]*\)\s*)?(anos?|m[eê]s(?:es)?|dias?)\b(?!-multa)", re.IGNORECASE)
@@ -14,7 +14,7 @@ _REGIME = re.compile(r"regime inicial\s+(\w+)", re.IGNORECASE)
 
 
 @dataclass(frozen=True, slots=True)
-class DosimetriaDeclarada:
+class DeclaredSentencing:
     """O que a própria sentença diz sobre a pena, para comparar com o cálculo do motor.
 
     Extração por regras, feita para o formato do conjunto de treinamento. Não substitui
@@ -22,17 +22,17 @@ class DosimetriaDeclarada:
     """
 
     trecho: str
-    pena_base: Pena | None
-    pena_definitiva: Pena | None
+    pena_base: Penalty | None
+    pena_definitiva: Penalty | None
     dias_multa: int | None
     regime_inicial: str | None
 
 
-def eh_penal(sentenca: Sentenca) -> bool:
+def eh_penal(sentenca: CourtDecision) -> bool:
     return sentenca.ramo.lower().startswith("direito penal")
 
 
-def extrair_dosimetria_declarada(sentenca: Sentenca) -> DosimetriaDeclarada | None:
+def extrair_dosimetria_declarada(sentenca: CourtDecision) -> DeclaredSentencing | None:
     """Devolve a dosimetria escrita no dispositivo, ou None se a sentença não tiver uma."""
     inicio = sentenca.dispositivo.find("Dosimetria:")
     if not eh_penal(sentenca) or inicio == -1:
@@ -41,7 +41,7 @@ def extrair_dosimetria_declarada(sentenca: Sentenca) -> DosimetriaDeclarada | No
 
     dias_multa = _DIAS_MULTA.search(trecho)
     regime = _REGIME.search(trecho)
-    return DosimetriaDeclarada(
+    return DeclaredSentencing(
         trecho=trecho,
         pena_base=_pena(_PENA_BASE.search(trecho)),
         pena_definitiva=_pena(_PENA_DEFINITIVA.search(trecho)),
@@ -50,7 +50,7 @@ def extrair_dosimetria_declarada(sentenca: Sentenca) -> DosimetriaDeclarada | No
     )
 
 
-def _pena(match: re.Match | None) -> Pena | None:
+def _pena(match: re.Match | None) -> Penalty | None:
     if match is None:
         return None
     anos = meses = dias = 0
@@ -64,4 +64,4 @@ def _pena(match: re.Match | None) -> Pena | None:
             dias += int(numero)
     if not (anos or meses or dias):
         return None
-    return Pena.de_anos_meses_dias(anos=anos, meses=meses, dias=dias)
+    return Penalty.de_anos_meses_dias(anos=anos, meses=meses, dias=dias)

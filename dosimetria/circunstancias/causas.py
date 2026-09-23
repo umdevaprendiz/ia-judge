@@ -1,16 +1,16 @@
 from dataclasses import dataclass
 from enum import Enum
-from fractions import Fraction
+import fractions
 
-from ..valores.fracao import Fracao
+from ..valores.fracao import Fraction
 
 
-class DirecaoCausa(Enum):
+class CauseDirection(Enum):
     AUMENTO = "aumento"
     DIMINUICAO = "diminuicao"
 
 
-class OrigemCausa(Enum):
+class CauseOrigin(Enum):
     """Onde a causa está prevista. Só as da Parte Especial entram no concurso do art. 68, parágrafo único."""
 
     PARTE_GERAL = "parte_geral"
@@ -18,7 +18,7 @@ class OrigemCausa(Enum):
 
 
 @dataclass(frozen=True, slots=True)
-class CausaModificadora:
+class ModifyingCause:
     """Causa de aumento ou de diminuição de pena (3ª fase), com a fração que o caso aplica.
 
     `fracao_min`/`fracao_max` vêm do dispositivo (ex.: "de um terço até metade");
@@ -29,11 +29,11 @@ class CausaModificadora:
 
     codigo: str
     dispositivo: str
-    direcao: DirecaoCausa
-    origem: OrigemCausa
-    fracao_min: Fracao
-    fracao_max: Fracao | None = None
-    fracao_escolhida: Fracao | None = None
+    direcao: CauseDirection
+    origem: CauseOrigin
+    fracao_min: Fraction
+    fracao_max: Fraction | None = None
+    fracao_escolhida: Fraction | None = None
     justificativa: str | None = None
 
     def __post_init__(self) -> None:
@@ -55,7 +55,7 @@ class CausaModificadora:
             )
 
     @property
-    def fracao_aplicada(self) -> Fracao:
+    def fracao_aplicada(self) -> Fraction:
         return self.fracao_escolhida or self.fracao_min
 
     @property
@@ -63,6 +63,6 @@ class CausaModificadora:
         return racional(self.fracao_aplicada) != racional(self.fracao_min)
 
 
-def racional(fracao: Fracao) -> Fraction:
+def racional(fracao: Fraction) -> fractions.Fraction:
     """Valor exato da fração, para comparar e compor sem arredondar no meio do cálculo."""
-    return Fraction(fracao.numerador, fracao.denominador)
+    return fractions.Fraction(fracao.numerador, fracao.denominador)

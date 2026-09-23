@@ -14,11 +14,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from dosimetria import (
-    CircunstanciaJudicial,
-    Composicao,
-    Direcao,
-    DirecaoCausa,
-    OrigemCausa,
+    JudicialCircumstance,
+    Composition,
+    CircumstanceDirection,
+    CauseDirection,
+    CauseOrigin,
     comparar_resposta,
     entrada_de_dict,
     pena_para_dict,
@@ -27,13 +27,13 @@ from dosimetria import (
 from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
 
 from .esquemas import (
-    ComparacaoSaida,
-    EntradaDosimetria,
-    Exemplo,
-    ExemploResumo,
-    Opcoes,
-    PedidoComparacao,
-    ResultadoSaida,
+    ComparisonOutput,
+    SentencingRequest,
+    Example,
+    ExampleSummary,
+    Options,
+    ComparisonRequest,
+    SentencingOutput,
 )
 
 ARQUIVO_EXEMPLOS = Path(__file__).resolve().parent.parent / "dados" / "casos" / "dosimetrias.json"
@@ -106,26 +106,26 @@ def saude() -> dict:
     return {"status": "ok"}
 
 
-@app.get("/opcoes", response_model=Opcoes, tags=["referência"])
-def opcoes() -> Opcoes:
+@app.get("/opcoes", response_model=Options, tags=["referência"])
+def opcoes() -> Options:
     """Valores aceitos nos campos de escolha da entrada."""
-    return Opcoes(
-        circunstancias_judiciais=[c.value for c in CircunstanciaJudicial],
-        direcoes_agravante_atenuante=[d.value for d in Direcao],
-        direcoes_causa=[d.value for d in DirecaoCausa],
-        origens_causa=[o.value for o in OrigemCausa],
+    return Options(
+        circunstancias_judiciais=[c.value for c in JudicialCircumstance],
+        direcoes_agravante_atenuante=[d.value for d in CircumstanceDirection],
+        direcoes_causa=[d.value for d in CauseDirection],
+        origens_causa=[o.value for o in CauseOrigin],
         estrategias=list(ESTRATEGIAS),
-        composicoes=[c.value for c in Composicao],
+        composicoes=[c.value for c in Composition],
     )
 
 
-@app.get("/exemplos", response_model=list[ExemploResumo], tags=["referência"])
+@app.get("/exemplos", response_model=list[ExampleSummary], tags=["referência"])
 def listar_exemplos() -> list[dict]:
     """Casos prontos para testar. Use GET /exemplos/{id} para pegar a entrada de um deles."""
     return [{k: caso[k] for k in ("id", "descricao", "fonte")} for caso in _exemplos().values()]
 
 
-@app.get("/exemplos/{id_exemplo}", response_model=Exemplo, tags=["referência"])
+@app.get("/exemplos/{id_exemplo}", response_model=Example, tags=["referência"])
 def obter_exemplo(id_exemplo: str) -> dict:
     """A entrada de um caso de exemplo, pronta para colar em POST /dosimetria/calcular."""
     caso = _exemplos().get(id_exemplo)
@@ -134,15 +134,15 @@ def obter_exemplo(id_exemplo: str) -> dict:
     return {k: caso[k] for k in ("id", "descricao", "fonte", "entrada")}
 
 
-@app.post("/dosimetria/calcular", response_model=ResultadoSaida, tags=["dosimetria"])
-def calcular(entrada: EntradaDosimetria) -> dict:
+@app.post("/dosimetria/calcular", response_model=SentencingOutput, tags=["dosimetria"])
+def calcular(entrada: SentencingRequest) -> dict:
     """Calcula a dosimetria completa: as três fases, o passo a passo, os alertas e a fundamentação."""
     resultado = entrada_de_dict(entrada.model_dump(mode="json")).calcular()
     return resultado_para_dict(resultado)
 
 
-@app.post("/ensino/comparar", response_model=ComparacaoSaida, tags=["ensino"])
-def comparar(pedido: PedidoComparacao) -> dict:
+@app.post("/ensino/comparar", response_model=ComparisonOutput, tags=["ensino"])
+def comparar(pedido: ComparisonRequest) -> dict:
     """Corrige a dosimetria de um estudante, fase a fase, e devolve o gabarito completo."""
     resultado = entrada_de_dict(pedido.entrada.model_dump(mode="json")).calcular()
     resposta = pedido.resposta

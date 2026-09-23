@@ -3,13 +3,13 @@
 Fica fora do pacote `dosimetria` de propósito: o motor continua sem depender de PDF.
 """
 
-from .leitor import Sentenca, ler_sentencas
-from .dosimetria_declarada import DosimetriaDeclarada, eh_penal, extrair_dosimetria_declarada
+from .leitor import CourtDecision, ler_sentencas
+from .dosimetria_declarada import DeclaredSentencing, eh_penal, extrair_dosimetria_declarada
 
 __all__ = [
-    "Sentenca",
+    "CourtDecision",
     "ler_sentencas",
-    "DosimetriaDeclarada",
+    "DeclaredSentencing",
     "eh_penal",
     "extrair_dosimetria_declarada",
 ]

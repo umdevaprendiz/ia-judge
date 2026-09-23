@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import total_ordering
 
-from .fracao import Fracao
+from .fracao import Fraction
 
 DIAS_POR_ANO = 365
 DIAS_POR_MES = 30
@@ -11,7 +11,7 @@ DIAS_POR_MES = 30
 
 @total_ordering
 @dataclass(frozen=True, slots=True)
-class Pena:
+class Penalty:
     """Quantidade de pena privativa de liberdade, guardada internamente em dias inteiros."""
 
     dias: int
@@ -21,22 +21,22 @@ class Pena:
             raise ValueError("pena não pode ter dias negativos")
 
     @classmethod
-    def de_anos_meses_dias(cls, anos: int = 0, meses: int = 0, dias: int = 0) -> "Pena":
+    def de_anos_meses_dias(cls, anos: int = 0, meses: int = 0, dias: int = 0) -> "Penalty":
         return cls(anos * DIAS_POR_ANO + meses * DIAS_POR_MES + dias)
 
-    def mais(self, fracao: Fracao) -> "Pena":
+    def mais(self, fracao: Fraction) -> "Penalty":
         """Aumenta a pena em uma fração dela mesma (ex.: majorante de 1/3)."""
-        return Pena(self.dias + fracao.aplicar(self.dias))
+        return Penalty(self.dias + fracao.aplicar(self.dias))
 
-    def menos(self, fracao: Fracao) -> "Pena":
+    def menos(self, fracao: Fraction) -> "Penalty":
         """Diminui a pena em uma fração dela mesma (ex.: minorante de 1/6)."""
-        return Pena(self.dias - fracao.aplicar(self.dias))
+        return Penalty(self.dias - fracao.aplicar(self.dias))
 
-    def mais_dias(self, dias: int) -> "Pena":
-        return Pena(self.dias + dias)
+    def mais_dias(self, dias: int) -> "Penalty":
+        return Penalty(self.dias + dias)
 
-    def menos_dias(self, dias: int) -> "Pena":
-        return Pena(self.dias - dias)
+    def menos_dias(self, dias: int) -> "Penalty":
+        return Penalty(self.dias - dias)
 
     def como_anos_meses_dias(self) -> tuple[int, int, int]:
         """Decompõe em anos, meses e dias pela convenção do projeto (365 e 30 dias).
@@ -51,7 +51,7 @@ class Pena:
             meses, dias = 11, dias + DIAS_POR_MES
         return anos, meses, dias
 
-    def __lt__(self, outra: "Pena") -> bool:
+    def __lt__(self, outra: "Penalty") -> bool:
         return self.dias < outra.dias
 
     def __str__(self) -> str:

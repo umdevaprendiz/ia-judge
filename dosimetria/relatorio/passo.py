@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 
-from ..valores.pena import Pena
+from ..valores.pena import Penalty
 
 
 @dataclass(frozen=True, slots=True)
-class Passo:
-    """Um passo do cálculo, para compor o relatório explicativo (ResultadoDosimetria)."""
+class Step:
+    """Um passo do cálculo, para compor o relatório explicativo (SentencingResult)."""
 
     fase: str
     regra: str
     dispositivo: str
-    valor_antes: Pena
-    valor_depois: Pena
+    valor_antes: Penalty
+    valor_depois: Penalty
     motivo: str

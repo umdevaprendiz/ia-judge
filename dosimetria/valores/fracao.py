@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class Fracao:
+class Fraction:
     """Fração legal (ex.: 1/3, 1/6), guardada como numerador/denominador para nunca perder precisão."""
 
     numerador: int

@@ -1,66 +1,66 @@
 """Motor de dosimetria penal (sistema trifásico do art. 68 do CP), em Python puro.
 
-A API pública é reexportada aqui: `from dosimetria import Pena, calcular_dosimetria_completa`.
+A API pública é reexportada aqui: `from dosimetria import Penalty, calcular_dosimetria_completa`.
 """
 
-from .valores import Faixa, Fracao, Pena
+from .valores import PenaltyRange, Fraction, Penalty
 from .circunstancias import (
-    CausaModificadora,
-    CircunstanciaJudicial,
-    CircunstanciaLegal,
-    Direcao,
-    DirecaoCausa,
-    OrigemCausa,
-    Valoracao,
+    ModifyingCause,
+    JudicialCircumstance,
+    LegalCircumstance,
+    CircumstanceDirection,
+    CauseDirection,
+    CauseOrigin,
+    Assessment,
 )
-from .quantum import EstrategiaQuantum, FracaoDoIntervalo, FracaoDoMinimo
-from .relatorio import Passo, gerar_fundamentacao, pena_para_dict, resultado_para_dict
+from .quantum import QuantumStrategy, IntervalFraction, MinimumFraction
+from .relatorio import Step, gerar_fundamentacao, pena_para_dict, resultado_para_dict
 from .fases import (
-    Composicao,
-    OpcaoFase3,
-    ResultadoDosimetria,
-    ResultadoFase1,
-    ResultadoFase2,
-    ResultadoFase3,
+    Composition,
+    Phase3Option,
+    SentencingResult,
+    Phase1Result,
+    Phase2Result,
+    Phase3Result,
     calcular_dosimetria_completa,
     calcular_pena_base,
     calcular_pena_definitiva,
     calcular_pena_intermediaria,
 )
-from .entrada import EntradaDosimetria, entrada_de_dict
-from .ensino import ComparacaoFase, ComparacaoResposta, comparar_resposta
+from .entrada import SentencingInput, entrada_de_dict
+from .ensino import PhaseComparison, AnswerComparison, comparar_resposta
 
 __all__ = [
-    "Fracao",
-    "Pena",
-    "Faixa",
-    "CircunstanciaJudicial",
-    "Valoracao",
-    "Passo",
-    "EstrategiaQuantum",
-    "FracaoDoIntervalo",
-    "FracaoDoMinimo",
-    "ResultadoFase1",
+    "Fraction",
+    "Penalty",
+    "PenaltyRange",
+    "JudicialCircumstance",
+    "Assessment",
+    "Step",
+    "QuantumStrategy",
+    "IntervalFraction",
+    "MinimumFraction",
+    "Phase1Result",
     "calcular_pena_base",
-    "CircunstanciaLegal",
-    "Direcao",
-    "ResultadoFase2",
+    "LegalCircumstance",
+    "CircumstanceDirection",
+    "Phase2Result",
     "calcular_pena_intermediaria",
-    "CausaModificadora",
-    "DirecaoCausa",
-    "OrigemCausa",
-    "Composicao",
-    "OpcaoFase3",
-    "ResultadoFase3",
+    "ModifyingCause",
+    "CauseDirection",
+    "CauseOrigin",
+    "Composition",
+    "Phase3Option",
+    "Phase3Result",
     "calcular_pena_definitiva",
-    "ResultadoDosimetria",
+    "SentencingResult",
     "calcular_dosimetria_completa",
     "gerar_fundamentacao",
     "pena_para_dict",
     "resultado_para_dict",
-    "EntradaDosimetria",
+    "SentencingInput",
     "entrada_de_dict",
-    "ComparacaoFase",
-    "ComparacaoResposta",
+    "PhaseComparison",
+    "AnswerComparison",
     "comparar_resposta",
 ]

@@ -1,16 +1,16 @@
 import math
 from dataclasses import dataclass
 from enum import Enum
-from fractions import Fraction
+import fractions
 
-from ..circunstancias.causas import CausaModificadora, DirecaoCausa, OrigemCausa, racional
-from ..relatorio.passo import Passo
-from ..valores.pena import Pena
+from ..circunstancias.causas import ModifyingCause, CauseDirection, CauseOrigin, racional
+from ..relatorio.passo import Step
+from ..valores.pena import Penalty
 
 FASE = "3ª fase (pena definitiva)"
 
 
-class Composicao(Enum):
+class Composition(Enum):
     """Como várias causas se somam na 3ª fase.
 
     CASCATA: cada fração incide sobre a pena já modificada pela causa anterior.
@@ -23,14 +23,14 @@ class Composicao(Enum):
 
 
 @dataclass(frozen=True, slots=True)
-class OpcaoFase3:
+class Phase3Option:
     descricao: str
-    pena_definitiva: Pena
-    passos: tuple[Passo, ...]
+    pena_definitiva: Penalty
+    passos: tuple[Step, ...]
 
 
 @dataclass(frozen=True, slots=True)
-class ResultadoFase3:
+class Phase3Result:
     """Resultado da 3ª fase.
 
     `aplicando_todas` aplica todas as causas. `limitada_art68` só existe quando há
@@ -39,19 +39,19 @@ class ResultadoFase3:
     motor mostra as duas e deixa a escolha com o juiz.
     """
 
-    aplicando_todas: OpcaoFase3
-    limitada_art68: OpcaoFase3 | None
+    aplicando_todas: Phase3Option
+    limitada_art68: Phase3Option | None
 
 
 def calcular_pena_definitiva(
-    pena_intermediaria: Pena,
-    causas: list[CausaModificadora],
-    composicao: Composicao,
-) -> ResultadoFase3:
+    pena_intermediaria: Penalty,
+    causas: list[ModifyingCause],
+    composicao: Composition,
+) -> Phase3Result:
     """3ª fase do art. 68 do CP: aplica causas de aumento e de diminuição.
 
     Diferente das fases anteriores, aqui a pena pode ultrapassar o máximo ou ficar
-    abaixo do mínimo da faixa — por isso esta função nem recebe a `Faixa`.
+    abaixo do mínimo da faixa — por isso esta função nem recebe a `PenaltyRange`.
 
     O cálculo é feito com frações exatas e as frações de dia são desprezadas uma
     única vez, no fim (art. 11 do CP; seção 6.1 do plano). Consequência: na cascata,
@@ -63,7 +63,7 @@ def calcular_pena_definitiva(
 
     aplicadas, descartadas, rotulos = _limitar_pelo_art68(causas)
     if not descartadas:
-        return ResultadoFase3(aplicando_todas=aplicando_todas, limitada_art68=None)
+        return Phase3Result(aplicando_todas=aplicando_todas, limitada_art68=None)
 
     limitada = _aplicar(
         pena_intermediaria,
@@ -72,21 +72,21 @@ def calcular_pena_definitiva(
         composicao,
         "art. 68, parágrafo único: " + " e ".join(rotulos),
     )
-    return ResultadoFase3(aplicando_todas=aplicando_todas, limitada_art68=limitada)
+    return Phase3Result(aplicando_todas=aplicando_todas, limitada_art68=limitada)
 
 
 def _limitar_pelo_art68(
-    causas: list[CausaModificadora],
-) -> tuple[list[CausaModificadora], list[CausaModificadora], list[str]]:
+    causas: list[ModifyingCause],
+) -> tuple[list[ModifyingCause], list[ModifyingCause], list[str]]:
     """Separa, para cada sentido com concurso na Parte Especial, a causa que prevalece."""
-    descartadas: list[CausaModificadora] = []
+    descartadas: list[ModifyingCause] = []
     rotulos: list[str] = []
     for direcao, rotulo in [
-        (DirecaoCausa.AUMENTO, "só o aumento que mais aumenta"),
-        (DirecaoCausa.DIMINUICAO, "só a diminuição que mais diminui"),
+        (CauseDirection.AUMENTO, "só o aumento que mais aumenta"),
+        (CauseDirection.DIMINUICAO, "só a diminuição que mais diminui"),
     ]:
         especiais = [
-            c for c in causas if c.direcao is direcao and c.origem is OrigemCausa.PARTE_ESPECIAL
+            c for c in causas if c.direcao is direcao and c.origem is CauseOrigin.PARTE_ESPECIAL
         ]
         if len(especiais) < 2:
             continue
@@ -98,19 +98,19 @@ def _limitar_pelo_art68(
 
 
 def _aplicar(
-    pena_intermediaria: Pena,
-    causas: list[CausaModificadora],
-    descartadas: list[CausaModificadora],
-    composicao: Composicao,
+    pena_intermediaria: Penalty,
+    causas: list[ModifyingCause],
+    descartadas: list[ModifyingCause],
+    composicao: Composition,
     descricao: str,
-) -> OpcaoFase3:
-    passos: list[Passo] = []
-    exato = Fraction(pena_intermediaria.dias)
+) -> Phase3Option:
+    passos: list[Step] = []
+    exato = fractions.Fraction(pena_intermediaria.dias)
 
     for causa in causas:
         fracao = racional(causa.fracao_aplicada)
-        sinal = 1 if causa.direcao is DirecaoCausa.AUMENTO else -1
-        if composicao is Composicao.CASCATA:
+        sinal = 1 if causa.direcao is CauseDirection.AUMENTO else -1
+        if composicao is Composition.CASCATA:
             depois = exato * (1 + sinal * fracao)
         else:
             depois = exato + sinal * fracao * pena_intermediaria.dias
@@ -120,7 +120,7 @@ def _aplicar(
                 "use a composição em cascata ou revise as frações"
             )
         passos.append(
-            Passo(
+            Step(
                 fase=FASE,
                 regra="art. 68 do CP",
                 dispositivo=causa.dispositivo,
@@ -135,7 +135,7 @@ def _aplicar(
 
     for causa in descartadas:
         passos.append(
-            Passo(
+            Step(
                 fase=FASE,
                 regra="art. 68, parágrafo único, do CP",
                 dispositivo=causa.dispositivo,
@@ -150,7 +150,7 @@ def _aplicar(
 
     if not causas and not descartadas:
         passos.append(
-            Passo(
+            Step(
                 fase=FASE,
                 regra="art. 68 do CP",
                 dispositivo="-",
@@ -160,18 +160,18 @@ def _aplicar(
             )
         )
 
-    return OpcaoFase3(descricao=descricao, pena_definitiva=pena_definitiva, passos=tuple(passos))
+    return Phase3Option(descricao=descricao, pena_definitiva=pena_definitiva, passos=tuple(passos))
 
 
-def _motivo(causa: CausaModificadora, composicao: Composicao) -> str:
-    verbo = "aumento" if causa.direcao is DirecaoCausa.AUMENTO else "diminuição"
-    base = "em cascata" if composicao is Composicao.CASCATA else "sobre a pena intermediária"
+def _motivo(causa: ModifyingCause, composicao: Composition) -> str:
+    verbo = "aumento" if causa.direcao is CauseDirection.AUMENTO else "diminuição"
+    base = "em cascata" if composicao is Composition.CASCATA else "sobre a pena intermediária"
     motivo = f"{causa.codigo}: {verbo} de {causa.fracao_aplicada} ({base})"
     if causa.acima_da_minima:
         motivo += f"; fração acima da mínima ({causa.fracao_min}): {causa.justificativa}"
     return motivo
 
 
-def _truncar(valor: Fraction) -> Pena:
+def _truncar(valor: fractions.Fraction) -> Penalty:
     """Despreza as frações de dia (art. 11 do CP)."""
-    return Pena(math.floor(valor))
+    return Penalty(math.floor(valor))

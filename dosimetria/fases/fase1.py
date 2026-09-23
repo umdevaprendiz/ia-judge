@@ -1,31 +1,31 @@
 from dataclasses import dataclass
 
-from ..circunstancias.judiciais import CircunstanciaJudicial, Valoracao
-from ..valores.faixa import Faixa
-from ..relatorio.passo import Passo
-from ..valores.pena import Pena
-from ..quantum.estrategias import EstrategiaQuantum
+from ..circunstancias.judiciais import JudicialCircumstance, Assessment
+from ..valores.faixa import PenaltyRange
+from ..relatorio.passo import Step
+from ..valores.pena import Penalty
+from ..quantum.estrategias import QuantumStrategy
 
 
 @dataclass(frozen=True, slots=True)
-class ResultadoFase1:
-    pena_base: Pena
-    passo: Passo
+class Phase1Result:
+    pena_base: Penalty
+    passo: Step
     alertas: tuple[str, ...] = ()
 
 
 def calcular_pena_base(
-    faixa: Faixa,
-    circunstancias: dict[CircunstanciaJudicial, Valoracao],
-    estrategia: EstrategiaQuantum,
-) -> ResultadoFase1:
+    faixa: PenaltyRange,
+    circunstancias: dict[JudicialCircumstance, Assessment],
+    estrategia: QuantumStrategy,
+) -> Phase1Result:
     """1ª fase do art. 68 do CP: fixa a pena-base a partir das 8 circunstâncias do art. 59.
 
     Circunstâncias favoráveis ou neutras não alteram a pena-base — ela parte do mínimo
     da faixa. Cada circunstância desfavorável soma um incremento fixo (definido pela
     estratégia de quantum), e o resultado nunca sai da faixa.
     """
-    esperadas = set(CircunstanciaJudicial)
+    esperadas = set(JudicialCircumstance)
     recebidas = set(circunstancias)
     if recebidas != esperadas:
         faltando = esperadas - recebidas
@@ -37,8 +37,8 @@ def calcular_pena_base(
 
     desfavoraveis = [
         circunstancia.value
-        for circunstancia in CircunstanciaJudicial
-        if circunstancias[circunstancia] is Valoracao.DESFAVORAVEL
+        for circunstancia in JudicialCircumstance
+        if circunstancias[circunstancia] is Assessment.DESFAVORAVEL
     ]
     quantidade_desfavoravel = len(desfavoraveis)
     incremento = estrategia.incremento_por_circunstancia(faixa)
@@ -53,7 +53,7 @@ def calcular_pena_base(
     else:
         motivo = "nenhuma circunstância desfavorável: pena-base fixada no mínimo da faixa"
 
-    passo = Passo(
+    passo = Step(
         fase="1ª fase (pena-base)",
         regra="art. 59 do CP",
         dispositivo=faixa.origem,
@@ -67,4 +67,4 @@ def calcular_pena_base(
             f"pena-base calculada ({pena_base_bruta}) passaria do máximo da faixa; "
             f"fixada no máximo ({faixa.maximo})",
         )
-    return ResultadoFase1(pena_base=pena_base, passo=passo, alertas=alertas)
+    return Phase1Result(pena_base=pena_base, passo=passo, alertas=alertas)

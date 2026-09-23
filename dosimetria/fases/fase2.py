@@ -1,29 +1,29 @@
 from dataclasses import dataclass
 
-from ..circunstancias.legais import CircunstanciaLegal, Direcao
-from ..valores.faixa import Faixa
-from ..relatorio.passo import Passo
-from ..valores.pena import Pena
-from ..quantum.estrategias import EstrategiaQuantum
+from ..circunstancias.legais import LegalCircumstance, CircumstanceDirection
+from ..valores.faixa import PenaltyRange
+from ..relatorio.passo import Step
+from ..valores.pena import Penalty
+from ..quantum.estrategias import QuantumStrategy
 
 
 @dataclass(frozen=True, slots=True)
-class ResultadoFase2:
-    pena_intermediaria: Pena
-    passo: Passo
+class Phase2Result:
+    pena_intermediaria: Penalty
+    passo: Step
     alertas: tuple[str, ...] = ()
 
 
 def calcular_pena_intermediaria(
-    faixa: Faixa,
-    pena_base: Pena,
-    circunstancias: list[CircunstanciaLegal],
-    estrategia: EstrategiaQuantum,
-) -> ResultadoFase2:
+    faixa: PenaltyRange,
+    pena_base: Penalty,
+    circunstancias: list[LegalCircumstance],
+    estrategia: QuantumStrategy,
+) -> Phase2Result:
     """2ª fase do art. 68 do CP: aplica agravantes e atenuantes sobre a pena-base.
 
     Continua sem sair da faixa — em particular, a atenuante nunca reduz abaixo do
-    mínimo (Súmula 231 do STJ), garantido por `Faixa.limitar`.
+    mínimo (Súmula 231 do STJ), garantido por `PenaltyRange.limitar`.
 
     Havendo concurso entre agravantes e atenuantes com preponderância só de um lado
     (art. 67 do CP: motivos determinantes do crime, personalidade do agente e
@@ -31,8 +31,8 @@ def calcular_pena_intermediaria(
     casos (sem concurso, ou preponderância dos dois lados, ou de nenhum), o efeito é
     a compensação líquida entre o número de agravantes e de atenuantes.
     """
-    agravantes = [c for c in circunstancias if c.direcao is Direcao.AGRAVANTE]
-    atenuantes = [c for c in circunstancias if c.direcao is Direcao.ATENUANTE]
+    agravantes = [c for c in circunstancias if c.direcao is CircumstanceDirection.AGRAVANTE]
+    atenuantes = [c for c in circunstancias if c.direcao is CircumstanceDirection.ATENUANTE]
 
     regra_preponderancia = None
     if agravantes and atenuantes:
@@ -47,7 +47,7 @@ def calcular_pena_intermediaria(
 
     incremento = estrategia.incremento_por_circunstancia(faixa).dias
     dias_bruto = pena_base.dias + incremento * len(agravantes) - incremento * len(atenuantes)
-    pena_intermediaria = faixa.limitar(Pena(max(dias_bruto, 0)))
+    pena_intermediaria = faixa.limitar(Penalty(max(dias_bruto, 0)))
 
     partes_motivo = [
         f"{len(agravantes)} agravante(s){_codigos(agravantes)}, "
@@ -58,7 +58,7 @@ def calcular_pena_intermediaria(
     if pena_intermediaria.dias != dias_bruto:
         partes_motivo.append("resultado contido na faixa (Súmula 231 do STJ, se for o caso)")
 
-    passo = Passo(
+    passo = Step(
         fase="2ª fase (pena intermediária)",
         regra="arts. 61 a 67 do CP",
         dispositivo=faixa.origem,
@@ -79,12 +79,12 @@ def calcular_pena_intermediaria(
         )
     if regra_preponderancia:
         alertas.append(f"concurso de agravantes e atenuantes: {regra_preponderancia}")
-    return ResultadoFase2(
+    return Phase2Result(
         pena_intermediaria=pena_intermediaria, passo=passo, alertas=tuple(alertas)
     )
 
 
-def _codigos(circunstancias: list[CircunstanciaLegal]) -> str:
+def _codigos(circunstancias: list[LegalCircumstance]) -> str:
     """Ex.: " (reincidencia, confissao_espontanea)", ou vazio se não houver nenhuma."""
     if not circunstancias:
         return ""
