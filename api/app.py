@@ -5,6 +5,7 @@ Documentação interativa: http://127.0.0.1:8000/docs
 """
 
 import json
+import os
 from functools import cache
 from pathlib import Path
 
@@ -103,7 +104,8 @@ def inicio() -> dict:
 
 @app.get("/saude", tags=["geral"])
 def saude() -> dict:
-    return {"status": "ok"}
+    """Verificação de funcionamento. `commit` é o commit publicado (definido pelo Render)."""
+    return {"status": "ok", "commit": os.environ.get("RENDER_GIT_COMMIT")}
 
 
 @app.get("/opcoes", response_model=Options, tags=["referência"])

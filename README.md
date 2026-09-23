@@ -68,10 +68,25 @@ em **New → Blueprint**, conecte a conta do GitHub, escolha este repositório e
 clique em **Apply**. A API deste repositório está em
 https://sergius-ia-judge.onrender.com/docs.
 
-Depois disso, cada push na `main` publica uma versão nova, mas só depois que o
-workflow de testes do GitHub (`.github/workflows/testes.yml`) passar. No plano
-gratuito, o serviço dorme depois de um tempo sem acesso, e a primeira requisição
-seguinte pode levar cerca de um minuto para responder.
+Quem publica as versões novas é o GitHub Actions (`.github/workflows/testes.yml`):
+a cada push na `main`, ele roda os testes e, se passarem, chama o *deploy hook*
+do Render com o commit exato e espera a API pública responder com esse commit
+(`GET /saude` informa o commit publicado). O Render não publica sozinho
+(`autoDeployTrigger: "off"` no `render.yaml`).
+
+Configuração, feita uma vez:
+
+1. No Render, abra o serviço → **Settings** → **Deploy Hook** e copie a URL.
+2. No GitHub, abra o repositório → **Settings → Secrets and variables → Actions →
+   New repository secret**, com o nome `RENDER_DEPLOY_HOOK_URL` e a URL copiada
+   como valor.
+
+A URL do deploy hook contém uma chave secreta: ela fica só nesse secret e nunca
+deve ser colada em arquivos do repositório. Se vazar, gere outra no Render
+(**Regenerate Hook**) e atualize o secret.
+
+No plano gratuito, o serviço dorme depois de um tempo sem acesso, e a primeira
+requisição seguinte pode levar cerca de um minuto para responder.
 
 ## O que o motor faz
 
