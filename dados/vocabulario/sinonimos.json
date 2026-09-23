@@ -1,0 +1,34 @@
+{
+ "descricao": "Sinônimos revisados: cada palavra da lista é lida pelo agente como a palavra canônica (a chave). Só entram sinônimos que, numa descrição de caso penal, têm um único sentido possível.",
+ "fonte": "OpenWordnet-PT, versão 2026.04.07 (github.com/own-pt/openWordnet-PT), licença CC BY 4.0; revisão manual. Os itens em 'acrescentados' não vêm do OpenWordnet-PT.",
+ "recusados": {
+  "executar": "também é executar um plano ou um contrato",
+  "abater": "também é abater uma dívida",
+  "atacar": "também é ataque verbal",
+  "reconhecer": "também é reconhecer o réu (identificação), não confessar",
+  "velho": "também é carro velho, casa velha",
+  "voltar, retornar, regressar": "não são sinônimos de devolver neste contexto",
+  "roubar <-> furtar": "o OpenWordnet-PT os junta, mas são crimes diferentes (arts. 155 e 157)",
+  "corromper": "também é corromper menor (outro crime)",
+  "quebrar, bater": "também é quebrar a perna, bater o carro"
+ },
+ "sinonimos": {
+  "matar": ["assassinar"],
+  "furtar": ["surrupiar", "afanar", "larapiar"],
+  "roubar": ["assaltar"],
+  "agredir": ["espancar", "machucar", "lesionar", "maltratar"],
+  "enganar": ["iludir", "lograr", "trapacear", "ludibriar"],
+  "sequestrar": ["raptar", "abduzir", "seqüestrar"],
+  "estuprar": ["violentar"],
+  "destruir": ["destroçar", "estraçalhar", "demolir", "depredar"],
+  "danificar": ["avariar"],
+  "fugir": ["escapar", "evadir", "escapulir", "foragir"],
+  "confessar": ["admitir"],
+  "arrombar": ["arrebentar"],
+  "esfaquear": ["apunhalar"],
+  "atirar": ["balear", "disparar", "tirotear", "alvejar"],
+  "criança": ["menino", "menina", "bebê"],
+  "faca": ["coitelo", "punhal", "peixeira"]
+ },
+ "acrescentados": ["ludibriar", "depredar", "alvejar", "punhal", "peixeira"]
+}

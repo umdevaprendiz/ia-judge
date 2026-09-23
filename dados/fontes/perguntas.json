@@ -43,6 +43,9 @@
   {"pergunta": "comprei pela internet e quero devolver", "esperado": ["CDC.art49"], "ate": 1},
   {"pergunta": "direitos básicos do consumidor", "esperado": ["CDC.art6"], "ate": 2},
   {"pergunta": "dano moral por ato ilícito", "esperado": ["CC.art186"], "ate": 1},
-  {"pergunta": "não há crime sem lei anterior que o defina", "esperado": ["CP.art1", "CF.art5"], "ate": 1}
+  {"pergunta": "não há crime sem lei anterior que o defina", "esperado": ["CP.art1", "CF.art5"], "ate": 1},
+  {"pergunta": "o réu assassinou a vítima", "esperado": ["CP.art121"], "ate": 1},
+  {"pergunta": "surrupiou a carteira de um passageiro", "esperado": ["CP.art155"], "ate": 2},
+  {"pergunta": "espancou a vítima, que ficou machucada", "esperado": ["CP.art129"], "ate": 2}
  ]
 }

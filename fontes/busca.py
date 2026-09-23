@@ -21,6 +21,9 @@ from threading import Lock
 
 from .extracao import LegalProvision
 from .texto import sem_acentos
+from .vocabulario import lema
+
+_PALAVRA = re.compile(r"[a-z0-9à-öø-ÿ]+")
 
 ARQUIVO_BASE = Path(__file__).resolve().parent.parent / "dados" / "fontes" / "dispositivos.json"
 
@@ -168,9 +171,24 @@ def normalizar(texto: str) -> str:
 
 
 def termos(texto: str) -> list[str]:
-    """Texto -> radicais, sem acentos e sem palavras vazias ("furtou a bicicleta" -> ["furt", "biciclet"])."""
-    palavras = re.findall(r"[a-z0-9]+", normalizar(texto))
-    return [radical(p) for p in palavras if p not in _PALAVRAS_VAZIAS and (len(p) > 1 or p.isdigit())]
+    """Texto -> radicais, sem acentos e sem palavras vazias ("furtou a bicicleta" -> ["furt", "biciclet"]).
+
+    Cada palavra conta pela forma escrita e, quando é diferente, também pela forma base do
+    dicionário ("mata" -> "mata" e "matar"; "assassinou" -> "assassin" e "matar"). A forma
+    escrita não é trocada porque várias palavras são substantivo e verbo ao mesmo tempo.
+    """
+    saida = []
+    for escrita in _PALAVRA.findall(texto.lower().replace("º", "o").replace("ª", "a")):
+        simples = sem_acentos(escrita)
+        if simples in _PALAVRAS_VAZIAS or (len(simples) < 2 and not simples.isdigit()):
+            continue
+        atual = radical(simples)
+        saida.append(atual)
+        if not simples.isdigit():
+            da_base = radical(sem_acentos(lema(escrita)))
+            if da_base != atual:
+                saida.append(da_base)
+    return saida
 
 
 class _Bm25Field:

@@ -14,7 +14,7 @@ from privacidade import anonimizar
 
 from .seguranca import RateLimiter
 
-log = logging.getLogger("sergius.casos")
+log = logging.getLogger(__name__)
 
 TAMANHO_MINIMO = 50
 TAMANHO_MAXIMO = 20_000

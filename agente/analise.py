@@ -19,6 +19,7 @@ from threading import Lock
 
 from dosimetria import Penalty, pena_para_dict
 from fontes.busca import SINONIMOS, LegalSearchIndex, _Bm25Field, base_de_fontes, normalizar, termos
+from fontes.vocabulario import lematizar
 
 from .catalogo import (
     AGRAVANTES,
@@ -98,9 +99,10 @@ class CrimeAgent:
             lei = self.crimes[self._ordem[posicao]].lei
             pontos[posicao] *= _PESO_DA_LEI.get(lei, _PESO_DAS_OUTRAS_LEIS)
         # indícios fortes do léxico: pesam mais que a semelhança de palavras
+        frases = _frases(texto)
         indicios: dict[str, str] = {}
         for rotulo, peso, padrao in INDICIOS_DE_CRIMES:
-            evidencia = _frase_com(padrao, [f.strip() for f in _FRASE.findall(texto) if f.strip()])
+            evidencia = _frase_com(padrao, frases)
             if evidencia is not None and rotulo in self.crimes:
                 pontos[self._ordem.index(rotulo)] += peso
                 indicios[rotulo] = evidencia
@@ -146,7 +148,7 @@ class CrimeAgent:
         crime = self.crimes.get(rotulo)
         if crime is None:
             raise ValueError(f"crime não encontrado na base: {rotulo}")
-        frases = [f.strip() for f in _FRASE.findall(texto) if f.strip()]
+        frases = _frases(texto)
         com_violencia = bool(COM_VIOLENCIA.search(crime.caput))
 
         formas = [self._opcao(op, frases) for op in crime.opcoes if op.tipo == "forma"]
@@ -205,7 +207,7 @@ class CrimeAgent:
             ],
         }
 
-    def _opcao(self, opcao: CrimeOption, frases: list[str]) -> dict:
+    def _opcao(self, opcao: CrimeOption, frases: list[tuple[str, str]]) -> dict:
         item = {
             "rotulo": opcao.rotulo,
             "titulo": opcao.titulo,
@@ -235,7 +237,7 @@ class CrimeAgent:
         return [descricao for descricao, padrao in _AUSENCIAS if not padrao.search(texto)]
 
 
-def _circunstancia(circunstancia: GeneralCircumstance, frases: list[str]) -> dict:
+def _circunstancia(circunstancia: GeneralCircumstance, frases: list[tuple[str, str]]) -> dict:
     return {
         "codigo": circunstancia.codigo,
         "titulo": circunstancia.titulo,
@@ -245,21 +247,33 @@ def _circunstancia(circunstancia: GeneralCircumstance, frases: list[str]) -> dic
     }
 
 
-def _sugerir(circunstancia: GeneralCircumstance, frases: list[str]) -> dict:
+def _sugerir(circunstancia: GeneralCircumstance, frases: list[tuple[str, str]]) -> dict:
     evidencia = _frase_com(circunstancia.indicios, frases) if circunstancia.indicios is not None else None
     return {"sugerido": evidencia is not None, "evidencia": evidencia}
 
 
-# "não confessou", "nunca foi condenado", "sem arma": o indício logo depois de uma negação não vale
-_NEGACAO_ANTES = re.compile(r"\b(?:n[ãa]o|nunca|jamais|sem|nem|negou)\s+(?:\S+\s+){0,2}$", re.IGNORECASE)
+# o indício não vale logo depois de uma negação ("não confessou", "nunca foi condenado", "sem
+# arma") nem de uma intenção ("iria matá-lo", "ameaçou matar", "prometeu matar"): o fato não aconteceu
+_NEGACAO_ANTES = re.compile(
+    r"\b(?:n[ãa]o|nunca|jamais|sem|nem|negou|negar|iria|ia|ir|vai|vou|irá|pretend\w*|promet\w*|amea[çc]\w*(?:\s+de)?|queria|quis|querer)"
+    r"\s+(?:\S+\s+){0,2}$",
+    re.IGNORECASE,
+)
 
 
-def _frase_com(padrao: re.Pattern, frases: list[str]) -> str | None:
-    for frase in frases:
-        for correspondencia in padrao.finditer(frase):
-            antes = frase[max(0, correspondencia.start() - 30) : correspondencia.start()]
-            if not _NEGACAO_ANTES.search(antes):
-                return _encurtar(frase)
+def _frases(texto: str) -> list[tuple[str, str]]:
+    """Cada frase do caso, como foi escrita e com as palavras na forma base ("assassinou" -> "matar")."""
+    return [(f.strip(), lematizar(f.strip())) for f in _FRASE.findall(texto) if f.strip()]
+
+
+def _frase_com(padrao: re.Pattern, frases: list[tuple[str, str]]) -> str | None:
+    """A primeira frase com o indício, na forma escrita ou na forma base, e sem negação antes dele."""
+    for original, na_forma_base in frases:
+        for versao in (original, na_forma_base):
+            for correspondencia in padrao.finditer(versao):
+                antes = versao[max(0, correspondencia.start() - 30) : correspondencia.start()]
+                if not _NEGACAO_ANTES.search(antes):
+                    return _encurtar(original)
     return None
 
 

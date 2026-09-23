@@ -81,14 +81,8 @@ jobs:
       - name: Audita as dependências do teste de navegador (npm audit)
         working-directory: tests/navegador
         run: npm audit --audit-level=moderate
-      - name: Procura segredos no código
-        run: |
-          # falha se aparecer algo com cara de credencial (o .env nunca é versionado)
-          if git grep -n -I -E "(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,}|api\.render\.com/deploy/srv-[a-z0-9]+\?key=|mysql://[^:@/ <>]+:[^@/ <>\$\{]+@)" -- . ':!*.pdf'; then
-            echo "::error::Possível segredo encontrado no código (veja as linhas acima)."
-            exit 1
-          fi
-          test ! -e .env || { echo "::error::.env não pode ser versionado"; exit 1; }
+      - name: Procura vazamentos no código (segredos, dados locais, arquivos proibidos)
+        run: python scripts/verificar_vazamentos.py
 
   deploy:
     needs: [testes, navegador, seguranca]

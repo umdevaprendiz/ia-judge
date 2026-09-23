@@ -64,8 +64,10 @@ tratada como requisito em cada funcionalidade:
   usa um usuário que só lê e grava dados; criar e alterar tabelas é tarefa de outro
   usuário, que só existe durante as migrações.
 - **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
-  Render e do GitHub. O MySQL local usa usuário, banco e senhas aleatórios num `.env` fora do git. O CI
-  procura segredos no código e reprova o build se achar algum.
+  Render e do GitHub. O MySQL local usa usuário, banco e senhas aleatórios num `.env` fora do git.
+  `scripts/verificar_vazamentos.py` varre todos os arquivos do repositório (antes de cada commit
+  e no CI) atrás de chaves, tokens, URLs com senha, caminhos locais, e-mails pessoais, arquivos
+  proibidos e valores do `.env` local, e reprova o build se achar algum.
 - **Dependências fixadas e auditadas**: o CI roda `pip-audit` e `npm audit` e reprova
   vulnerabilidades conhecidas; o Dependabot abre PRs de atualização toda semana.
 - O contêiner roda com usuário sem privilégios de root.
@@ -92,7 +94,7 @@ terceiros, responde. **Nada é gravado**: a descrição é anonimizada, analisad
    parágrafo contam como uma causa (Súmula 443); agravante que já qualificou não se repete
    (bis in idem); repouso noturno não se aplica ao furto qualificado (STJ, Tema 1.087).
 
-Casos de teste em `dados/agente/casos.json` (`python -m agente.avaliacao`): 25 descrições de
+Casos de teste em `dados/agente/casos.json` (`python -m agente.avaliacao`): 38 descrições de
 estudante, de furto a peculato; hoje o crime certo vem em 1º lugar em todas, com todas as
 sugestões esperadas e nenhuma indevida. Rotas: `POST /agente/analisar`, `POST
 /agente/estrutura`, `GET /agente/crimes`, `POST /agente/calcular` (30 por minuto por visitante).
@@ -100,6 +102,26 @@ A Lei de Drogas ainda não está na base, e o agente avisa quando o caso é de t
 
 Guardar o caso para ensinar o agente depois continua possível, mas é opcional e só aparece
 com o banco de dados ligado.
+
+## Vocabulário (dicionários abertos do português brasileiro)
+
+A busca e o agente comparam as palavras pela **forma base**: "mata", "matou", "matando" e
+"matará" contam como "matar", e sinônimos revisados contam como a palavra canônica
+("assassinou" -> "matar", "surrupiou" -> "furtar", "espancou" -> "agredir"). Assim o
+estudante pode escrever do próprio jeito.
+
+- **Flexões**: dicionário **VERO** (Verificador Ortográfico do LibreOffice, pt-BR, com o Acordo
+  Ortográfico de 1990), licença LGPLv3/MPL 2.0. `dados/vocabulario/lexico.json` traz uma
+  seleção das palavras base (todos os verbos, as palavras da lei e dos sinônimos) e das regras
+  de sufixo; `fontes/vocabulario.py` desfaz o sufixo na hora, como um corretor ortográfico.
+- **Sinônimos**: **OpenWordnet-PT** (Rademaker et al., 2012; versão 2026.04.07), licença CC BY 4.0.
+  Os candidatos passam por revisão antes de entrar em `dados/vocabulario/sinonimos.json`, que
+  registra também os recusados e o motivo (ex.: "executar" também é executar um plano;
+  "furtar" e "roubar" são crimes diferentes).
+- Na frase, só os verbos e os sinônimos mudam: substantivos mantêm o gênero ("ex-companheira"
+  não vira "ex-companheiro"), e auxiliares de intenção ficam ("iria matar" não é matar).
+- Para gerar de novo: baixe `pt_BR.dic`, `pt_BR.aff` e o `own-pt-*.tar.xz` para `dicionarios/`
+  (fora do git) e rode `python scripts/construir_vocabulario.py`.
 
 ## Base de legislação e busca (RAG)
 

@@ -21,3 +21,7 @@ venv/
 # teste no navegador (roda fora da imagem)
 tests/navegador/node_modules/
 tests/navegador/fotos/
+
+# dicionários de terceiros (só servem para gerar dados/vocabulario/) e diário local
+dicionarios/
+docs/progresso.md

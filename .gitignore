@@ -28,3 +28,6 @@ tests/navegador/fotos/
 
 # diário de trabalho local (decisões e próximos passos), fora do repositório público
 docs/progresso.md
+
+# dicionários de terceiros baixados para gerar o vocabulário do agente (scripts/construir_vocabulario.py)
+dicionarios/
