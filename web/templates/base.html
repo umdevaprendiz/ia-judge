@@ -21,7 +21,6 @@
         <a href="/calcular" {% if atual == "calcular" %}aria-current="page"{% endif %}>Calcular</a>
         <a href="/praticar" {% if atual == "praticar" %}aria-current="page"{% endif %}>Praticar</a>
         <a href="/como-funciona" {% if atual == "como-funciona" %}aria-current="page"{% endif %}>Como funciona</a>
-        <a href="/docs">API</a>
       </nav>
     </div>
   </header>
@@ -36,6 +35,9 @@
       Confira as regras no texto vigente do Código Penal.
     </p>
     <p>Convenção: 1 ano = 365 dias, 1 mês = 30 dias; frações de dia são desprezadas (art. 11 do CP).</p>
+    <p class="rodape__autoria">
+      Desenvolvido por <strong>{{ AUTOR }}</strong> · © {{ ano_atual() }} {{ AUTOR }}. Todos os direitos reservados.
+    </p>
   </footer>
   {% block scripts %}{% endblock %}
 </body>
