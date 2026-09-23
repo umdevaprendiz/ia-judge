@@ -9,3 +9,11 @@ venv/
 *.pdf
 # o conjunto de treinamento é lido pelos testes (pacote sentencas/)
 !Conjunto de Treinamento - 10 Sentenças Judiciais.pdf
+
+# segredos e credenciais: nunca colocar na imagem
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12

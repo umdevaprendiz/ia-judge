@@ -208,9 +208,9 @@ art. 68, parágrafo único) e as mensagens de erro.
 # roda o notebook de testes contra o código atual; sai com erro se algum teste falhar
 docker compose run --rm testes
 
-# abre o JupyterLab para editar e rodar os testes
+# abre o JupyterLab para editar e rodar os testes; o terminal mostra o endereço
+# com um token aleatório gerado a cada início (http://127.0.0.1:8888/lab?token=...)
 docker compose up jupyter
-# -> http://127.0.0.1:8888/lab?token=dosimetria  (troque o token com JUPYTER_TOKEN)
 ```
 
 ### Sem Docker

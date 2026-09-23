@@ -24,15 +24,16 @@ services:
       - ./:/app:ro
 
   # JupyterLab para editar e rodar os testes, com a pasta do projeto montada.
-  #   docker compose up jupyter   ->   http://127.0.0.1:8888/lab?token=dosimetria
+  #   docker compose up jupyter
+  # O Jupyter gera um token aleatório a cada início e mostra no terminal o endereço
+  # completo (http://127.0.0.1:8888/lab?token=...). Não fixe um token aqui: este
+  # arquivo vai para o repositório público.
   jupyter:
     build:
       context: .
       target: dev
     image: sergius-ia-judge:dev
     command: ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser"]
-    environment:
-      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-dosimetria}
     ports:
       - "127.0.0.1:8888:8888"
     volumes:
