@@ -1,4 +1,4 @@
-# Progresso do motor de dosimetria
+# Progresso do motor de dosimetria (sergius-ia-Judge)
 
 Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
 `plano-ia-dosimetria-penal.pdf`.
