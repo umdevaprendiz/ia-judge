@@ -18,13 +18,14 @@ registro do que já foi feito e dos próximos passos está em
 
 ## Usando a API
 
-```bash
-docker compose up api
-```
+A API está publicada em **https://sergius-ia-judge.onrender.com/docs**. É a
+documentação interativa: em cada rota, clique em *Try it out* e depois em
+*Execute*. As rotas já vêm com exemplos preenchidos. Ela fica no plano gratuito
+do Render e "dorme" sem uso, então a primeira visita depois de um tempo pode
+levar cerca de um minuto.
 
-Abra **http://localhost:8000/docs**. É a documentação interativa: em cada rota,
-clique em *Try it out* e depois em *Execute*. As rotas já vêm com exemplos
-preenchidos.
+Para rodar na sua máquina, use `docker compose up api` e abra
+http://localhost:8000/docs.
 
 | Rota | O que faz |
 |---|---|
@@ -37,7 +38,7 @@ preenchidos.
 Exemplo de chamada fora do navegador:
 
 ```bash
-curl -X POST http://localhost:8000/dosimetria/calcular   -H "Content-Type: application/json"   -d '{
+curl -X POST https://sergius-ia-judge.onrender.com/dosimetria/calcular   -H "Content-Type: application/json"   -d '{
     "faixa": {"origem": "CP.art155", "minimo": {"anos": 1}, "maximo": {"anos": 4}},
     "circunstancias_desfavoraveis": ["culpabilidade"],
     "agravantes_atenuantes": [{"codigo": "reincidencia", "dispositivo": "CP.art61.I",
@@ -64,7 +65,8 @@ A API não tem login nem guarda dados: ela só calcula. A imagem Docker padrão
 O arquivo `render.yaml` descreve a publicação no [Render](https://render.com),
 no plano gratuito. Para publicar pela primeira vez: no painel do Render, clique
 em **New → Blueprint**, conecte a conta do GitHub, escolha este repositório e
-clique em **Apply**. A API fica em `https://<nome-do-serviço>.onrender.com/docs`.
+clique em **Apply**. A API deste repositório está em
+https://sergius-ia-judge.onrender.com/docs.
 
 Depois disso, cada push na `main` publica uma versão nova, mas só depois que o
 workflow de testes do GitHub (`.github/workflows/testes.yml`) passar. No plano
@@ -230,7 +232,6 @@ O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
 
 - Reunir 10 dosimetrias de sentenças penais **reais**. Hoje só há uma: no
   conjunto de treinamento, apenas o caso 04 é penal.
-- Divulgar o endereço público da API (Render) para os estudantes.
 - Ingestão do Código Penal (Planalto → banco) e extração dos fatos do caso via LLM.
 
 Os detalhes estão em [`docs/progresso.md`](docs/progresso.md).
