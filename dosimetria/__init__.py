@@ -9,6 +9,7 @@ from .agravantes_atenuantes import CircunstanciaLegal, Direcao
 from .fase2 import ResultadoFase2, calcular_pena_intermediaria
 from .causas import CausaModificadora, DirecaoCausa, OrigemCausa
 from .fase3 import Composicao, OpcaoFase3, ResultadoFase3, calcular_pena_definitiva
+from .completa import ResultadoDosimetria, calcular_dosimetria_completa
 
 __all__ = [
     "Fracao",
@@ -33,4 +34,6 @@ __all__ = [
     "OpcaoFase3",
     "ResultadoFase3",
     "calcular_pena_definitiva",
+    "ResultadoDosimetria",
+    "calcular_dosimetria_completa",
 ]

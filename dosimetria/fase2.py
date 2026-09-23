@@ -11,6 +11,7 @@ from .quantum import EstrategiaQuantum
 class ResultadoFase2:
     pena_intermediaria: Pena
     passo: Passo
+    alertas: tuple[str, ...] = ()
 
 
 def calcular_pena_intermediaria(
@@ -62,4 +63,19 @@ def calcular_pena_intermediaria(
         valor_depois=pena_intermediaria,
         motivo="; ".join(partes_motivo),
     )
-    return ResultadoFase2(pena_intermediaria=pena_intermediaria, passo=passo)
+    alertas = []
+    if dias_bruto < faixa.minimo.dias:
+        alertas.append(
+            "atenuante(s) não aplicada(s) integralmente: a pena intermediária não pode "
+            f"ficar abaixo do mínimo da faixa ({faixa.minimo}) — Súmula 231 do STJ"
+        )
+    elif dias_bruto > faixa.maximo.dias:
+        alertas.append(
+            "agravante(s) não aplicada(s) integralmente: a pena intermediária não pode "
+            f"passar do máximo da faixa ({faixa.maximo})"
+        )
+    if regra_preponderancia:
+        alertas.append(f"concurso de agravantes e atenuantes: {regra_preponderancia}")
+    return ResultadoFase2(
+        pena_intermediaria=pena_intermediaria, passo=passo, alertas=tuple(alertas)
+    )

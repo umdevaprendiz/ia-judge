@@ -11,6 +11,7 @@ from .quantum import EstrategiaQuantum
 class ResultadoFase1:
     pena_base: Pena
     passo: Passo
+    alertas: tuple[str, ...] = ()
 
 
 def calcular_pena_base(
@@ -57,4 +58,10 @@ def calcular_pena_base(
         valor_depois=pena_base,
         motivo=motivo,
     )
-    return ResultadoFase1(pena_base=pena_base, passo=passo)
+    alertas = ()
+    if pena_base != pena_base_bruta:
+        alertas = (
+            f"pena-base calculada ({pena_base_bruta}) passaria do máximo da faixa; "
+            f"fixada no máximo ({faixa.maximo})",
+        )
+    return ResultadoFase1(pena_base=pena_base, passo=passo, alertas=alertas)
