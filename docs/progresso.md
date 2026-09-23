@@ -232,6 +232,13 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   deixou de ser JSON e virou a página inicial; as rotas da API não mudaram. Os
   arquivos estáticos levam `?v=<commit>` para não ficarem presos no cache após
   um deploy.
+  - Foco nos estudantes (pedido do usuário): o menu não tem mais a aba "API" e
+    a página Como funciona não aponta mais para `/docs`. A API segue no ar,
+    porque as páginas dependem dela, e `/docs` continua acessível para quem
+    souber o endereço, mas não aparece nas páginas. O rodapé de todas as
+    páginas traz "Desenvolvido por Sérgio Souza · © <ano> Sérgio Souza. Todos
+    os direitos reservados.", com o ano calculado a cada requisição. O README
+    ganhou a seção "Autor", com os direitos reservados e sem licença de uso.
   - Praticar: a lista mostra "Caso N" e o enunciado só os fatos, porque as
     descrições entregam a resposta; a descrição aparece depois da correção. A
     opção do art. 68, parágrafo único, conta como certa.
@@ -250,7 +257,7 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
     no CSS resolve para qualquer elemento. O teste simula 1,5 s de latência
     nesse pedido para reproduzir o cenário localmente.
   - Testes: a seção "Páginas para estudantes" do notebook, e
-    `tests/navegador/teste.js` (Playwright, 35 verificações), que roda no job
+    `tests/navegador/teste.js` (Playwright, 38 verificações), que roda no job
     `navegador` do GitHub Actions com o Chrome, contra a imagem Docker da API.
     O deploy só acontece se `testes` e `navegador` passarem.
 

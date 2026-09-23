@@ -28,6 +28,16 @@ const verificar = (condicao, mensagem) => {
   await pagina.goto(`${BASE}/`);
   verificar((await pagina.title()).includes("sergius-ia-Judge"), "Início: título da página");
   verificar(await pagina.locator('nav a[aria-current="page"]', { hasText: "Início" }).count() === 1, "Início: menu marca a página atual");
+  verificar(
+    JSON.stringify(await pagina.locator("nav a").allTextContents()) === JSON.stringify(["Início", "Calcular", "Praticar", "Como funciona"]),
+    "Início: menu só com as páginas dos estudantes (sem a aba API)"
+  );
+  verificar(await pagina.locator('a[href="/docs"]').count() === 0, "Início: nenhum link para a documentação da API");
+  const autoria = await pagina.locator(".rodape__autoria").textContent();
+  verificar(
+    autoria.includes("Desenvolvido por Sérgio Souza") && autoria.includes(`© ${new Date().getFullYear()} Sérgio Souza. Todos os direitos reservados.`),
+    `Início: rodapé com autoria e direitos reservados (${autoria.trim().replace(/\s+/g, " ")})`
+  );
   await pagina.screenshot({ path: `${FOTOS}/1-inicio.png`, fullPage: true });
 
   // ---------- Calcular: exemplo carregado e cálculo ----------

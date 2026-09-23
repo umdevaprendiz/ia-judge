@@ -279,3 +279,10 @@ O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
 - Ingestão do Código Penal (Planalto → banco) e extração dos fatos do caso via LLM.
 
 Os detalhes estão em [`docs/progresso.md`](docs/progresso.md).
+
+## Autor
+
+Desenvolvido por **Sérgio Souza** ([@umdevaprendiz](https://github.com/umdevaprendiz)).
+
+© 2026 Sérgio Souza. Todos os direitos reservados. O código está disponível para
+consulta, mas não há licença de uso, cópia ou redistribuição.

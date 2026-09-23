@@ -110,6 +110,7 @@ h4 { font-size: 1rem; color: var(--texto-suave); margin-top: 1.25rem; }
   padding: 1.5rem 1rem; text-align: center;
 }
 .rodape p { margin: .25rem auto; max-width: 70ch; }
+.rodape__autoria { margin-top: .9rem !important; padding-top: .9rem; border-top: 1px solid var(--borda); color: var(--texto); }
 
 /* ---------- blocos genéricos ---------- */
 
