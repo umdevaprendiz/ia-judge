@@ -160,7 +160,10 @@ formulario.addEventListener("submit", async (evento) => {
 // ---------- escolha do caso ----------
 
 async function carregarCaso(id) {
-  esconder(caixaErros, areaCorrecao);
+  // enquanto o caso novo não chega, nada do caso anterior fica na tela: senão a
+  // resposta poderia ser corrigida contra o caso errado
+  casoAtual = null;
+  esconder(caixaErros, areaCorrecao, enunciado, formulario);
   formulario.reset();
   try {
     casoAtual = await chamarApi(`/exemplos/${encodeURIComponent(id)}`);
