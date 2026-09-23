@@ -35,17 +35,20 @@ def calcular_pena_base(
             f"(faltando={faltando or None}, desconhecidas={desconhecidas or None})"
         )
 
-    quantidade_desfavoravel = sum(
-        1 for valoracao in circunstancias.values() if valoracao is Valoracao.DESFAVORAVEL
-    )
+    desfavoraveis = [
+        circunstancia.value
+        for circunstancia in CircunstanciaJudicial
+        if circunstancias[circunstancia] is Valoracao.DESFAVORAVEL
+    ]
+    quantidade_desfavoravel = len(desfavoraveis)
     incremento = estrategia.incremento_por_circunstancia(faixa)
     pena_base_bruta = faixa.minimo.mais_dias(incremento.dias * quantidade_desfavoravel)
     pena_base = faixa.limitar(pena_base_bruta)
 
     if quantidade_desfavoravel:
         motivo = (
-            f"{quantidade_desfavoravel} circunstância(s) desfavorável(is) do art. 59, "
-            f"{estrategia.nome} cada"
+            f"{quantidade_desfavoravel} circunstância(s) desfavorável(is) do art. 59 "
+            f"({', '.join(desfavoraveis)}), {estrategia.nome} cada"
         )
     else:
         motivo = "nenhuma circunstância desfavorável: pena-base fixada no mínimo da faixa"

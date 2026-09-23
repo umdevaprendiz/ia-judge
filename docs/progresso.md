@@ -12,7 +12,7 @@ dosimetria/
   circunstancias/    judiciais.py (art. 59), legais.py (arts. 61-67), causas.py (3ª fase)
   quantum/           estrategias.py (Strategy do quantum das fases 1 e 2)
   fases/             fase1.py, fase2.py, fase3.py, completa.py
-  relatorio/         passo.py (unidade do passo a passo)
+  relatorio/         passo.py (passo a passo) e fundamentacao.py (texto)
 ```
 
 Quem usa o motor importa sempre de `dosimetria` (ex.: `from dosimetria import
@@ -95,6 +95,12 @@ Pena`); os subpacotes são organização interna e podem mudar sem quebrar isso.
     máximo e concurso resolvido por preponderância (art. 67). A completa soma a
     isso: pena definitiva fora da faixa (permitido na 3ª fase) e existência das
     duas opções do art. 68, parágrafo único.
+- `dosimetria/relatorio/fundamentacao.py` — `gerar_fundamentacao(resultado)`
+  monta o texto da dosimetria (faixa, critério de quantum, composição, as três
+  fases com cada passo, a opção do art. 68, parágrafo único, e os alertas) só a
+  partir do `ResultadoDosimetria`, sem acrescentar análise nova. Os motivos das
+  fases 1 e 2 passaram a nomear as circunstâncias (ex.: "(culpabilidade)",
+  "(reincidencia)"). Testado na seção "Fundamentação" do notebook.
 
 Testes: a seção "Fase 3" do notebook cobre furto noturno, pena acima do máximo e
 abaixo do mínimo, fração sem justificativa/fora do intervalo, cascata x sobre a
@@ -163,6 +169,4 @@ para não duplicar trabalho de novo.
 - **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
   dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
   sentenças penais reais conforme forem aparecendo.
-- Texto do relatório para leitura humana (fundamentação a partir dos `Passo`s e
-  alertas).
 - Depois: ingestão (Planalto → banco) ou extração via LLM.

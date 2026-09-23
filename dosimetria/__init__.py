@@ -14,7 +14,7 @@ from .circunstancias import (
     Valoracao,
 )
 from .quantum import EstrategiaQuantum, FracaoDoIntervalo, FracaoDoMinimo
-from .relatorio import Passo
+from .relatorio import Passo, gerar_fundamentacao
 from .fases import (
     Composicao,
     OpcaoFase3,
@@ -53,4 +53,5 @@ __all__ = [
     "calcular_pena_definitiva",
     "ResultadoDosimetria",
     "calcular_dosimetria_completa",
+    "gerar_fundamentacao",
 ]
