@@ -268,6 +268,11 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   somam só 360 dias, na exibição os meses param em 11 e o excedente fica nos
   dias: 726 dias = "1 ano, 11 meses, 31 dias" (antes saía "1 ano, 12 meses,
   1 dia"). A decomposição continua exata e volta para o mesmo total de dias.
+- Repositório público: confirmado pelo usuário que os nomes de partes, juízes e
+  processos do `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf` são
+  fictícios, então o PDF pode ficar no repositório. Os PDFs da CF e da
+  Coletânea Penal são texto de lei (sem direito autoral, Lei 9.610/98, art. 8º,
+  IV). Por decisão do usuário, o repositório fica sem licença por enquanto.
 - Estratégias de quantum não têm valor padrão implícito no motor: cada chamada a
   `calcular_pena_base`/`calcular_pena_intermediaria` recebe a estratégia
   explicitamente.
