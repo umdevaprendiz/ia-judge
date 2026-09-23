@@ -139,8 +139,10 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   serviços. `docker compose run --rm testes` executa o notebook contra o código
   atual (pasta montada só para leitura, cópia executada em `/tmp`) e sai com erro
   se algum assert falhar. `docker compose up jupyter` abre o JupyterLab em
-  `http://127.0.0.1:8888/lab?token=dosimetria` (token mudável pela variável
-  `JUPYTER_TOKEN`; a porta só escuta em 127.0.0.1). O motor em si não tem
+  `http://127.0.0.1:8888` com um token aleatório gerado a cada início e mostrado
+  no terminal (antes havia um token fixo, `dosimetria`, no compose; foi removido
+  para não haver credencial no repositório público). A porta só escuta em
+  127.0.0.1. O motor em si não tem
   dependências; `requirements.txt` só traz o `pypdf`, usado pelo leitor de
   sentenças. O `.dockerignore` deixa o PDF do conjunto de treinamento entrar na
   imagem, porque os testes o leem.

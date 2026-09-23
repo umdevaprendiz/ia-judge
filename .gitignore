@@ -3,3 +3,12 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 venv/
+
+# segredos e credenciais: nunca versionar (o repositório é público)
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+.azure/
