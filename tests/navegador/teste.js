@@ -21,7 +21,13 @@ const verificar = (condicao, mensagem) => {
   const pagina = await contexto.newPage();
   const errosConsole = [];
   // os 422 são provocados de propósito pelos testes de erro; qualquer outro erro conta
-  pagina.on("console", (m) => m.type() === "error" && !m.text().includes("status of 422") && errosConsole.push(m.text()));
+  // 404 esperado só no passo que confere que um caso excluído sumiu
+  let esperando404 = false;
+  pagina.on("console", (m) => {
+    if (m.type() !== "error" || m.text().includes("status of 422")) return;
+    if (esperando404 && m.text().includes("status of 404")) return;
+    errosConsole.push(m.text());
+  });
   pagina.on("pageerror", (e) => errosConsole.push(String(e)));
 
   // ---------- Início ----------
@@ -29,7 +35,7 @@ const verificar = (condicao, mensagem) => {
   verificar((await pagina.title()).includes("sergius-ia-Judge"), "Início: título da página");
   verificar(await pagina.locator('nav a[aria-current="page"]', { hasText: "Início" }).count() === 1, "Início: menu marca a página atual");
   verificar(
-    JSON.stringify(await pagina.locator("nav a").allTextContents()) === JSON.stringify(["Início", "Calcular", "Praticar", "Como funciona"]),
+    JSON.stringify(await pagina.locator("nav a").allTextContents()) === JSON.stringify(["Início", "Calcular", "Analisar caso", "Praticar", "Como funciona"]),
     "Início: menu só com as páginas dos estudantes (sem a aba API)"
   );
   verificar(await pagina.locator('a[href="/docs"]').count() === 0, "Início: nenhum link para a documentação da API");
@@ -151,6 +157,75 @@ const verificar = (condicao, mensagem) => {
   await pagina.click('#resposta button[type="submit"]');
   await pagina.locator(".placar").waitFor();
   verificar((await pagina.locator(".placar").textContent()) === "Você acertou 1 de 1 fase.", "Praticar: opção do art. 68 aceita como correta");
+
+  // ---------- Analisar caso (precisa do banco: SEM_BANCO=1 pula) ----------
+  await pagina.goto(`${BASE}/analisar`);
+  const descricao =
+    "O réu Rafael Souza e Silva, CPF 123.456.789-09, reincidente, entrou à noite na loja da Rua das Flores, 120, " +
+    "e subtraiu um celular da vítima Maria, de 72 anos. Rafael confessou. Telefone (21) 98765-4321.";
+  // texto curto: recusado no próprio navegador
+  await pagina.fill("#descricao", "curto demais");
+  await pagina.click("#revisar");
+  verificar((await pagina.locator("#erros").textContent()).includes("pelo menos 50"), "Analisar: descrição curta é recusada");
+  await pagina.fill("#descricao", descricao);
+  verificar((await pagina.locator("#contador").textContent()).startsWith(`${descricao.length}`), "Analisar: contador de caracteres");
+  await pagina.click("#revisar");
+  await pagina.locator("#previa").waitFor({ state: "visible" });
+  const previa = await pagina.locator("#texto-anonimizado").textContent();
+  verificar(
+    !["Rafael", "123.456.789-09", "Flores", "Maria", "98765"].some((dado) => previa.includes(dado)),
+    `Analisar: prévia sem dados pessoais (${previa.slice(0, 80)}…)`
+  );
+  verificar(await pagina.locator("#texto-anonimizado mark").count() >= 5, "Analisar: marcadores destacados na prévia");
+  verificar(await pagina.locator("#salvar").isDisabled(), "Analisar: salvar bloqueado sem concordância");
+  await pagina.check("#consentimento");
+  verificar(await pagina.locator("#salvar").isEnabled(), "Analisar: salvar liberado com concordância");
+  // editar depois de revisar obriga a revisar de novo
+  await pagina.locator("#descricao").press("End");
+  await pagina.locator("#descricao").type(" Fim.");
+  verificar(await pagina.locator("#previa").isHidden(), "Analisar: editar o texto invalida a prévia");
+  await pagina.click("#revisar");
+  await pagina.locator("#previa").waitFor({ state: "visible" });
+  await pagina.check("#consentimento");
+
+  if (process.env.SEM_BANCO === "1") {
+    console.log("(pulando gravação: SEM_BANCO=1)");
+  } else {
+    await pagina.click("#salvar");
+    await pagina.locator("#salvo").waitFor({ state: "visible" });
+    const codigo = (await pagina.locator("#salvo .codigo").textContent()).trim();
+    verificar(/^[A-Za-z0-9_-]{8,16}$/.test(codigo), `Analisar: caso salvo com código (${codigo})`);
+    verificar((await pagina.inputValue("#descricao")) === "", "Analisar: texto original sai da página depois de salvar");
+    verificar(!(await pagina.locator("#salvo").textContent()).includes("Rafael"), "Analisar: caso salvo não contém o nome");
+
+    // consulta pelo código
+    await pagina.fill("#codigo", codigo);
+    await pagina.click('#form-consulta button[type="submit"]');
+    await pagina.locator("#consulta").waitFor({ state: "visible" });
+    verificar((await pagina.locator("#consulta").textContent()).includes(codigo), "Analisar: consulta pelo código");
+
+    // exclusão (LGPD)
+    pagina.once("dialog", (dialogo) => dialogo.accept());
+    await pagina.locator("#consulta .botao--perigo").click();
+    await pagina.waitForFunction(() => document.querySelector("#consulta").textContent.includes("Caso excluído"));
+    esperando404 = true;
+    await pagina.click('#form-consulta button[type="submit"]');
+    await pagina.waitForFunction(() => document.querySelector("#erros").textContent.includes("não encontrado"));
+    esperando404 = false;
+    verificar(true, "Analisar: caso excluído não é mais encontrado");
+    verificar(!(await pagina.locator("#salvo").textContent()).includes(codigo), "Analisar: cartão do caso salvo some após a exclusão");
+  }
+  await pagina.screenshot({ path: `${FOTOS}/8-analisar.png`, fullPage: true });
+
+  // cabeçalhos de segurança nas páginas
+  const resposta = await pagina.request.get(`${BASE}/analisar`);
+  const cabecalhos = resposta.headers();
+  verificar(
+    (cabecalhos["content-security-policy"] || "").includes("script-src 'self'") &&
+      cabecalhos["x-frame-options"] === "DENY" &&
+      cabecalhos["x-content-type-options"] === "nosniff",
+    "Segurança: CSP, anti-frame e nosniff nas páginas"
+  );
 
   // ---------- Como funciona ----------
   await pagina.goto(`${BASE}/como-funciona`);

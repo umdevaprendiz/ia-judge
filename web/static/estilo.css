@@ -285,6 +285,42 @@ input[type="checkbox"] { width: 1.1rem; height: 1.1rem; accent-color: var(--prim
 .observacao { margin: .5rem 0 0; font-style: italic; }
 .gabarito { margin-top: 1rem; }
 
+/* ---------- analisar caso ---------- */
+
+textarea {
+  font: inherit; color: var(--texto); background: var(--fundo); width: 100%; min-height: 14rem; resize: vertical;
+  border: 1px solid var(--borda); border-radius: 8px; padding: .65rem .75rem; line-height: 1.5;
+}
+textarea:focus { border-color: var(--primaria); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primaria) 25%, transparent); }
+
+.aviso--privacidade { background: var(--superficie); border-color: var(--primaria); color: var(--texto); }
+.aviso--privacidade h2 { font-size: 1.05rem; margin-bottom: .35rem; color: var(--primaria); }
+.aviso--privacidade li { margin: .25rem 0; }
+.aviso--sucesso { background: var(--sucesso-fundo); border-color: var(--sucesso); color: var(--texto); }
+.aviso--sucesso h2 { color: var(--sucesso); font-size: 1.15rem; }
+
+.roteiro { margin-bottom: 1.25rem; }
+.roteiro summary { cursor: pointer; font-weight: 700; }
+.roteiro ul { margin: .75rem 0 0; padding-left: 1.2rem; }
+.roteiro li { margin: .3rem 0; }
+
+.previa { margin-top: 1.25rem; }
+.texto-anonimizado {
+  white-space: pre-wrap; word-break: break-word; background: var(--superficie-2);
+  border-radius: 8px; padding: 1rem; margin: .75rem 0; line-height: 1.6;
+}
+mark { background: color-mix(in srgb, var(--realce) 30%, transparent); color: inherit; border-radius: 4px; padding: 0 .2em; font-weight: 600; }
+.consentimento { align-items: flex-start; margin-top: 1rem; font-weight: 500; }
+.consentimento input { margin-top: .2rem; flex: none; }
+.codigo { font-size: 1.1rem; background: var(--superficie-2); padding: .15rem .45rem; border-radius: 6px; user-select: all; }
+.botao--perigo { color: var(--erro); border-color: var(--erro); }
+.botao--perigo:hover { background: var(--erro-fundo); color: var(--erro); border-color: var(--erro); }
+
+.consulta { margin-top: 2rem; }
+.consulta h2 { font-size: 1.1rem; }
+.linha-consulta { display: flex; gap: .75rem; align-items: flex-end; flex-wrap: wrap; }
+.linha-consulta .campo { flex: 1 1 220px; }
+
 /* ---------- texto corrido ---------- */
 
 .texto { max-width: 760px; }

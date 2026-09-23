@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block conteudo %}
+<header class="cabecalho-pagina">
+  <h1>Analisar caso</h1>
+  <p>Descreva o caso com o máximo de detalhes. Nesta etapa do projeto, o caso é guardado (anonimizado) para
+    formar a base de estudo do agente; a análise automática chega nas próximas etapas.</p>
+</header>
+
+<aside class="aviso aviso--privacidade" aria-label="Privacidade">
+  <h2>Sua privacidade</h2>
+  <ul>
+    <li>Não é preciso usar nomes reais. Mesmo assim, antes de salvar, <strong>nomes, CPF, RG, telefones, e-mails,
+      endereços, placas e números de processo são trocados por marcadores</strong> como [PESSOA 1].</li>
+    <li>Você vê o texto exatamente como será guardado antes de salvar. <strong>O texto original não é guardado.</strong></li>
+    <li>Ao salvar, você recebe um código: com ele, consulta ou exclui o caso quando quiser.</li>
+  </ul>
+</aside>
+
+<details class="bloco roteiro" open>
+  <summary>O que incluir na descrição</summary>
+  <ul>
+    <li><strong>O crime e o dispositivo:</strong> ex.: furto qualificado pelo concurso de pessoas (art. 155, §4º, IV, do CP).</li>
+    <li><strong>Os fatos:</strong> quando, onde, como, com que meios, valores e prejuízos.</li>
+    <li><strong>O réu:</strong> antecedentes e reincidência (com condenação definitiva?), conduta social, personalidade, idade na data do fato.</li>
+    <li><strong>Circunstâncias do crime:</strong> motivos, consequências e comportamento da vítima.</li>
+    <li><strong>Agravantes e atenuantes:</strong> confissão, reparação do dano, vítima idosa ou criança, motivo fútil etc.</li>
+    <li><strong>Causas de aumento e de diminuição:</strong> tentativa, arma, concurso de pessoas, repouso noturno, arrependimento posterior etc.</li>
+    <li><strong>Qualificadoras</strong>, se houver.</li>
+  </ul>
+</details>
+
+<form id="formulario" class="formulario" novalidate>
+  <fieldset class="bloco">
+    <legend>Descrição do caso</legend>
+    <label class="campo" for="descricao">Descreva o caso
+      <textarea id="descricao" name="descricao" rows="12" minlength="50" maxlength="20000"
+        placeholder="Ex.: Em março de 2024, à noite, o réu, reincidente em furto, entrou em uma loja fechada..."></textarea>
+    </label>
+    <p class="ajuda" id="contador" aria-live="polite">0 de 20.000 caracteres (mínimo 50)</p>
+    <div class="acoes">
+      <button type="submit" class="botao botao--primario" id="revisar">Revisar anonimização</button>
+    </div>
+  </fieldset>
+</form>
+
+<div id="erros" class="aviso aviso--erro" role="alert" hidden></div>
+
+<section id="previa" class="bloco previa" aria-live="polite" hidden>
+  <h2>Como o caso será guardado</h2>
+  <p class="ajuda">Confira se nenhum dado pessoal escapou. Se escapou, edite a descrição acima e revise de novo.</p>
+  <div id="texto-anonimizado" class="texto-anonimizado"></div>
+  <div id="trocas"></div>
+  <label class="caixa consentimento">
+    <input type="checkbox" id="consentimento">
+    <span>Concordo que a descrição anonimizada acima seja guardada e, depois de validada pelo responsável pelo
+      projeto, usada para ensinar o agente. Sei que posso excluí-la a qualquer momento com o código do caso.</span>
+  </label>
+  <div class="acoes">
+    <button type="button" class="botao botao--primario" id="salvar" disabled>Salvar caso</button>
+  </div>
+</section>
+
+<section id="salvo" class="aviso aviso--sucesso" aria-live="polite" hidden></section>
+
+<section class="bloco consulta">
+  <h2>Consultar ou excluir um caso</h2>
+  <form id="form-consulta" class="linha-consulta" novalidate>
+    <label class="campo" for="codigo">Código do caso
+      <input id="codigo" name="codigo" autocomplete="off" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9_-]{8,16}">
+    </label>
+    <button type="submit" class="botao">Consultar</button>
+  </form>
+  <div id="consulta" hidden></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script type="module" src="/static/analisar.js?v={{ versao }}"></script>
+{% endblock %}

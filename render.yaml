@@ -17,3 +17,11 @@ services:
     envVars:
       - key: PORT
         value: "8000"
+      # o IP real do visitante vem no X-Forwarded-For anexado pelo proxy do Render
+      - key: CONFIAR_PROXY
+        value: "1"
+      # segredos: definidos só no painel do Render (Environment), nunca aqui
+      - key: DATABASE_URL
+        sync: false
+      - key: MYSQL_CA_CERT
+        sync: false
