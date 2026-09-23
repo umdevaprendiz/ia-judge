@@ -34,7 +34,7 @@ from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
 from .casos import roteador as rotas_dos_casos
-from .seguranca import SecurityHeadersMiddleware
+from .seguranca import SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
     ComparisonOutput,
@@ -133,9 +133,21 @@ async def erro_de_validacao(_: Request, erro: RequestValidationError) -> JSONRes
 
 
 @app.get("/saude", tags=["geral"])
-def saude() -> dict:
-    """Verificação de funcionamento. `commit` é o commit publicado (definido pelo Render)."""
-    return {"status": "ok", "commit": os.environ.get("RENDER_GIT_COMMIT")}
+def saude(request: Request) -> dict:
+    """Verificação de funcionamento. `commit` é o commit publicado (definido pelo Render).
+
+    `protecao_ip` diz de onde vem o IP usado no limite de requisições, e se o cabeçalho
+    esperado chegou nesta requisição. Não expõe nenhum IP.
+    """
+    cabecalho = cabecalho_de_ip()
+    return {
+        "status": "ok",
+        "commit": os.environ.get("RENDER_GIT_COMMIT"),
+        "protecao_ip": {
+            "origem": protecao_de_ip(),
+            "cabecalho_presente": bool(cabecalho and request.headers.get(cabecalho)),
+        },
+    }
 
 
 @app.get("/opcoes", response_model=Options, tags=["referência"])

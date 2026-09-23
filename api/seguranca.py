@@ -100,7 +100,7 @@ class SecurityHeadersMiddleware:
 
 def _https_pelo_proxy(scope) -> bool:
     """Atrás do proxy do Render, o HTTPS termina no proxy; ele informa o protocolo original."""
-    if os.environ.get("CONFIAR_PROXY") != "1":
+    if not _confiar_proxy():
         return False
     for nome, valor in scope.get("headers", []):
         if nome == b"x-forwarded-proto":
@@ -124,6 +124,37 @@ async def _responder_413(enviar) -> None:
     await enviar({"type": "http.response.body", "body": corpo})
 
 
+def _no_render() -> bool:
+    """O Render define RENDER=true em todo serviço (como define RENDER_GIT_COMMIT)."""
+    return os.environ.get("RENDER") == "true"
+
+
+def cabecalho_de_ip() -> str:
+    """Cabeçalho confiável com o IP do visitante, se houver.
+
+    Explícito por IP_CLIENTE_CABECALHO; no Render, cf-connecting-ip automaticamente, porque
+    ele fica atrás do Cloudflare. A detecção automática existe porque a variável do
+    render.yaml não chegou a ser aplicada em produção, e o limite continuou burlável.
+    """
+    explicito = os.environ.get("IP_CLIENTE_CABECALHO", "").strip().lower()
+    if explicito:
+        return explicito
+    return "cf-connecting-ip" if _no_render() else ""
+
+
+def protecao_de_ip() -> str:
+    """Qual origem de IP está em uso (para conferência, sem expor IPs)."""
+    if cabecalho_de_ip():
+        return cabecalho_de_ip()
+    if _confiar_proxy():
+        return "x-forwarded-for (último valor)"
+    return "conexão direta"
+
+
+def _confiar_proxy() -> bool:
+    return os.environ.get("CONFIAR_PROXY") == "1" or _no_render()
+
+
 def ip_do_cliente(request: Request) -> str:
     """IP de quem fez a requisição, sem aceitar valores que o próprio visitante possa forjar.
 
@@ -138,14 +169,14 @@ def ip_do_cliente(request: Request) -> str:
     Cloudflare, que muda a cada requisição. Usá-lo deixava o limite burlável (testado em
     produção). Por isso o render.yaml define IP_CLIENTE_CABECALHO=cf-connecting-ip.
     """
-    cabecalho = os.environ.get("IP_CLIENTE_CABECALHO", "").strip().lower()
+    cabecalho = cabecalho_de_ip()
     if cabecalho:
         valor = request.headers.get(cabecalho, "").strip()
         if valor:
             return valor
         # cabeçalho esperado ausente: não cai para valores forjáveis; todos dividem um balde
         return "sem-ip-do-proxy"
-    if os.environ.get("CONFIAR_PROXY") == "1":
+    if _confiar_proxy():
         encaminhado = request.headers.get("x-forwarded-for", "")
         ultimos = [ip.strip() for ip in encaminhado.split(",") if ip.strip()]
         if ultimos:
