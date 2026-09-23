@@ -1,0 +1,5 @@
+# Ferramentas para rodar e editar os testes em notebook (tests/dosimetria_tests.ipynb).
+-r requirements.txt
+nbconvert==7.17.1
+ipykernel==7.3.0
+jupyterlab==4.6.3
