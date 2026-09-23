@@ -3,7 +3,7 @@
 pypdf==6.17.0
 # API HTTP (pacote api/)
 fastapi==0.141.1
-uvicorn==0.52.4
+uvicorn==0.53.0
 # páginas para estudantes (pacote web/): templates HTML
 jinja2==3.1.6
 # banco de dados MySQL (pacote banco/): ORM, driver, migrações e criptografia do login do MySQL 8
