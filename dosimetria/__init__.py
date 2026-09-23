@@ -14,7 +14,7 @@ from .circunstancias import (
     Valoracao,
 )
 from .quantum import EstrategiaQuantum, FracaoDoIntervalo, FracaoDoMinimo
-from .relatorio import Passo, gerar_fundamentacao
+from .relatorio import Passo, gerar_fundamentacao, pena_para_dict, resultado_para_dict
 from .fases import (
     Composicao,
     OpcaoFase3,
@@ -27,6 +27,7 @@ from .fases import (
     calcular_pena_definitiva,
     calcular_pena_intermediaria,
 )
+from .entrada import EntradaDosimetria, entrada_de_dict
 
 __all__ = [
     "Fracao",
@@ -54,4 +55,8 @@ __all__ = [
     "ResultadoDosimetria",
     "calcular_dosimetria_completa",
     "gerar_fundamentacao",
+    "pena_para_dict",
+    "resultado_para_dict",
+    "EntradaDosimetria",
+    "entrada_de_dict",
 ]

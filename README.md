@@ -96,6 +96,10 @@ Para o texto completo, no formato da seção de dosimetria de uma sentença (fai
 critério, as três fases, a opção do art. 68, parágrafo único, e os alertas), use
 `gerar_fundamentacao(resultado)`.
 
+A mesma entrada também pode ser escrita em JSON (veja os casos em
+`dados/casos/dosimetrias.json`): `entrada_de_dict(dados).calcular()` devolve o
+resultado, e `resultado_para_dict(resultado)` o converte de volta para JSON.
+
 ## Estrutura
 
 ```
@@ -104,11 +108,12 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   circunstancias/        judiciais (art. 59), legais (arts. 61-67), causas (3ª fase)
   quantum/               estratégias de quantum das fases 1 e 2
   fases/                 fase1, fase2, fase3 e a dosimetria completa
-  relatorio/             Passo e gerar_fundamentacao (texto da dosimetria)
+  relatorio/             Passo, gerar_fundamentacao (texto) e resultado_para_dict (JSON)
+  entrada.py             entrada_de_dict: o formato JSON de entrada (o mesmo da API)
 sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
+dados/casos/             casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
 tests/
   dosimetria_tests.ipynb notebook de testes
-  casos/                 casos de dosimetria com resultado esperado (JSON)
 docs/progresso.md        o que foi feito, decisões tomadas e próximos passos
 ```
 
@@ -117,7 +122,7 @@ docs/progresso.md        o que foi feito, decisões tomadas e próximos passos
 Os testes ficam no notebook `tests/dosimetria_tests.ipynb`. Cada seção
 imprime `OK`, e qualquer `assert` que falhar interrompe a execução naquele ponto.
 
-A seção "Casos de dosimetria" lê `tests/casos/dosimetrias.json`: são 10
+A seção "Casos de dosimetria" lê `dados/casos/dosimetrias.json`: são 10
 dosimetrias com o resultado esperado calculado à mão, e a conta de cada uma fica
 anotada no próprio arquivo. Uma vem do caso 04 de
 `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`; as outras foram
@@ -127,7 +132,7 @@ incluir um objeto no JSON.
 A seção "Sentenças do conjunto de treinamento" lê o próprio PDF com o pacote
 `sentencas/`, separa as 10 sentenças (ramo, tema, processo, partes, resultado,
 relatório, fundamentação, dispositivo e magistrado) e as confere com a anotação
-de `tests/casos/conjunto_treinamento.json`. Na única sentença penal (caso 04), o
+de `dados/casos/conjunto_treinamento.json`. Na única sentença penal (caso 04), o
 teste extrai a dosimetria que a juíza escreveu (pena-base, pena definitiva,
 dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
 sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
