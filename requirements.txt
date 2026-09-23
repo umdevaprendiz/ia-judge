@@ -1,2 +1,3 @@
 # O motor de dosimetria (pacote dosimetria/) usa só a biblioteca padrão do Python.
-# Dependências de execução entram aqui quando surgirem (ex.: banco, API, LLM).
+# O leitor de sentenças (pacote sentencas/) precisa ler PDF.
+pypdf==6.17.0

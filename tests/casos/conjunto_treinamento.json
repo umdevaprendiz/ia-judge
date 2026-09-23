@@ -1,16 +1,17 @@
 {
   "fonte": "Conjunto de Treinamento - 10 Sentenças Judiciais.pdf",
-  "observacao": "Só o caso 04 é penal e tem dosimetria. Os demais servem como exemplos negativos para a futura etapa de extração (o sistema deve reconhecer que não há pena privativa de liberdade a calcular).",
+  "observacao": "Anotação feita à mão a partir do PDF, usada para conferir o leitor (sentencas/). Só o caso 04 é penal e tem dosimetria; os fatos dele para o motor estão em dosimetrias.json (id em 'caso_dosimetria'). Os demais servem de exemplos negativos: não há pena privativa de liberdade a calcular.",
   "casos": [
-    {"numero": 1, "ramo": "Direito do Consumidor", "tema": "Inscrição indevida em cadastro de inadimplentes", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 2, "ramo": "Direito de Família", "tema": "Revisional de alimentos", "resultado": "PARCIALMENTE PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 3, "ramo": "Direito do Trabalho", "tema": "Vínculo empregatício e horas extras", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 4, "ramo": "Direito Penal", "tema": "Furto qualificado por concurso de pessoas (art. 155, §4º, IV)", "resultado": "CONDENAÇÃO", "tem_dosimetria": true, "caso_dosimetria": "treinamento-04"},
-    {"numero": 5, "ramo": "Direito Imobiliário", "tema": "Despejo por falta de pagamento", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 6, "ramo": "Responsabilidade Civil", "tema": "Acidente de trânsito", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 7, "ramo": "Direito do Consumidor", "tema": "Cancelamento de voo e extravio de bagagem", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 8, "ramo": "Direito Previdenciário", "tema": "Aposentadoria por incapacidade permanente", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 9, "ramo": "Direito Administrativo", "tema": "Fornecimento de medicamento de alto custo", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null},
-    {"numero": 10, "ramo": "Direito Civil / Contratos", "tema": "Cobrança de multa por rescisão contratual", "resultado": "IMPROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null}
+    {"numero": 1, "ramo": "Direito do Consumidor", "tema": "Inscrição Indevida em Cadastro de Inadimplentes", "processo": "1002341-88.2024.8.26.0100", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 2, "ramo": "Direito de Família", "tema": "Revisional de Alimentos — Redução por Alteração Financeira", "processo": "5014892-12.2023.8.13.0024", "resultado": "PARCIALMENTE PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 3, "ramo": "Direito do Trabalho", "tema": "Reconhecimento de Vínculo Empregatício e Horas Extras", "processo": "1000871-45.2023.5.02.0015", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 4, "ramo": "Direito Penal", "tema": "Furto Qualificado por Concurso de Pessoas (Art. 155, §4º, IV)", "processo": "0089123-11.2023.8.19.0001", "resultado": "CONDENAÇÃO", "tem_dosimetria": true, "caso_dosimetria": "treinamento-04",
+     "dosimetria_declarada": {"pena_base_dias": 730, "pena_definitiva_dias": 730, "dias_multa": 10, "regime_inicial": "aberto"}},
+    {"numero": 5, "ramo": "Direito Imobiliário", "tema": "Despejo por Falta de Pagamento e Cobrança de Aluguéis", "processo": "0012984-77.2023.8.16.0001", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 6, "ramo": "Responsabilidade Civil", "tema": "Acidente de Trânsito — Avarias e Danos Materiais", "processo": "5003411-90.2023.8.21.0001", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 7, "ramo": "Direito do Consumidor", "tema": "Cancelamento de Voo e Extravio de Bagagem", "processo": "8011234-55.2023.8.05.0001", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 8, "ramo": "Direito Previdenciário", "tema": "Concessão de Aposentadoria por Invalidez / BPC", "processo": "0804512-33.2023.4.05.8300", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 9, "ramo": "Direito Administrativo", "tema": "Fornecimento de Medicamento de Alto Custo", "processo": "0219845-10.2023.8.06.0001", "resultado": "PROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null},
+    {"numero": 10, "ramo": "Direito Civil / Contratos", "tema": "Cobrança de Multa por Rescisão Contratual", "processo": "5119823-44.2023.8.09.0051", "resultado": "IMPROCEDENTE", "tem_dosimetria": false, "caso_dosimetria": null, "dosimetria_declarada": null}
   ]
 }
