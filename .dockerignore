@@ -17,3 +17,7 @@ venv/
 *.key
 *.pfx
 *.p12
+
+# teste no navegador (roda fora da imagem)
+tests/navegador/node_modules/
+tests/navegador/fotos/

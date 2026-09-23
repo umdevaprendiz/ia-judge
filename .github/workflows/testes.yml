@@ -1,5 +1,5 @@
-# A cada push na main: roda os testes e, se passarem, publica a API no Render.
-# Em pull requests, só roda os testes.
+# A cada push na main: roda os testes (notebook e navegador) e, se passarem, publica
+# no Render. Em pull requests, só roda os testes.
 #
 # O deploy usa o "deploy hook" do Render, cuja URL contém uma chave secreta. Ela fica
 # só no secret RENDER_DEPLOY_HOOK_URL do repositório (Settings -> Secrets and
@@ -25,8 +25,43 @@ jobs:
       - name: Roda o notebook de testes no contêiner
         run: docker compose run --rm testes
 
+  navegador:
+    # usa as páginas num Chrome de verdade, contra a mesma imagem que vai para o Render
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tests/navegador/package-lock.json
+      - name: Sobe a API e as páginas no contêiner
+        run: |
+          docker compose up -d --build api
+          for i in $(seq 1 30); do curl -fsS http://localhost:8000/saude && exit 0; sleep 2; done
+          docker compose logs api
+          exit 1
+      - name: Instala o Playwright (sem baixar navegador; usa o Chrome do runner)
+        working-directory: tests/navegador
+        run: npm ci
+      - name: Testa as páginas no Chrome
+        working-directory: tests/navegador
+        env:
+          NAVEGADOR: chrome
+          BASE: http://localhost:8000
+        run: node teste.js
+      - name: Guarda as fotos de tela
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: fotos-das-paginas
+          path: tests/navegador/fotos/
+          retention-days: 7
+
   deploy:
-    needs: testes
+    needs: [testes, navegador]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions: {}
@@ -45,16 +80,17 @@ jobs:
           curl -fsS -o /dev/null -X POST "${RENDER_DEPLOY_HOOK_URL}&ref=${GITHUB_SHA}"
           echo "Deploy do commit ${GITHUB_SHA} solicitado ao Render."
 
-      - name: Espera a API pública responder com o commit novo
+      - name: Espera o site público responder com o commit novo
         run: |
           for tentativa in $(seq 1 60); do
             commit=$(curl -fsS -m 60 "$API_URL/saude" | python3 -c "import sys, json; print(json.load(sys.stdin).get('commit') or '')" || true)
             if [ "$commit" = "$GITHUB_SHA" ]; then
-              echo "API no ar com o commit $GITHUB_SHA: $API_URL/docs"
+              echo "No ar com o commit $GITHUB_SHA: $API_URL"
+              curl -fsS -o /dev/null "$API_URL/calcular" && echo "Página /calcular respondendo."
               exit 0
             fi
             echo "Aguardando o deploy (commit no ar: ${commit:-desconhecido})..."
             sleep 20
           done
-          echo "::error::A API não passou a responder com o commit $GITHUB_SHA em 20 minutos."
+          echo "::error::O site não passou a responder com o commit $GITHUB_SHA em 20 minutos."
           exit 1

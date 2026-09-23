@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ titulo }} · sergius-ia-Judge</title>
+  <meta name="description" content="Dosimetria penal passo a passo (sistema trifásico do art. 68 do CP) para estudantes de Direito.">
+  <link rel="stylesheet" href="/static/estilo.css?v={{ versao }}">
+  <link rel="icon" href="/static/icone.svg?v={{ versao }}" type="image/svg+xml">
+</head>
+<body>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  <header class="topo">
+    <div class="topo__interno">
+      <a class="marca" href="/">
+        <span class="marca__icone" aria-hidden="true">⚖</span>
+        <span>sergius-ia-<strong>Judge</strong></span>
+      </a>
+      <nav class="menu" aria-label="Principal">
+        <a href="/" {% if atual == "inicio" %}aria-current="page"{% endif %}>Início</a>
+        <a href="/calcular" {% if atual == "calcular" %}aria-current="page"{% endif %}>Calcular</a>
+        <a href="/praticar" {% if atual == "praticar" %}aria-current="page"{% endif %}>Praticar</a>
+        <a href="/como-funciona" {% if atual == "como-funciona" %}aria-current="page"{% endif %}>Como funciona</a>
+        <a href="/docs">API</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo" class="conteudo">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    <p>
+      <strong>Projeto educacional.</strong> O resultado não substitui a análise de um profissional.
+      Confira as regras no texto vigente do Código Penal.
+    </p>
+    <p>Convenção: 1 ano = 365 dias, 1 mês = 30 dias; frações de dia são desprezadas (art. 11 do CP).</p>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

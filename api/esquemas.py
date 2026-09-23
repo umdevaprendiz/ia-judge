@@ -49,14 +49,14 @@ class PenaltyInput(BaseModel):
 class PenaltyRangeInput(BaseModel):
     """Pena em abstrato do tipo penal já escolhido (simples ou qualificado)."""
 
-    origem: str = Field(examples=["CP.art155"], description="Rótulo do dispositivo que define a faixa.")
+    origem: str = Field(min_length=1, examples=["CP.art155"], description="Rótulo do dispositivo que define a faixa.")
     minimo: PenaltyInput
     maximo: PenaltyInput
 
 
 class AggravatingMitigatingInput(BaseModel):
-    codigo: str = Field(examples=["reincidencia"])
-    dispositivo: str = Field(examples=["CP.art61.I"])
+    codigo: str = Field(min_length=1, examples=["reincidencia"])
+    dispositivo: str = Field(min_length=1, examples=["CP.art61.I"])
     direcao: CircumstanceDirection
     preponderante: bool = Field(
         False, description="Motivos determinantes, personalidade ou reincidência (art. 67 do CP)."
@@ -66,8 +66,8 @@ class AggravatingMitigatingInput(BaseModel):
 class CauseInput(BaseModel):
     """Causa de aumento ou de diminuição (3ª fase)."""
 
-    codigo: str = Field(examples=["repouso_noturno"])
-    dispositivo: str = Field(examples=["CP.art155.§1"])
+    codigo: str = Field(min_length=1, examples=["repouso_noturno"])
+    dispositivo: str = Field(min_length=1, examples=["CP.art155.§1"])
     direcao: CauseDirection
     origem: CauseOrigin
     fracao_min: str = Field(pattern=PADRAO_FRACAO, examples=["1/3"])

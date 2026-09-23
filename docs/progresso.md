@@ -17,6 +17,7 @@ dosimetria/
   ensino.py          comparar_resposta (correção da dosimetria do estudante)
 sentencas/           leitor do PDF de sentenças (fora do motor, que não depende de PDF)
 api/                 API HTTP em FastAPI (app.py e esquemas.py)
+web/                 páginas para estudantes (rotas.py, templates/, static/)
 dados/casos/         dosimetrias.json e conjunto_treinamento.json
 ```
 
@@ -220,6 +221,29 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   `commit`, lido de `RENDER_GIT_COMMIT`). No `render.yaml`, `autoDeployTrigger`
   passou a `"off"`. Se o secret faltar, o job falha com uma mensagem explicando
   o que configurar.
+- **Páginas para estudantes** (`web/`), pedidas porque devolver só JSON seria
+  pouco para estudantes. Ficam no mesmo repositório e no mesmo contêiner da API
+  (decisão discutida com o usuário: um deploy só, sem CORS e sem versões
+  descasadas), em arquivos separados: `web/rotas.py` (rotas `/`, `/calcular`,
+  `/praticar`, `/como-funciona`), `web/templates/` (Jinja2, layout `base.html`)
+  e `web/static/` (`estilo.css` com tema claro e escuro, `comum.js`,
+  `calcular.js`, `praticar.js`, `icone.svg`). JavaScript sem framework e sem
+  build; ele só chama a API JSON e insere texto via `textContent`. O `GET /`
+  deixou de ser JSON e virou a página inicial; as rotas da API não mudaram. Os
+  arquivos estáticos levam `?v=<commit>` para não ficarem presos no cache após
+  um deploy.
+  - Praticar: a lista mostra "Caso N" e o enunciado só os fatos, porque as
+    descrições entregam a resposta; a descrição aparece depois da correção. A
+    opção do art. 68, parágrafo único, conta como certa.
+  - Bug encontrado no teste com navegador e corrigido: o campo do dispositivo da
+    faixa se chamava `origem`, o mesmo nome do campo "Previsão" das causas, e com
+    uma causa na tela o valor era lido vazio. Agora ele se chama `faixa_origem`,
+    e a API recusa `origem`, `codigo` e `dispositivo` vazios (`min_length=1`,
+    mensagem "não pode ficar vazio").
+  - Testes: a seção "Páginas para estudantes" do notebook, e
+    `tests/navegador/teste.js` (Playwright, 32 verificações), que roda no job
+    `navegador` do GitHub Actions com o Chrome, contra a imagem Docker da API.
+    O deploy só acontece se `testes` e `navegador` passarem.
 
 ## Decisões de projeto tomadas nesta sessão
 

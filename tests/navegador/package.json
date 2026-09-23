@@ -1,0 +1,11 @@
+{
+  "name": "sergius-ia-judge-teste-navegador",
+  "private": true,
+  "description": "Teste das páginas para estudantes num navegador de verdade (Playwright).",
+  "scripts": {
+    "test": "node teste.js"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}
