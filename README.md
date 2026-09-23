@@ -14,7 +14,7 @@ brasileiro), pensado para estudantes de Direito. Hoje o repositório contém:
 > Confira as regras no texto compilado vigente do Planalto e, se possível,
 > valide com um professor de Direito Penal.
 
-O plano completo do projeto está em `plano-ia-dosimetria-penal.pdf`, e o
+O plano do projeto é um PDF do autor, fora do repositório; o
 registro do que já foi feito e dos próximos passos está em
 [`docs/progresso.md`](docs/progresso.md).
 
@@ -23,7 +23,8 @@ registro do que já foi feito e dos próximos passos está em
 | Página | O que o estudante faz |
 |---|---|
 | [Início](https://sergius-ia-judge.onrender.com/) | Visão geral do sistema trifásico |
-| [Analisar caso](https://sergius-ia-judge.onrender.com/analisar) | Descreve um caso em detalhes; o texto é anonimizado (nomes, CPF, endereços, processos...), revisado pelo próprio estudante e guardado no MySQL, com código para consultar ou excluir. É a base de estudo do agente de análise, em construção |
+| [Analisar caso](https://sergius-ia-judge.onrender.com/analisar) | Descreve o caso com as próprias palavras; o agente identifica o crime, sugere qualificadoras, causas e circunstâncias (com a frase que motivou cada uma) e calcula a pena depois da conferência. Nada é guardado |
+| [Pesquisar na lei](https://sergius-ia-judge.onrender.com/pesquisar) | Busca nos textos oficiais do CP, CPP, Constituição, LEP, CDC, Código Civil e outras leis, escrevendo do próprio jeito |
 | [Calcular](https://sergius-ia-judge.onrender.com/calcular) | Preenche a faixa, as circunstâncias, as agravantes e atenuantes e as causas (ou carrega um dos exemplos) e vê as três penas, os alertas, o passo a passo e a fundamentação, que pode ser copiada |
 | [Praticar](https://sergius-ia-judge.onrender.com/praticar) | Recebe um caso (sem a descrição, que entregaria a resposta), faz a dosimetria e recebe a correção fase a fase, com a diferença em dias, a explicação e o gabarito |
 | [Como funciona](https://sergius-ia-judge.onrender.com/como-funciona) | As regras usadas pelo motor, em linguagem de estudo |
@@ -67,7 +68,7 @@ tratada como requisito em cada funcionalidade:
   usa um usuário que só lê e grava dados; criar e alterar tabelas é tarefa de outro
   usuário, que só existe durante as migrações.
 - **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
-  Render e do GitHub. O MySQL local usa senhas aleatórias num `.env` fora do git. O CI
+  Render e do GitHub. O MySQL local usa usuário, banco e senhas aleatórios num `.env` fora do git. O CI
   procura segredos no código e reprova o build se achar algum.
 - **Dependências fixadas e auditadas**: o CI roda `pip-audit` e `npm audit` e reprova
   vulnerabilidades conhecidas; o Dependabot abre PRs de atualização toda semana.
