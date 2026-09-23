@@ -39,7 +39,8 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
 - Testes: `tests/dosimetria_tests.ipynb` (notebook, não pytest — decisão do
   usuário). Rodar com:
   `py -m jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb`
-  Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3.
+  Hoje todas as seções imprimem `OK`: Fracao, Pena, Faixa, Quantum, Fase 1, Fase 2, Fase 3,
+  Dosimetria completa.
 - `dosimetria/causas.py` — `CausaModificadora` (código, dispositivo, `DirecaoCausa`
   AUMENTO/DIMINUICAO, `OrigemCausa` PARTE_GERAL/PARTE_ESPECIAL, `fracao_min`,
   `fracao_max` opcional, `fracao_escolhida` opcional, `justificativa`). Aplica a
@@ -65,11 +66,30 @@ Registro de continuidade entre sessões, complementar ao `git log`. Baseado em
     as descartadas aparecem como `Passo` sem efeito. O motor não escolhe.
   - Sem causas: um `Passo` explicando que pena definitiva = intermediária.
 
+- `dosimetria/completa.py` — `calcular_dosimetria_completa(faixa,
+  circunstancias_judiciais, agravantes_atenuantes, causas, estrategia,
+  composicao)` encadeia as três fases e devolve `ResultadoDosimetria` (seção 7.2
+  do plano): `faixa_aplicada`, `pena_base`, `pena_intermediaria`,
+  `pena_definitiva` (todas as causas aplicadas), `alternativa_art68` (a outra
+  opção do art. 68, parágrafo único, quando existe), `passos` (1ª, 2ª e 3ª fases,
+  encadeados), `criterio_quantum`, `composicao` e `alertas`.
+  - A faixa recebida já é a aplicada (simples ou qualificada); escolher entre
+    elas fica para quem monta o caso (ingestão/extração).
+  - `ResultadoFase1` e `ResultadoFase2` ganharam `alertas`: pena-base travada no
+    máximo, atenuante travada no mínimo (Súmula 231), agravante travada no
+    máximo e concurso resolvido por preponderância (art. 67). A completa soma a
+    isso: pena definitiva fora da faixa (permitido na 3ª fase) e existência das
+    duas opções do art. 68, parágrafo único.
+
 Testes: a seção "Fase 3" do notebook cobre furto noturno, pena acima do máximo e
 abaixo do mínimo, fração sem justificativa/fora do intervalo, cascata x sobre a
 intermediária, arredondamento único (365·7/6·7/6 = 496, não 495), roubo com
 concurso de pessoas + arma de fogo + tentativa (duas opções), concurso de
-diminuições. Todas as seções imprimem `OK`.
+diminuições.
+A seção "Dosimetria completa" cobre um roubo com as duas opções do art. 68,
+parágrafo único, o encadeamento dos passos das três fases, e os alertas de
+Súmula 231, de agravante travada no máximo, de pena definitiva acima do máximo e
+de pena-base travada no máximo. Todas as seções imprimem `OK`.
 
 ## Decisões de projeto tomadas nesta sessão
 
@@ -94,13 +114,11 @@ para não duplicar trabalho de novo.
 
 ## Próximo passo
 
-O motor puro (Fases 1–3) está completo. Próximo marco:
-- `calcular_dosimetria_completa(faixa, circunstancias_judiciais,
-  agravantes_atenuantes, causas, estrategia, composicao)` encadeando as três
-  fases e devolvendo `ResultadoDosimetria` (seção 7.2 do plano): faixa aplicada,
-  pena-base, intermediária, definitiva (ou as duas opções do art. 68, parágrafo
-  único), lista completa de `Passo`, `criterio_quantum` e `alertas` (ex.: Súmula
-  231 travou a atenuante).
+O motor puro está completo (Fases 1–3 + `calcular_dosimetria_completa`).
+Próximos marcos:
 - Reproduzir no notebook ao menos 10 dosimetrias reais (critério de pronto da
-  Fase 2 do plano), tiradas de sentenças ou manuais.
+  Fase 2 do plano), tiradas de sentenças ou manuais, comparando pena-base,
+  intermediária e definitiva com as da decisão.
+- Formatação do relatório para leitura humana (texto da fundamentação a partir
+  dos `Passo`s e alertas).
 - Depois: ingestão (Planalto → banco) ou extração via LLM.
