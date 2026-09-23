@@ -14,7 +14,9 @@ dosimetria/
   fases/             fase1.py, fase2.py, fase3.py, completa.py
   relatorio/         passo.py (passo a passo), fundamentacao.py (texto), serializacao.py (JSON)
   entrada.py         formato JSON de entrada (entrada_de_dict), o mesmo da API
+  ensino.py          comparar_resposta (correção da dosimetria do estudante)
 sentencas/           leitor do PDF de sentenças (fora do motor, que não depende de PDF)
+api/                 API HTTP em FastAPI (app.py e esquemas.py)
 dados/casos/         dosimetrias.json e conjunto_treinamento.json
 ```
 
@@ -164,6 +166,24 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   para `dados/casos/`, e cada um agora tem `entrada` (nesse formato) e
   `esperado`. O notebook usa esse conversor em vez de ter o seu próprio, e a
   seção "Entrada e saída em JSON" testa as mensagens de erro e o JSON de saída.
+- `dosimetria/ensino.py` — `comparar_resposta(resultado, pena_base=...,
+  pena_intermediaria=..., pena_definitiva=...)` corrige só as fases
+  respondidas. Para cada uma, diz se está correta, a diferença em dias e como o
+  motor chegou à pena. Na definitiva, aceita também a opção do art. 68,
+  parágrafo único.
+- API em FastAPI (`api/`), pedida para que estudantes universitários possam
+  usar o motor. Rotas: `POST /dosimetria/calcular`, `POST /ensino/comparar`,
+  `GET /exemplos`, `GET /exemplos/{id}` (os casos de `dados/casos/`), `GET
+  /opcoes`, `GET /saude` e a documentação interativa em `/docs`, com exemplos
+  preenchidos. Erros de validação voltam com status 422, o campo e a mensagem
+  em português; violações de regra do motor (`ValueError`) também voltam como
+  422 com a explicação. CORS está liberado para qualquer origem, sem login e
+  sem guardar dados.
+  - Docker: o `Dockerfile` tem os alvos `api` (padrão, imagem de ~208 MB,
+    respeita a variável `PORT`) e `dev` (com Jupyter). `docker compose up api`
+    sobe a API em `http://localhost:8000/docs`. Verificado com chamadas HTTP
+    reais ao container.
+  - Testes: a seção "API" do notebook usa o `TestClient` do FastAPI.
 
 ## Decisões de projeto tomadas nesta sessão
 
@@ -196,4 +216,8 @@ para não duplicar trabalho de novo.
 - **Conjunto real ainda insuficiente**: o critério de pronto do plano pede 10
   dosimetrias *reais*; hoje há 1 (caso 04). Substituir os casos construídos por
   sentenças penais reais conforme forem aparecendo.
+- **Hospedar a API** num endereço público para os estudantes (a imagem
+  `api` já serve para Render, Railway, Fly.io, Cloud Run etc.; falta o
+  usuário escolher o serviço e criar a conta). Se o uso crescer, avaliar um
+  limite de requisições por IP.
 - Depois: ingestão (Planalto → banco) ou extração via LLM.

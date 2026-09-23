@@ -1,9 +1,12 @@
 # sergius-ia-Judge: motor de dosimetria penal
 
 Projeto de estudo de uma IA que auxilia na **dosimetria da pena** (Código Penal
-brasileiro). Hoje o repositório contém o **motor de cálculo**, escrito em Python
-puro, sem banco e sem LLM, que aplica o sistema trifásico do art. 68 do CP e
-devolve o passo a passo de cada fase.
+brasileiro), pensado para estudantes de Direito. Hoje o repositório contém:
+
+- o **motor de cálculo**, em Python puro, sem banco e sem LLM, que aplica o
+  sistema trifásico do art. 68 do CP e devolve o passo a passo de cada fase;
+- uma **API HTTP** (FastAPI) para qualquer pessoa usar o motor pelo navegador ou
+  por outro programa, incluindo a **correção da dosimetria feita pelo estudante**.
 
 > Projeto educacional. O resultado não substitui a análise de um profissional.
 > Confira as regras no texto compilado vigente do Planalto e, se possível,
@@ -12,6 +15,50 @@ devolve o passo a passo de cada fase.
 O plano completo do projeto está em `plano-ia-dosimetria-penal.pdf`, e o
 registro do que já foi feito e dos próximos passos está em
 [`docs/progresso.md`](docs/progresso.md).
+
+## Usando a API
+
+```bash
+docker compose up api
+```
+
+Abra **http://localhost:8000/docs**. É a documentação interativa: em cada rota,
+clique em *Try it out* e depois em *Execute*. As rotas já vêm com exemplos
+preenchidos.
+
+| Rota | O que faz |
+|---|---|
+| `POST /dosimetria/calcular` | Calcula as três fases e devolve as penas, o passo a passo, os alertas e a fundamentação em texto |
+| `POST /ensino/comparar` | Corrige a dosimetria de um estudante fase a fase: diz o que está certo, a diferença em dias, como o motor chegou à pena e devolve o gabarito |
+| `GET /exemplos` e `GET /exemplos/{id}` | Casos prontos (os mesmos dos testes) para colar em `/dosimetria/calcular` |
+| `GET /opcoes` | Valores aceitos nos campos de escolha (circunstâncias, direções, estratégias...) |
+| `GET /saude` | Verificação de funcionamento |
+
+Exemplo de chamada fora do navegador:
+
+```bash
+curl -X POST http://localhost:8000/dosimetria/calcular   -H "Content-Type: application/json"   -d '{
+    "faixa": {"origem": "CP.art155", "minimo": {"anos": 1}, "maximo": {"anos": 4}},
+    "circunstancias_desfavoraveis": ["culpabilidade"],
+    "agravantes_atenuantes": [{"codigo": "reincidencia", "dispositivo": "CP.art61.I",
+                               "direcao": "agravante", "preponderante": true}],
+    "causas": [{"codigo": "repouso_noturno", "dispositivo": "CP.art155.§1",
+                "direcao": "aumento", "origem": "parte_especial", "fracao_min": "1/3"}],
+    "estrategia": {"tipo": "fracao_do_intervalo", "fracao": "1/8"},
+    "composicao": "cascata"
+  }'
+```
+
+Sem Docker: `pip install -r requirements.txt` e `uvicorn api.app:app --reload`.
+
+Erros de preenchimento voltam com status 422, o nome do campo e uma mensagem em
+português (ex.: `"causas.0.fracao_min": "formato inválido (frações no formato
+'1/3')"`). Violações das regras do motor também voltam como 422, com a explicação
+(ex.: fração acima da mínima sem justificativa).
+
+A API não tem login nem guarda dados: ela só calcula. A imagem Docker padrão
+(`docker build .`) já é a da API e respeita a variável `PORT`, o que permite
+hospedá-la em serviços que rodam contêineres.
 
 ## O que o motor faz
 
@@ -110,7 +157,9 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   fases/                 fase1, fase2, fase3 e a dosimetria completa
   relatorio/             Passo, gerar_fundamentacao (texto) e resultado_para_dict (JSON)
   entrada.py             entrada_de_dict: o formato JSON de entrada (o mesmo da API)
+  ensino.py              comparar_resposta: correção da dosimetria do estudante
 sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
+api/                     API HTTP (FastAPI): app.py (rotas) e esquemas.py (formatos)
 dados/casos/             casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
 tests/
   dosimetria_tests.ipynb notebook de testes
@@ -138,6 +187,10 @@ dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
 sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
 confirma que nelas não há dosimetria a calcular.
 
+A seção "API" testa todas as rotas com o `TestClient` do FastAPI: os 10 exemplos
+pela rota de cálculo, a correção do estudante (inclusive aceitando a opção do
+art. 68, parágrafo único) e as mensagens de erro.
+
 ### Com Docker (recomendado)
 
 ```bash
@@ -159,13 +212,14 @@ jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb
 ```
 
 O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
-(`sentencas/`) usa `pypdf`, e o Jupyter só é necessário para os testes.
+(`sentencas/`) usa `pypdf`, a API usa FastAPI e uvicorn, e o Jupyter (com o
+`httpx`, usado nos testes da API) só é necessário para os testes.
 
 ## Próximos passos
 
 - Reunir 10 dosimetrias de sentenças penais **reais**. Hoje só há uma: no
   conjunto de treinamento, apenas o caso 04 é penal.
-- Gerar o texto da fundamentação a partir dos passos e alertas.
+- Hospedar a API num endereço público para os estudantes.
 - Ingestão do Código Penal (Planalto → banco) e extração dos fatos do caso via LLM.
 
 Os detalhes estão em [`docs/progresso.md`](docs/progresso.md).

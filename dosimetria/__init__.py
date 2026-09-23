@@ -28,6 +28,7 @@ from .fases import (
     calcular_pena_intermediaria,
 )
 from .entrada import EntradaDosimetria, entrada_de_dict
+from .ensino import ComparacaoFase, ComparacaoResposta, comparar_resposta
 
 __all__ = [
     "Fracao",
@@ -59,4 +60,7 @@ __all__ = [
     "resultado_para_dict",
     "EntradaDosimetria",
     "entrada_de_dict",
+    "ComparacaoFase",
+    "ComparacaoResposta",
+    "comparar_resposta",
 ]

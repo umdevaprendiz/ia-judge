@@ -3,3 +3,5 @@
 nbconvert==7.17.1
 ipykernel==7.3.0
 jupyterlab==4.6.3
+# cliente HTTP usado pelo TestClient do FastAPI nos testes da API
+httpx==0.28.1
