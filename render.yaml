@@ -11,8 +11,9 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /saude
-    # só publica depois que o workflow de testes do GitHub passar
-    autoDeployTrigger: checksPass
+    # quem publica é o GitHub Actions (.github/workflows/testes.yml), depois dos
+    # testes, chamando o deploy hook do Render; o Render não publica sozinho
+    autoDeployTrigger: "off"
     envVars:
       - key: PORT
         value: "8000"

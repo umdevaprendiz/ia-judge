@@ -213,6 +213,13 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   /dosimetria/calcular`, `/ensino/comparar` corrige (2/3 no exemplo), os erros
   de validação saem em português, o `§` chega correto e o CORS responde ao
   preflight de outra origem (`access-control-allow-origin: *`).
+- Deploy pelo GitHub Actions: o workflow `testes.yml` virou "Testes e deploy".
+  Depois dos testes, num push na `main`, o job `deploy` chama o deploy hook do
+  Render (`secrets.RENDER_DEPLOY_HOOK_URL`, que nunca vai para o repositório)
+  com `&ref=<sha>` e espera até `GET /saude` responder com esse commit (campo
+  `commit`, lido de `RENDER_GIT_COMMIT`). No `render.yaml`, `autoDeployTrigger`
+  passou a `"off"`. Se o secret faltar, o job falha com uma mensagem explicando
+  o que configurar.
 
 ## Decisões de projeto tomadas nesta sessão
 

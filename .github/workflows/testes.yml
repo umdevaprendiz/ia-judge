@@ -1,12 +1,19 @@
-# Roda o notebook de testes no contêiner a cada push na main e em pull requests.
-# O Render (render.yaml) só publica uma versão nova depois que este workflow passa.
-name: Testes
+# A cada push na main: roda os testes e, se passarem, publica a API no Render.
+# Em pull requests, só roda os testes.
+#
+# O deploy usa o "deploy hook" do Render, cuja URL contém uma chave secreta. Ela fica
+# só no secret RENDER_DEPLOY_HOOK_URL do repositório (Settings -> Secrets and
+# variables -> Actions) e nunca deve aparecer em arquivos do repositório.
+name: Testes e deploy
 
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+
+env:
+  API_URL: https://sergius-ia-judge.onrender.com
 
 jobs:
   testes:
@@ -17,3 +24,37 @@ jobs:
       - uses: actions/checkout@v7
       - name: Roda o notebook de testes no contêiner
         run: docker compose run --rm testes
+
+  deploy:
+    needs: testes
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions: {}
+    concurrency:
+      group: deploy-render
+      cancel-in-progress: false
+    steps:
+      - name: Dispara o deploy do commit no Render
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::Secret RENDER_DEPLOY_HOOK_URL não configurado (veja o README, seção Hospedagem no Render)."
+            exit 1
+          fi
+          curl -fsS -o /dev/null -X POST "${RENDER_DEPLOY_HOOK_URL}&ref=${GITHUB_SHA}"
+          echo "Deploy do commit ${GITHUB_SHA} solicitado ao Render."
+
+      - name: Espera a API pública responder com o commit novo
+        run: |
+          for tentativa in $(seq 1 60); do
+            commit=$(curl -fsS -m 60 "$API_URL/saude" | python3 -c "import sys, json; print(json.load(sys.stdin).get('commit') or '')" || true)
+            if [ "$commit" = "$GITHUB_SHA" ]; then
+              echo "API no ar com o commit $GITHUB_SHA: $API_URL/docs"
+              exit 0
+            fi
+            echo "Aguardando o deploy (commit no ar: ${commit:-desconhecido})..."
+            sleep 20
+          done
+          echo "::error::A API não passou a responder com o commit $GITHUB_SHA em 20 minutos."
+          exit 1
