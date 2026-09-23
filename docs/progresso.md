@@ -12,8 +12,10 @@ dosimetria/
   circunstancias/    judiciais.py (art. 59), legais.py (arts. 61-67), causas.py (3ª fase)
   quantum/           estrategias.py (Strategy do quantum das fases 1 e 2)
   fases/             fase1.py, fase2.py, fase3.py, completa.py
-  relatorio/         passo.py (passo a passo) e fundamentacao.py (texto)
+  relatorio/         passo.py (passo a passo), fundamentacao.py (texto), serializacao.py (JSON)
+  entrada.py         formato JSON de entrada (entrada_de_dict), o mesmo da API
 sentencas/           leitor do PDF de sentenças (fora do motor, que não depende de PDF)
+dados/casos/         dosimetrias.json e conjunto_treinamento.json
 ```
 
 Quem usa o motor importa sempre de `dosimetria` (ex.: `from dosimetria import
@@ -113,7 +115,7 @@ parágrafo único, o encadeamento dos passos das três fases, e os alertas de
 Súmula 231, de agravante travada no máximo, de pena definitiva acima do máximo e
 de pena-base travada no máximo. Todas as seções imprimem `OK`.
 
-- `tests/casos/dosimetrias.json` — conjunto de 10 dosimetrias com resultado
+- `dados/casos/dosimetrias.json` — conjunto de 10 dosimetrias com resultado
   esperado calculado à mão (a conta fica anotada no campo `conta` de cada caso),
   no espírito da tabela `caso_benchmark` do plano. A seção "Casos de dosimetria"
   do notebook lê o arquivo, monta as entradas do motor e compara pena-base,
@@ -126,7 +128,7 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
     compensação reincidência x confissão, tráfico privilegiado com Súmula 231,
     estelionato com quantum de 1/6 do mínimo, preponderância do art. 67,
     agravante travada no máximo, concurso formal e Súmula 443.
-- `tests/casos/conjunto_treinamento.json` — índice das 10 sentenças do PDF de
+- `dados/casos/conjunto_treinamento.json` — índice das 10 sentenças do PDF de
   treinamento. **Só o caso 04 é penal**; os outros 9 (consumidor, família,
   trabalho, locação, trânsito, previdenciário, saúde, contratos) não têm pena a
   calcular e ficam anotados como exemplos negativos para a etapa de extração.
@@ -150,9 +152,18 @@ de pena-base travada no máximo. Todas as seções imprimem `OK`.
   dias-multa e regime inicial. Para sentenças não penais, devolve `None`. Isso
   não é a extração com LLM do plano; serve de referência para testar o motor.
   A seção "Sentenças do conjunto de treinamento" do notebook confere as 10
-  sentenças com `tests/casos/conjunto_treinamento.json` e, no caso 04, verifica
+  sentenças com `dados/casos/conjunto_treinamento.json` e, no caso 04, verifica
   que o motor chega à pena declarada pela juíza (2 anos). Antes os testes só
   usavam números do caso 04 transcritos à mão, sem ler o PDF.
+- Formato JSON único de entrada e saída: `dosimetria/entrada.py`
+  (`entrada_de_dict(dados)` → `EntradaDosimetria`, com `.calcular()`) e
+  `dosimetria/relatorio/serializacao.py` (`resultado_para_dict`: penas em
+  `total_dias` + anos/meses/dias + texto, passos, alertas e fundamentação).
+  Faixa em `{"anos", "meses", "dias"}` e frações como `"1/3"`; erros de formato
+  viram `ValueError` com o campo e as opções válidas. Os casos foram movidos
+  para `dados/casos/`, e cada um agora tem `entrada` (nesse formato) e
+  `esperado`. O notebook usa esse conversor em vez de ter o seu próprio, e a
+  seção "Entrada e saída em JSON" testa as mensagens de erro e o JSON de saída.
 
 ## Decisões de projeto tomadas nesta sessão
 
