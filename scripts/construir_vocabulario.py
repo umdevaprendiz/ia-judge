@@ -3,7 +3,7 @@
     python scripts/construir_vocabulario.py            gera dados/vocabulario/lexico.json
     python scripts/construir_vocabulario.py sinonimos  lista candidatos a sinônimos para revisão
 
-Fontes (baixadas para dicionarios/, fora do git):
+Fontes (baixadas para materiais/dicionarios/, fora do git):
 - VERO, dicionário do LibreOffice para pt-BR (pt_BR.dic e pt_BR.aff), LGPLv3/MPL:
   palavras base e regras de sufixo, com as quais cada flexão volta à forma base ("mata",
   "matou", "matando" -> "matar").
@@ -24,7 +24,7 @@ from collections import defaultdict
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-PASTA = RAIZ / "dicionarios"
+PASTA = RAIZ / "materiais" / "dicionarios"
 SAIDA = RAIZ / "dados" / "vocabulario"
 
 

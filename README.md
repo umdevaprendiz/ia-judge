@@ -120,8 +120,8 @@ estudante pode escrever do próprio jeito.
   "furtar" e "roubar" são crimes diferentes).
 - Na frase, só os verbos e os sinônimos mudam: substantivos mantêm o gênero ("ex-companheira"
   não vira "ex-companheiro"), e auxiliares de intenção ficam ("iria matar" não é matar).
-- Para gerar de novo: baixe `pt_BR.dic`, `pt_BR.aff` e o `own-pt-*.tar.xz` para `dicionarios/`
-  (fora do git) e rode `python scripts/construir_vocabulario.py`.
+- Para gerar de novo: baixe `pt_BR.dic`, `pt_BR.aff` e o `own-pt-*.tar.xz` para
+  `materiais/dicionarios/` (fora do git) e rode `python scripts/construir_vocabulario.py`.
 
 ## Base de legislação e busca (RAG)
 
@@ -130,11 +130,11 @@ dos PDFs oficiais do Senado e da Câmara (Código Penal, CPP, Constituição e A
 dos Crimes Hediondos, Lei 9.099, Contravenções Penais, CDC, Código Civil e as leis que vêm
 nesses livros). Um registro por artigo, com epígrafe ("Furto"), título e capítulo.
 
-- **Ingestão** (`fontes/`, `scripts/construir_base_de_fontes.py`): lê os PDFs da raiz, tira
-  cabeçalhos, números de página e notas de rodapé, junta palavras partidas e divide em leis e
-  artigos. Artigos citados dentro de leis que alteram outras não viram artigos falsos. De
-  cada artigo fica a edição mais recente. O resultado vai para `dados/fontes/dispositivos.json`;
-  os PDFs ficam fora do git.
+- **Ingestão** (`fontes/`, `scripts/construir_base_de_fontes.py`): lê os PDFs de
+  `materiais/legislacao/`, tira cabeçalhos, números de página e notas de rodapé, junta palavras
+  partidas e divide em leis e artigos. Artigos citados dentro de leis que alteram outras não viram
+  artigos falsos. De cada artigo fica a edição mais recente. O resultado vai para
+  `dados/fontes/dispositivos.json`; os PDFs ficam fora do git.
 - **Busca** (`fontes/busca.py`): BM25 com dois campos (o artigo inteiro e a "cabeça": epígrafe
   e caput), palavras reduzidas ao radical e sem acentos, sinônimos leigos ("assalto com faca"
   encontra roubo e arma branca) e referências diretas ("art. 157 do CP"). É determinística e

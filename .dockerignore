@@ -22,6 +22,6 @@ venv/
 tests/navegador/node_modules/
 tests/navegador/fotos/
 
-# dicionários de terceiros (só servem para gerar dados/vocabulario/) e diário local
-dicionarios/
+# materiais brutos locais (PDFs de legislação e dicionários de terceiros) e diário local
+materiais/
 docs/progresso.md

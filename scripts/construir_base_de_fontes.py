@@ -1,4 +1,4 @@
-"""Gera dados/fontes/dispositivos.json a partir dos PDFs de legislação da raiz do projeto.
+"""Gera dados/fontes/dispositivos.json a partir dos PDFs de legislação em materiais/legislacao/.
 
     python scripts/construir_base_de_fontes.py
 
@@ -22,6 +22,7 @@ from fontes.catalogo import FONTES  # noqa: E402
 from fontes.extracao import escolher_versoes, extrair_documento  # noqa: E402
 from fontes.texto import limpar_paginas  # noqa: E402
 
+PASTA_PDFS = RAIZ / "materiais" / "legislacao"
 SAIDA = RAIZ / "dados" / "fontes" / "dispositivos.json"
 
 
@@ -29,7 +30,7 @@ def main() -> None:
     artigos_por_fonte = {}
     usadas = []
     for fonte in FONTES:
-        arquivo = RAIZ / fonte.arquivo
+        arquivo = PASTA_PDFS / fonte.arquivo
         if not arquivo.is_file():
             print(f"AVISO: {fonte.arquivo} não encontrado; pulando")
             continue
