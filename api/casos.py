@@ -9,8 +9,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from banco import banco_configurado, fabrica_de_sessoes, obter_caso, salvar_caso
-from privacidade import anonimizar
+from database import banco_configurado, fabrica_de_sessoes, obter_caso, salvar_caso
+from privacy import anonimizar
 
 from .seguranca import RateLimiter
 

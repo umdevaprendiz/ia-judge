@@ -15,7 +15,7 @@ import re
 from functools import cache, lru_cache
 from pathlib import Path
 
-PASTA = Path(__file__).resolve().parent.parent / "dados" / "vocabulario"
+PASTA = Path(__file__).resolve().parent.parent / "data" / "vocabulario"
 _PALAVRA = re.compile(r"[A-Za-zÀ-ÖØ-öø-ÿ]+")
 _VERBO = re.compile(r"(?:ar|er|ir|or|ôr)$")
 # auxiliares ficam como foram escritos: carregam o tempo e a intenção ("iria matar" não é matar)

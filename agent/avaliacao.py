@@ -1,6 +1,6 @@
-"""Avaliação do agente com os casos de dados/agente/casos.json.
+"""Avaliação do agente com os casos de data/agent/casos.json.
 
-    python -m agente.avaliacao
+    python -m agent.avaliacao
 
 Para cada caso: o crime veio em 1º lugar? Tudo o que devia ser sugerido foi? Algo proibido
 (ex.: agravante que já qualificou o crime) foi sugerido?
@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .analise import CrimeAgent, agente
 
-ARQUIVO_CASOS = Path(__file__).resolve().parent.parent / "dados" / "agente" / "casos.json"
+ARQUIVO_CASOS = Path(__file__).resolve().parent.parent / "data" / "agent" / "casos.json"
 
 
 @dataclass(frozen=True, slots=True)

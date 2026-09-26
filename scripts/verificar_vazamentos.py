@@ -4,8 +4,9 @@ e no CI; sai com erro se achar alguma coisa.
     python scripts/verificar_vazamentos.py
 
 Verifica os arquivos versionados e os novos ainda não ignorados (git ls-files):
-- arquivos que nunca devem ir para o git (.env, chaves, certificados, dicionários de terceiros,
-  diário local, PDFs além do conjunto de treinamento usado nos testes);
+- arquivos que nunca devem ir para o git (.env, chaves, certificados, materiais/ com PDFs de
+  legislação e dicionários de terceiros, diário local, PDFs além do conjunto de treinamento
+  usado nos testes);
 - segredos: chaves privadas, tokens (GitHub, AWS, Google, Slack, JWT), deploy hook do Render,
   URL de banco com senha, endereço de serviço da Aiven, atribuição de senha/token com valor;
 - dados locais: caminhos do computador (C:\\Users\\..., /home/...) e e-mails pessoais;
@@ -20,10 +21,10 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 TAMANHO_MAXIMO = 5 * 1024 * 1024
-GRANDES_PERMITIDOS = {"dados/fontes/dispositivos.json"}
+GRANDES_PERMITIDOS = {"data/sources/dispositivos.json"}
 
 ARQUIVOS_PROIBIDOS = re.compile(
-    r"(^|/)\.env(\.|$)|\.(pem|key|p12|pfx|jks|kdbx)$|(^|/)id_(rsa|ed25519|ecdsa)|^dicionarios/|^docs/progresso\.md$"
+    r"(^|/)\.env(\.|$)|\.(pem|key|p12|pfx|jks|kdbx)$|(^|/)id_(rsa|ed25519|ecdsa)|^materiais/|^docs/progresso\.md$"
 )
 PDF_PERMITIDO = "Conjunto de Treinamento - 10 Sentenças Judiciais.pdf"
 

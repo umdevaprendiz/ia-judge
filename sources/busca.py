@@ -25,7 +25,7 @@ from .vocabulario import lema
 
 _PALAVRA = re.compile(r"[a-z0-9à-öø-ÿ]+")
 
-ARQUIVO_BASE = Path(__file__).resolve().parent.parent / "dados" / "fontes" / "dispositivos.json"
+ARQUIVO_BASE = Path(__file__).resolve().parent.parent / "data" / "sources" / "dispositivos.json"
 
 _PALAVRAS_VAZIAS = set(
     """

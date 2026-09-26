@@ -26,6 +26,13 @@ jobs:
         run: python3 scripts/preparar_ambiente.py
       - name: Roda o notebook de testes no contêiner (com MySQL)
         run: docker compose run --rm testes
+      - name: Guarda o relatório de testes (verificações por seção, duração, resultado)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: relatorio-de-testes
+          path: relatorios/
+          retention-days: 7
 
   navegador:
     # usa as páginas num Chrome de verdade, contra a mesma imagem que vai para o Render

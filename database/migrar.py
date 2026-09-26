@@ -1,4 +1,4 @@
-"""Aplica as migrações pendentes: python -m banco.migrar
+"""Aplica as migrações pendentes: python -m database.migrar
 
 Roda na inicialização do contêiner da API. Sem DATABASE_URL, não faz nada (o site
 funciona sem os recursos que dependem de banco). Depois das migrações, apaga os casos

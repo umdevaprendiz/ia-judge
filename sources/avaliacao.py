@@ -13,7 +13,7 @@ from pathlib import Path
 
 from .busca import LegalSearchIndex, base_de_fontes
 
-ARQUIVO_PERGUNTAS = Path(__file__).resolve().parent.parent / "dados" / "fontes" / "perguntas.json"
+ARQUIVO_PERGUNTAS = Path(__file__).resolve().parent.parent / "data" / "sources" / "perguntas.json"
 
 
 @dataclass(frozen=True, slots=True)

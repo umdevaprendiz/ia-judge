@@ -35,7 +35,7 @@ entram na página só como texto (`textContent`), nunca como HTML.
 O site é público e recebe textos que podem conter dados pessoais, então a segurança é
 tratada como requisito em cada funcionalidade:
 
-- **Anonimização antes de gravar** (`privacidade/`): nomes, apelidos, CPF, CNPJ, RG,
+- **Anonimização antes de gravar** (`privacy/`): nomes, apelidos, CPF, CNPJ, RG,
   e-mails, telefones, CEPs, placas, endereços, bairros, datas de nascimento e números de
   processo viram marcadores como `[PESSOA 1]`. A idade fica, porque muda a pena. O
   estudante vê e confirma o texto anonimizado; **o texto original nunca é gravado**. Cada
@@ -65,6 +65,23 @@ tratada como requisito em cada funcionalidade:
   usuário, que só existe durante as migrações.
 - **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
   Render e do GitHub. O MySQL local usa usuário, banco e senhas aleatórios num `.env` fora do git.
+
+## Métricas de uso
+
+Cada ação que o estudante dispara pelos botões da página (calcular, corrigir, pesquisar,
+enviar ou excluir um caso, usar o agente) gera uma linha de log em JSON
+(`api/metricas.py`), no mesmo log do servidor: data e hora, a ação, quanto demorou, o
+código de status da resposta e o que foi enviado. Navegação entre páginas, `/saude` e
+arquivos estáticos não geram log.
+
+Textos longos (a descrição de um caso, por exemplo, que chega **antes** da anonimização)
+aparecem só pelo tamanho (`"<texto de 1200 caracteres>"`), nunca pelo conteúdo — a mesma
+preocupação da seção anterior vale aqui: nada que possa identificar alguém vai para o log.
+Exemplo de uma linha:
+
+```json
+{"data_hora": "2026-01-15T14:32:07+00:00", "acao": "calcular pena", "rota": "/dosimetria/calcular", "status": 200, "duracao_ms": 4.8, "enviado": {"faixa": {"...": "..."}}}
+```
   `scripts/verificar_vazamentos.py` varre todos os arquivos do repositório (antes de cada commit
   e no CI) atrás de chaves, tokens, URLs com senha, caminhos locais, e-mails pessoais, arquivos
   proibidos e valores do `.env` local, e reprova o build se achar algum.
@@ -81,7 +98,7 @@ terceiros, responde. **Nada é gravado**: a descrição é anonimizada, analisad
    CDC e de outras leis): um léxico de indícios fortes ("anunciou o assalto" indica roubo,
    "produto de furto" indica receptação) mais a semelhança de palavras com a epígrafe e o
    caput de cada crime. O artigo citado na descrição ("art. 180 do CP") vai para o topo.
-2. **Lê a estrutura do crime direto da lei** (`agente/lei.py`): a pena do caput, as formas
+2. **Lê a estrutura do crime direto da lei** (`agent/lei.py`): a pena do caput, as formas
    com pena própria (qualificadas, privilegiadas, culposas) e as causas de aumento e de
    diminuição com a fração ("de 1/3 (um terço) até metade", "em dobro"). Nada é transcrito à
    mão: vale para qualquer crime da base.
@@ -94,7 +111,7 @@ terceiros, responde. **Nada é gravado**: a descrição é anonimizada, analisad
    parágrafo contam como uma causa (Súmula 443); agravante que já qualificou não se repete
    (bis in idem); repouso noturno não se aplica ao furto qualificado (STJ, Tema 1.087).
 
-Casos de teste em `dados/agente/casos.json` (`python -m agente.avaliacao`): 38 descrições de
+Casos de teste em `data/agent/casos.json` (`python -m agent.avaliacao`): 38 descrições de
 estudante, de furto a peculato; hoje o crime certo vem em 1º lugar em todas, com todas as
 sugestões esperadas e nenhuma indevida. Rotas: `POST /agente/analisar`, `POST
 /agente/estrutura`, `GET /agente/crimes`, `POST /agente/calcular` (30 por minuto por visitante).
@@ -111,17 +128,17 @@ A busca e o agente comparam as palavras pela **forma base**: "mata", "matou", "m
 estudante pode escrever do próprio jeito.
 
 - **Flexões**: dicionário **VERO** (Verificador Ortográfico do LibreOffice, pt-BR, com o Acordo
-  Ortográfico de 1990), licença LGPLv3/MPL 2.0. `dados/vocabulario/lexico.json` traz uma
+  Ortográfico de 1990), licença LGPLv3/MPL 2.0. `data/vocabulario/lexico.json` traz uma
   seleção das palavras base (todos os verbos, as palavras da lei e dos sinônimos) e das regras
-  de sufixo; `fontes/vocabulario.py` desfaz o sufixo na hora, como um corretor ortográfico.
+  de sufixo; `sources/vocabulario.py` desfaz o sufixo na hora, como um corretor ortográfico.
 - **Sinônimos**: **OpenWordnet-PT** (Rademaker et al., 2012; versão 2026.04.07), licença CC BY 4.0.
-  Os candidatos passam por revisão antes de entrar em `dados/vocabulario/sinonimos.json`, que
+  Os candidatos passam por revisão antes de entrar em `data/vocabulario/sinonimos.json`, que
   registra também os recusados e o motivo (ex.: "executar" também é executar um plano;
   "furtar" e "roubar" são crimes diferentes).
 - Na frase, só os verbos e os sinônimos mudam: substantivos mantêm o gênero ("ex-companheira"
   não vira "ex-companheiro"), e auxiliares de intenção ficam ("iria matar" não é matar).
-- Para gerar de novo: baixe `pt_BR.dic`, `pt_BR.aff` e o `own-pt-*.tar.xz` para `dicionarios/`
-  (fora do git) e rode `python scripts/construir_vocabulario.py`.
+- Para gerar de novo: baixe `pt_BR.dic`, `pt_BR.aff` e o `own-pt-*.tar.xz` para
+  `materiais/dicionarios/` (fora do git) e rode `python scripts/construir_vocabulario.py`.
 
 ## Base de legislação e busca (RAG)
 
@@ -130,16 +147,16 @@ dos PDFs oficiais do Senado e da Câmara (Código Penal, CPP, Constituição e A
 dos Crimes Hediondos, Lei 9.099, Contravenções Penais, CDC, Código Civil e as leis que vêm
 nesses livros). Um registro por artigo, com epígrafe ("Furto"), título e capítulo.
 
-- **Ingestão** (`fontes/`, `scripts/construir_base_de_fontes.py`): lê os PDFs da raiz, tira
-  cabeçalhos, números de página e notas de rodapé, junta palavras partidas e divide em leis e
-  artigos. Artigos citados dentro de leis que alteram outras não viram artigos falsos. De
-  cada artigo fica a edição mais recente. O resultado vai para `dados/fontes/dispositivos.json`;
-  os PDFs ficam fora do git.
-- **Busca** (`fontes/busca.py`): BM25 com dois campos (o artigo inteiro e a "cabeça": epígrafe
+- **Ingestão** (`sources/`, `scripts/construir_base_de_fontes.py`): lê os PDFs de
+  `materiais/legislacao/`, tira cabeçalhos, números de página e notas de rodapé, junta palavras
+  partidas e divide em leis e artigos. Artigos citados dentro de leis que alteram outras não viram
+  artigos falsos. De cada artigo fica a edição mais recente. O resultado vai para
+  `data/sources/dispositivos.json`; os PDFs ficam fora do git.
+- **Busca** (`sources/busca.py`): BM25 com dois campos (o artigo inteiro e a "cabeça": epígrafe
   e caput), palavras reduzidas ao radical e sem acentos, sinônimos leigos ("assalto com faca"
   encontra roubo e arma branca) e referências diretas ("art. 157 do CP"). É determinística e
   cita só o que está na base.
-- **Casos de teste** (`dados/fontes/perguntas.json`, `python -m fontes.avaliacao`): 43
+- **Casos de teste** (`data/sources/perguntas.json`, `python -m sources.avaliacao`): 43
   perguntas escritas como um estudante escreveria. Hoje 88% trazem o artigo certo em 1º lugar
   e 100% entre os 5 primeiros.
 - **Uso**: a página **Pesquisar na lei** e `GET /fontes/buscar?q=...`; o cálculo da
@@ -283,7 +300,7 @@ em 11 e o excedente fica nos dias: 726 dias aparecem como "1 ano, 11 meses,
 ## Exemplo de uso
 
 ```python
-from dosimetria import (
+from sentencing import (
     ModifyingCause, JudicialCircumstance, LegalCircumstance, Composition, CircumstanceDirection,
     CauseDirection, PenaltyRange, Fraction, IntervalFraction, CauseOrigin, Penalty, Assessment,
     calcular_dosimetria_completa,
@@ -336,13 +353,13 @@ critério, as três fases, a opção do art. 68, parágrafo único, e os alertas
 `gerar_fundamentacao(resultado)`.
 
 A mesma entrada também pode ser escrita em JSON (veja os casos em
-`dados/casos/dosimetrias.json`): `entrada_de_dict(dados).calcular()` devolve o
+`data/casos/dosimetrias.json`): `entrada_de_dict(dados).calcular()` devolve o
 resultado, e `resultado_para_dict(resultado)` o converte de volta para JSON.
 
 ## Estrutura
 
 ```
-dosimetria/              motor de cálculo (a API pública é importada de `dosimetria`)
+sentencing/              motor de cálculo (a API pública é importada de `sentencing`)
   valores/               Fraction, Penalty, PenaltyRange
   circunstancias/        judiciais (art. 59), legais (arts. 61-67), causas (3ª fase)
   quantum/               estratégias de quantum das fases 1 e 2
@@ -350,14 +367,18 @@ dosimetria/              motor de cálculo (a API pública é importada de `dosi
   relatorio/             Passo, gerar_fundamentacao (texto) e resultado_para_dict (JSON)
   entrada.py             entrada_de_dict: o formato JSON de entrada (o mesmo da API)
   ensino.py              comparar_resposta: correção da dosimetria do estudante
-sentencas/               leitor do PDF de sentenças e da dosimetria que elas declaram
+agent/                   agente da aba "Analisar caso": identifica o crime e monta a entrada
+sources/                 base de legislação e busca (RAG): ingestão, catálogo e BM25
+rulings/                 leitor do PDF de sentenças e da dosimetria que elas declaram
 api/                     API HTTP (FastAPI): app.py, casos.py, seguranca.py e esquemas.py
-banco/                   MySQL: conexão (TLS), tabelas, operações e migrar.py
-migracoes/               migrações do esquema do banco (Alembic)
-privacidade/             anonimização das descrições antes de gravar
+database/                MySQL: conexão (TLS), tabelas, operações e migrar.py
+migrations/              migrações do esquema do banco (Alembic)
+privacy/                 anonimização das descrições antes de gravar
 scripts/                 preparar_ambiente.py (gera o .env local com senhas aleatórias)
 web/                     páginas: rotas.py, templates/ (HTML) e static/ (CSS e JS)
-dados/casos/             casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
+data/casos/              casos de dosimetria com resultado esperado e anotação das sentenças (JSON)
+data/vocabulario/        léxico e sinônimos do vocabulário do agente
+data/sources/            base de legislação já extraída dos PDFs (JSON)
 tests/
   dosimetria_tests.ipynb notebook de testes
   navegador/             teste das páginas num navegador de verdade (Playwright)
@@ -368,7 +389,13 @@ tests/
 Os testes ficam no notebook `tests/dosimetria_tests.ipynb`. Cada seção
 imprime `OK`, e qualquer `assert` que falhar interrompe a execução naquele ponto.
 
-A seção "Casos de dosimetria" lê `dados/casos/dosimetrias.json`: são 17
+`scripts/rodar_testes.py` roda esse notebook célula a célula (é o que `docker compose run
+--rm testes` chama) e, ao final, imprime um resumo: quantas verificações (`assert`) cada
+seção tem, quanto tempo levou e se passou; se falhar, mostra em qual célula. O mesmo resumo
+vai para `relatorios/testes.json` (fora do git) e, no GitHub Actions, é publicado como
+artefato do job.
+
+A seção "Casos de dosimetria" lê `data/casos/dosimetrias.json`: são 17
 dosimetrias com o resultado esperado calculado à mão, e a conta de cada uma fica
 anotada no próprio arquivo. Uma vem do caso 04 de
 `Conjunto de Treinamento - 10 Sentenças Judiciais.pdf`; as outras foram
@@ -376,9 +403,9 @@ construídas para cobrir as regras do motor. Para acrescentar um caso, basta
 incluir um objeto no JSON.
 
 A seção "Sentenças do conjunto de treinamento" lê o próprio PDF com o pacote
-`sentencas/`, separa as 10 sentenças (ramo, tema, processo, partes, resultado,
+`rulings/`, separa as 10 sentenças (ramo, tema, processo, partes, resultado,
 relatório, fundamentação, dispositivo e magistrado) e as confere com a anotação
-de `dados/casos/conjunto_treinamento.json`. Na única sentença penal (caso 04), o
+de `data/casos/conjunto_treinamento.json`. Na única sentença penal (caso 04), o
 teste extrai a dosimetria que a juíza escreveu (pena-base, pena definitiva,
 dias-multa e regime) e verifica que o motor chega à mesma pena. As outras 9
 sentenças são cíveis, trabalhistas, previdenciárias ou administrativas, e o teste
@@ -419,8 +446,8 @@ pip install -r requirements-dev.txt
 jupyter nbconvert --to notebook --execute --inplace tests/dosimetria_tests.ipynb
 ```
 
-O motor (`dosimetria/`) não tem dependências externas. O leitor de sentenças
-(`sentencas/`) usa `pypdf`, a API usa FastAPI e uvicorn, e o Jupyter (com o
+O motor (`sentencing/`) não tem dependências externas. O leitor de sentenças
+(`rulings/`) usa `pypdf`, a API usa FastAPI e uvicorn, e o Jupyter (com o
 `httpx`, usado nos testes da API) só é necessário para os testes.
 
 ## Próximos passos

@@ -2,14 +2,14 @@
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from dosimetria import (
+from sentencing import (
     JudicialCircumstance,
     Composition,
     CircumstanceDirection,
     CauseDirection,
     CauseOrigin,
 )
-from dosimetria.entrada import ESTRATEGIAS
+from sentencing.entrada import ESTRATEGIAS
 
 from .fontes import ExcerptOutput
 

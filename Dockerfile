@@ -19,9 +19,11 @@ COPY requirements-dev.txt ./
 RUN pip install -r requirements-dev.txt
 COPY --chown=dosimetria:dosimetria . .
 USER dosimetria
-# Executa o notebook de testes; qualquer assert que falhar faz o comando sair com erro.
-# A cópia executada vai para /tmp para não alterar o notebook do projeto.
-CMD ["jupyter", "nbconvert", "--to", "notebook", "--execute", "--output-dir", "/tmp", "tests/dosimetria_tests.ipynb"]
+# Executa o notebook de testes e imprime o resumo (scripts/rodar_testes.py): quantas
+# verificações cada seção tem, quanto tempo levou e se passou. Qualquer assert que falhar
+# faz o comando sair com erro. A cópia executada e o relatório em JSON vão para /tmp, para
+# não alterar o notebook do projeto.
+CMD ["python", "scripts/rodar_testes.py"]
 
 
 FROM base AS api
@@ -32,4 +34,4 @@ EXPOSE 8000
 # A API sobe sem DATABASE_URL_MIGRACAO no ambiente: a senha do usuário que altera tabelas
 # só existe durante as migrações, e o processo do site nunca a vê.
 # A porta pode ser trocada pela variável PORT (plataformas de hospedagem costumam defini-la).
-CMD ["sh", "-c", "python -m banco.migrar && exec env -u DATABASE_URL_MIGRACAO uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]
+CMD ["sh", "-c", "python -m database.migrar && exec env -u DATABASE_URL_MIGRACAO uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]

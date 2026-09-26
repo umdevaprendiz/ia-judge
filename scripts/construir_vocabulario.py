@@ -3,7 +3,7 @@
     python scripts/construir_vocabulario.py            gera dados/vocabulario/lexico.json
     python scripts/construir_vocabulario.py sinonimos  lista candidatos a sinônimos para revisão
 
-Fontes (baixadas para dicionarios/, fora do git):
+Fontes (baixadas para materiais/dicionarios/, fora do git):
 - VERO, dicionário do LibreOffice para pt-BR (pt_BR.dic e pt_BR.aff), LGPLv3/MPL:
   palavras base e regras de sufixo, com as quais cada flexão volta à forma base ("mata",
   "matou", "matando" -> "matar").
@@ -24,8 +24,8 @@ from collections import defaultdict
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-PASTA = RAIZ / "dicionarios"
-SAIDA = RAIZ / "dados" / "vocabulario"
+PASTA = RAIZ / "materiais" / "dicionarios"
+SAIDA = RAIZ / "data" / "vocabulario"
 
 
 def ler_regras(arquivo: Path) -> dict[str, list[tuple[str, str, re.Pattern]]]:
@@ -62,7 +62,7 @@ def flexoes() -> dict[str, set[str]]:
 
 
 def palavras_da_base() -> set[str]:
-    dados = json.loads((RAIZ / "dados" / "fontes" / "dispositivos.json").read_text(encoding="utf-8"))
+    dados = json.loads((RAIZ / "data" / "sources" / "dispositivos.json").read_text(encoding="utf-8"))
     palavras: set[str] = set()
     for dispositivo in dados["dispositivos"]:
         palavras.update(re.findall(r"[a-záéíóúâêôãõçü]+", (dispositivo["texto"] + " " + dispositivo["epigrafe"]).lower()))

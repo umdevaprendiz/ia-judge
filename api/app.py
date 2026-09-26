@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from dosimetria import (
+from sentencing import (
     JudicialCircumstance,
     Composition,
     CircumstanceDirection,
@@ -30,15 +30,16 @@ from dosimetria import (
     pena_para_dict,
     resultado_para_dict,
 )
-from dosimetria.entrada import ESTRATEGIAS, pena_de_dict
+from sentencing.entrada import ESTRATEGIAS, pena_de_dict
 
-from banco import banco_configurado
-from fontes.busca import base_de_fontes
+from database import banco_configurado
+from sources.busca import base_de_fontes
 from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 
 from .agente import roteador as rotas_do_agente
 from .casos import roteador as rotas_dos_casos
 from .fontes import com_fontes_citadas, roteador as rotas_das_fontes
+from .metricas import MetricsMiddleware
 from .seguranca import RateLimiter, SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
@@ -51,7 +52,7 @@ from .esquemas import (
     SentencingOutput,
 )
 
-ARQUIVO_EXEMPLOS = Path(__file__).resolve().parent.parent / "dados" / "casos" / "dosimetrias.json"
+ARQUIVO_EXEMPLOS = Path(__file__).resolve().parent.parent / "data" / "casos" / "dosimetrias.json"
 
 # cálculo e correção: folga para um estudante praticando, sem deixar um script ocupar o servidor
 limite_calculo = RateLimiter("calculo", limite=60, janela=60, limite_global=3000)
@@ -71,6 +72,8 @@ app = FastAPI(
 # Outros sites só podem LER dados públicos (GET). Envios (POST/DELETE) só a partir das nossas
 # próprias páginas: assim um site de terceiros não consegue gravar casos em nome de um visitante.
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=[])
+# fica por dentro do SecurityHeadersMiddleware: só vê o corpo já cortado no tamanho máximo
+app.add_middleware(MetricsMiddleware)
 # adicionado por último = executa primeiro: cabeçalhos de segurança e limite de tamanho em tudo
 app.add_middleware(SecurityHeadersMiddleware)
 

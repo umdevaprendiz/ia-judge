@@ -18,9 +18,9 @@ tests/navegador/node_modules/
 tests/navegador/fotos/
 
 # PDFs novos ficam fora do git: a base de legislação vem deles (scripts/construir_base_de_fontes.py),
-# e o que vai para o repositório é o texto extraído (dados/fontes/). Alguns PDFs são edições comerciais.
+# e o que vai para o repositório é o texto extraído (data/sources/). Alguns PDFs são edições comerciais.
 *.pdf
-# exceção: os testes leem as 10 sentenças deste PDF (pacote sentencas/), inclusive no GitHub Actions
+# exceção: os testes leem as 10 sentenças deste PDF (pacote rulings/), inclusive no GitHub Actions
 !Conjunto de Treinamento - 10 Sentenças Judiciais.pdf
 
 # configuração local do editor/assistente
@@ -29,5 +29,9 @@ tests/navegador/fotos/
 # diário de trabalho local (decisões e próximos passos), fora do repositório público
 docs/progresso.md
 
-# dicionários de terceiros baixados para gerar o vocabulário do agente (scripts/construir_vocabulario.py)
-dicionarios/
+# materiais brutos locais: PDFs de legislação (scripts/construir_base_de_fontes.py) e dicionários
+# de terceiros para o vocabulário do agente (scripts/construir_vocabulario.py)
+materiais/
+
+# relatório de testes e notebook executado (scripts/rodar_testes.py), gerados a cada execução
+relatorios/

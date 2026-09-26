@@ -3,8 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from pydantic import BaseModel
 
-from fontes.busca import LegalSearchIndex, base_de_fontes
-from fontes.catalogo import LEIS_CONHECIDAS
+from sources.busca import LegalSearchIndex, base_de_fontes
+from sources.catalogo import LEIS_CONHECIDAS
 
 from .seguranca import RateLimiter
 
