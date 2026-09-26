@@ -65,6 +65,23 @@ tratada como requisito em cada funcionalidade:
   usuário, que só existe durante as migrações.
 - **Segredos fora do código**: a URL do banco e a do deploy hook ficam só nos painéis do
   Render e do GitHub. O MySQL local usa usuário, banco e senhas aleatórios num `.env` fora do git.
+
+## Métricas de uso
+
+Cada ação que o estudante dispara pelos botões da página (calcular, corrigir, pesquisar,
+enviar ou excluir um caso, usar o agente) gera uma linha de log em JSON
+(`api/metricas.py`), no mesmo log do servidor: data e hora, a ação, quanto demorou, o
+código de status da resposta e o que foi enviado. Navegação entre páginas, `/saude` e
+arquivos estáticos não geram log.
+
+Textos longos (a descrição de um caso, por exemplo, que chega **antes** da anonimização)
+aparecem só pelo tamanho (`"<texto de 1200 caracteres>"`), nunca pelo conteúdo — a mesma
+preocupação da seção anterior vale aqui: nada que possa identificar alguém vai para o log.
+Exemplo de uma linha:
+
+```json
+{"data_hora": "2026-01-15T14:32:07+00:00", "acao": "calcular pena", "rota": "/dosimetria/calcular", "status": 200, "duracao_ms": 4.8, "enviado": {"faixa": {"...": "..."}}}
+```
   `scripts/verificar_vazamentos.py` varre todos os arquivos do repositório (antes de cada commit
   e no CI) atrás de chaves, tokens, URLs com senha, caminhos locais, e-mails pessoais, arquivos
   proibidos e valores do `.env` local, e reprova o build se achar algum.

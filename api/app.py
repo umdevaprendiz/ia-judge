@@ -39,6 +39,7 @@ from web.rotas import PASTA_ESTATICOS, roteador as rotas_das_paginas
 from .agente import roteador as rotas_do_agente
 from .casos import roteador as rotas_dos_casos
 from .fontes import com_fontes_citadas, roteador as rotas_das_fontes
+from .metricas import MetricsMiddleware
 from .seguranca import RateLimiter, SecurityHeadersMiddleware, cabecalho_de_ip, protecao_de_ip
 
 from .esquemas import (
@@ -71,6 +72,8 @@ app = FastAPI(
 # Outros sites só podem LER dados públicos (GET). Envios (POST/DELETE) só a partir das nossas
 # próprias páginas: assim um site de terceiros não consegue gravar casos em nome de um visitante.
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET"], allow_headers=[])
+# fica por dentro do SecurityHeadersMiddleware: só vê o corpo já cortado no tamanho máximo
+app.add_middleware(MetricsMiddleware)
 # adicionado por último = executa primeiro: cabeçalhos de segurança e limite de tamanho em tudo
 app.add_middleware(SecurityHeadersMiddleware)
 
