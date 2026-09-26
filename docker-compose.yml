@@ -57,6 +57,14 @@ services:
         condition: service_healthy
     volumes:
       - ./:/app:ro
+      # única pasta com escrita: onde fica o relatório de testes (fora do git)
+      - ./relatorios:/app/relatorios
+    command:
+      [
+        "python", "scripts/rodar_testes.py",
+        "--relatorio", "/app/relatorios/testes.json",
+        "--notebook-executado", "/app/relatorios/dosimetria_tests_executado.ipynb",
+      ]
 
   # JupyterLab para editar e rodar os testes, com a pasta do projeto montada.
   #   docker compose up jupyter

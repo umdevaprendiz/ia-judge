@@ -7,7 +7,7 @@
 .venv/
 venv/
 *.pdf
-# o conjunto de treinamento é lido pelos testes (pacote sentencas/)
+# o conjunto de treinamento é lido pelos testes (pacote rulings/)
 !Conjunto de Treinamento - 10 Sentenças Judiciais.pdf
 
 # segredos e credenciais: nunca colocar na imagem
@@ -25,3 +25,6 @@ tests/navegador/fotos/
 # materiais brutos locais (PDFs de legislação e dicionários de terceiros) e diário local
 materiais/
 docs/progresso.md
+
+# relatório de testes e notebook executado (scripts/rodar_testes.py)
+relatorios/

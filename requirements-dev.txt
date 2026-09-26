@@ -3,5 +3,8 @@
 nbconvert==7.17.1
 ipykernel==7.3.0
 jupyterlab==4.6.3
+# executa o notebook célula a célula e gera o resumo (scripts/rodar_testes.py)
+nbclient==0.11.0
+nbformat==5.11.1
 # cliente HTTP usado pelo TestClient do FastAPI nos testes da API
 httpx==0.28.1

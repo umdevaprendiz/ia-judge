@@ -372,6 +372,12 @@ tests/
 Os testes ficam no notebook `tests/dosimetria_tests.ipynb`. Cada seção
 imprime `OK`, e qualquer `assert` que falhar interrompe a execução naquele ponto.
 
+`scripts/rodar_testes.py` roda esse notebook célula a célula (é o que `docker compose run
+--rm testes` chama) e, ao final, imprime um resumo: quantas verificações (`assert`) cada
+seção tem, quanto tempo levou e se passou; se falhar, mostra em qual célula. O mesmo resumo
+vai para `relatorios/testes.json` (fora do git) e, no GitHub Actions, é publicado como
+artefato do job.
+
 A seção "Casos de dosimetria" lê `data/casos/dosimetrias.json`: são 17
 dosimetrias com o resultado esperado calculado à mão, e a conta de cada uma fica
 anotada no próprio arquivo. Uma vem do caso 04 de

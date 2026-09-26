@@ -19,9 +19,11 @@ COPY requirements-dev.txt ./
 RUN pip install -r requirements-dev.txt
 COPY --chown=dosimetria:dosimetria . .
 USER dosimetria
-# Executa o notebook de testes; qualquer assert que falhar faz o comando sair com erro.
-# A cópia executada vai para /tmp para não alterar o notebook do projeto.
-CMD ["jupyter", "nbconvert", "--to", "notebook", "--execute", "--output-dir", "/tmp", "tests/dosimetria_tests.ipynb"]
+# Executa o notebook de testes e imprime o resumo (scripts/rodar_testes.py): quantas
+# verificações cada seção tem, quanto tempo levou e se passou. Qualquer assert que falhar
+# faz o comando sair com erro. A cópia executada e o relatório em JSON vão para /tmp, para
+# não alterar o notebook do projeto.
+CMD ["python", "scripts/rodar_testes.py"]
 
 
 FROM base AS api
