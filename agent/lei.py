@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass
 from fractions import Fraction
 
-from fontes.extracao import LegalProvision
+from sources.extracao import LegalProvision
 
 _NUMEROS = {
     "um": 1, "uma": 1, "dois": 2, "duas": 2, "tres": 3, "três": 3, "quatro": 4, "cinco": 5, "seis": 6,

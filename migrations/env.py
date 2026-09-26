@@ -2,8 +2,8 @@
 
 from alembic import context
 
-from banco.config import obter_engine
-from banco.modelos import Base
+from database.config import obter_engine
+from database.modelos import Base
 
 target_metadata = Base.metadata
 

@@ -17,9 +17,9 @@ from collections import Counter, defaultdict
 from functools import cache
 from threading import Lock
 
-from dosimetria import Penalty, pena_para_dict
-from fontes.busca import SINONIMOS, LegalSearchIndex, _Bm25Field, base_de_fontes, normalizar, termos
-from fontes.vocabulario import lematizar
+from sentencing import Penalty, pena_para_dict
+from sources.busca import SINONIMOS, LegalSearchIndex, _Bm25Field, base_de_fontes, normalizar, termos
+from sources.vocabulario import lematizar
 
 from .catalogo import (
     AGRAVANTES,

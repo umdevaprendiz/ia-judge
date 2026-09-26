@@ -21,7 +21,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 TAMANHO_MAXIMO = 5 * 1024 * 1024
-GRANDES_PERMITIDOS = {"dados/fontes/dispositivos.json"}
+GRANDES_PERMITIDOS = {"data/sources/dispositivos.json"}
 
 ARQUIVOS_PROIBIDOS = re.compile(
     r"(^|/)\.env(\.|$)|\.(pem|key|p12|pfx|jks|kdbx)$|(^|/)id_(rsa|ed25519|ecdsa)|^materiais/|^docs/progresso\.md$"

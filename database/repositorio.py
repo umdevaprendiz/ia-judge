@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
-from privacidade import anonimizar
+from privacy import anonimizar
 
 from .modelos import CaseRecord, CaseStatus, _agora
 

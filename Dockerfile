@@ -32,4 +32,4 @@ EXPOSE 8000
 # A API sobe sem DATABASE_URL_MIGRACAO no ambiente: a senha do usuário que altera tabelas
 # só existe durante as migrações, e o processo do site nunca a vê.
 # A porta pode ser trocada pela variável PORT (plataformas de hospedagem costumam defini-la).
-CMD ["sh", "-c", "python -m banco.migrar && exec env -u DATABASE_URL_MIGRACAO uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]
+CMD ["sh", "-c", "python -m database.migrar && exec env -u DATABASE_URL_MIGRACAO uvicorn api.app:app --host 0.0.0.0 --port ${PORT:-8000} --no-server-header"]

@@ -25,7 +25,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 PASTA = RAIZ / "materiais" / "dicionarios"
-SAIDA = RAIZ / "dados" / "vocabulario"
+SAIDA = RAIZ / "data" / "vocabulario"
 
 
 def ler_regras(arquivo: Path) -> dict[str, list[tuple[str, str, re.Pattern]]]:
@@ -62,7 +62,7 @@ def flexoes() -> dict[str, set[str]]:
 
 
 def palavras_da_base() -> set[str]:
-    dados = json.loads((RAIZ / "dados" / "fontes" / "dispositivos.json").read_text(encoding="utf-8"))
+    dados = json.loads((RAIZ / "data" / "sources" / "dispositivos.json").read_text(encoding="utf-8"))
     palavras: set[str] = set()
     for dispositivo in dados["dispositivos"]:
         palavras.update(re.findall(r"[a-záéíóúâêôãõçü]+", (dispositivo["texto"] + " " + dispositivo["epigrafe"]).lower()))

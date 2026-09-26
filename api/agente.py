@@ -6,10 +6,10 @@ import re
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from agente.analise import agente
-from agente.calculo import montar_entrada
-from dosimetria import Composition, JudicialCircumstance, entrada_de_dict, resultado_para_dict
-from privacidade import anonimizar
+from agent.analise import agente
+from agent.calculo import montar_entrada
+from sentencing import Composition, JudicialCircumstance, entrada_de_dict, resultado_para_dict
+from privacy import anonimizar
 
 from .esquemas import PADRAO_FRACAO, TEXTO_LONGO, SentencingOutput, SentencingRequest, StrategyInput
 from .fontes import ROTULO, com_fontes_citadas

@@ -18,12 +18,12 @@ sys.path.insert(0, str(RAIZ))
 
 from pypdf import PdfReader  # noqa: E402
 
-from fontes.catalogo import FONTES  # noqa: E402
-from fontes.extracao import escolher_versoes, extrair_documento  # noqa: E402
-from fontes.texto import limpar_paginas  # noqa: E402
+from sources.catalogo import FONTES  # noqa: E402
+from sources.extracao import escolher_versoes, extrair_documento  # noqa: E402
+from sources.texto import limpar_paginas  # noqa: E402
 
 PASTA_PDFS = RAIZ / "materiais" / "legislacao"
-SAIDA = RAIZ / "dados" / "fontes" / "dispositivos.json"
+SAIDA = RAIZ / "data" / "sources" / "dispositivos.json"
 
 
 def main() -> None:

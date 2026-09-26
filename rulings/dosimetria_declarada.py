@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from dosimetria import Penalty
+from sentencing import Penalty
 
 from .leitor import CourtDecision
 
